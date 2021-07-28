@@ -1,0 +1,1450 @@
+Mental Health Disorder Group,ICD10_Code,Description
+Anxiety Disorders,F4000,"Agoraphobia, unspecified"
+Anxiety Disorders,F4001,Agoraphobia with panic disorder
+Anxiety Disorders,F4002,Agoraphobia without panic disorder
+Anxiety Disorders,F4010,"Social phobia, unspecified"
+Anxiety Disorders,F4011,"Social phobia, generalized"
+Anxiety Disorders,F40210,Arachnophobia
+Anxiety Disorders,F40218,Other animal type phobia
+Anxiety Disorders,F40220,Fear of thunderstorms
+Anxiety Disorders,F40228,Other natural environment type phobia
+Anxiety Disorders,F40230,Fear of blood
+Anxiety Disorders,F40231,Fear of injections and transfusions
+Anxiety Disorders,F40232,Fear of other medical care
+Anxiety Disorders,F40233,Fear of injury
+Anxiety Disorders,F40240,Claustrophobia
+Anxiety Disorders,F40241,Acrophobia
+Anxiety Disorders,F40242,Fear of bridges
+Anxiety Disorders,F40243,Fear of flying
+Anxiety Disorders,F40248,Other situational type phobia
+Anxiety Disorders,F40290,Androphobia
+Anxiety Disorders,F40291,Gynephobia
+Anxiety Disorders,F40298,Other specified phobia
+Anxiety Disorders,F408,Other phobic anxiety disorders
+Anxiety Disorders,F409,"Phobic anxiety disorder, unspecified"
+Anxiety Disorders,F410,Panic disorder [episodic paroxysmal anxiety] without agoraphobia
+Anxiety Disorders,F411,Generalized anxiety disorder
+Anxiety Disorders,F413,Other mixed anxiety disorders
+Anxiety Disorders,F418,Other specified anxiety disorders
+Anxiety Disorders,F419,"Anxiety disorder, unspecified"
+Anxiety Disorders,F930,Separation anxiety disorder of childhood
+Anxiety Disorders,F940,Selective mutism
+Bipolar and Related Disorders,F3010,"Manic episode without psychotic symptoms, unspecified"
+Bipolar and Related Disorders,F3011,"Manic episode without psychotic symptoms, mild"
+Bipolar and Related Disorders,F3012,"Manic episode without psychotic symptoms, moderate"
+Bipolar and Related Disorders,F3013,"Manic episode, severe, without psychotic symptoms"
+Bipolar and Related Disorders,F302,"Manic episode, severe with psychotic symptoms"
+Bipolar and Related Disorders,F303,Manic episode in partial remission
+Bipolar and Related Disorders,F304,Manic episode in full remission
+Bipolar and Related Disorders,F308,Other manic episodes
+Bipolar and Related Disorders,F309,"Manic episode, unspecified"
+Bipolar and Related Disorders,F310,"Bipolar disorder, current episode hypomanic"
+Bipolar and Related Disorders,F3110,"Bipolar disorder, current episode manic without psychotic features, unspecified"
+Bipolar and Related Disorders,F3111,"Bipolar disorder, current episode manic without psychotic features, mild"
+Bipolar and Related Disorders,F3112,"Bipolar disorder, current episode manic without psychotic features, moderate"
+Bipolar and Related Disorders,F3113,"Bipolar disorder, current episode manic without psychotic features, severe"
+Bipolar and Related Disorders,F312,"Bipolar disorder, current episode manic severe with psychotic features"
+Bipolar and Related Disorders,F3130,"Bipolar disorder, current episode depressed, mild or moderate severity, unspecified"
+Bipolar and Related Disorders,F3131,"Bipolar disorder, current episode depressed, mild"
+Bipolar and Related Disorders,F3132,"Bipolar disorder, current episode depressed, moderate"
+Bipolar and Related Disorders,F314,"Bipolar disorder, current episode depressed, severe, without psychotic features"
+Bipolar and Related Disorders,F315,"Bipolar disorder, current episode depressed, severe, with psychotic features"
+Bipolar and Related Disorders,F3160,"Bipolar disorder, current episode mixed, unspecified"
+Bipolar and Related Disorders,F3161,"Bipolar disorder, current episode mixed, mild"
+Bipolar and Related Disorders,F3162,"Bipolar disorder, current episode mixed, moderate"
+Bipolar and Related Disorders,F3163,"Bipolar disorder, current episode mixed, severe, without psychotic features"
+Bipolar and Related Disorders,F3164,"Bipolar disorder, current episode mixed, severe, with psychotic features"
+Bipolar and Related Disorders,F3170,"Bipolar disorder, currently in remission, most recent episode unspecified"
+Bipolar and Related Disorders,F3171,"Bipolar disorder, in partial remission, most recent episode hypomanic"
+Bipolar and Related Disorders,F3172,"Bipolar disorder, in full remission, most recent episode hypomanic"
+Bipolar and Related Disorders,F3173,"Bipolar disorder, in partial remission, most recent episode manic"
+Bipolar and Related Disorders,F3174,"Bipolar disorder, in full remission, most recent episode manic"
+Bipolar and Related Disorders,F3175,"Bipolar disorder, in partial remission, most recent episode depressed"
+Bipolar and Related Disorders,F3176,"Bipolar disorder, in full remission, most recent episode depressed"
+Bipolar and Related Disorders,F3177,"Bipolar disorder, in partial remission, most recent episode mixed"
+Bipolar and Related Disorders,F3178,"Bipolar disorder, in full remission, most recent episode mixed"
+Bipolar and Related Disorders,F3181,Bipolar II disorder
+Bipolar and Related Disorders,F3189,Other bipolar disorder
+Bipolar and Related Disorders,F319,"Bipolar disorder, unspecified"
+Bipolar and Related Disorders,F340,Cyclothymic disorder
+Depressive Disorders,F320,"Major depressive disorder, single episode, mild"
+Depressive Disorders,F321,"Major depressive disorder, single episode, moderate"
+Depressive Disorders,F322,"Major depressive disorder, single episode, severe without psychotic features"
+Depressive Disorders,F323,"Major depressive disorder, single episode, severe with psychotic features"
+Depressive Disorders,F324,"Major depressive disorder, single episode, in partial remission"
+Depressive Disorders,F325,"Major depressive disorder, single episode, in full remission"
+Depressive Disorders,F328,Other depressive episodes
+Depressive Disorders,F3289,Other specified depressive episodes
+Depressive Disorders,F329,"Major depressive disorder, single episode, unspecified"
+Depressive Disorders,F330,"Major depressive disorder, recurrent, mild"
+Depressive Disorders,F331,"Major depressive disorder, recurrent, moderate"
+Depressive Disorders,F332,"Major depressive disorder, recurrent severe without psychotic features"
+Depressive Disorders,F333,"Major depressive disorder, recurrent, severe with psychotic symptoms"
+Depressive Disorders,F3340,"Major depressive disorder, recurrent, in remission, unspecified"
+Depressive Disorders,F3341,"Major depressive disorder, recurrent, in partial remission"
+Depressive Disorders,F3342,"Major depressive disorder, recurrent, in full remission"
+Depressive Disorders,F338,Other recurrent depressive disorders
+Depressive Disorders,F339,"Major depressive disorder, recurrent, unspecified"
+Depressive Disorders,F341,Dysthymic disorder
+Depressive Disorders,F348,Other persistent mood [affective] disorders
+Depressive Disorders,F3481,Disruptive mood dysregulation disorder
+"Disruptive, Impulse Control and Conduct Disorders",F630,Pathological gambling
+"Disruptive, Impulse Control and Conduct Disorders",F631,Pyromania
+"Disruptive, Impulse Control and Conduct Disorders",F632,Kleptomania
+"Disruptive, Impulse Control and Conduct Disorders",F6381,Intermittent explosive disorder
+"Disruptive, Impulse Control and Conduct Disorders",F6389,Other impulse disorders
+"Disruptive, Impulse Control and Conduct Disorders",F639,"Impulse disorder, unspecified"
+"Disruptive, Impulse Control and Conduct Disorders",F910,Conduct disorder confined to family context
+"Disruptive, Impulse Control and Conduct Disorders",F911,"Conduct disorder, childhood-onset type"
+"Disruptive, Impulse Control and Conduct Disorders",F912,"Conduct disorder, adolescent-onset type"
+"Disruptive, Impulse Control and Conduct Disorders",F913,Oppositional defiant disorder
+"Disruptive, Impulse Control and Conduct Disorders",F918,Other conduct disorders
+"Disruptive, Impulse Control and Conduct Disorders",F919,"Conduct disorder, unspecified"
+Dissociative Disorders,F440,Dissociative amnesia
+Dissociative Disorders,F441,Dissociative fugue
+Dissociative Disorders,F442,Dissociative stupor
+Dissociative Disorders,F4481,Dissociative identity disorder
+Dissociative Disorders,F481,Depersonalization-derealization syndrome
+Feeding and Eating Disorders,F5000,"Anorexia nervosa, unspecified"
+Feeding and Eating Disorders,F5001,"Anorexia nervosa, restricting type"
+Feeding and Eating Disorders,F5002,"Anorexia nervosa, binge eating/purging type"
+Feeding and Eating Disorders,F502,Bulimia nervosa
+Feeding and Eating Disorders,F508,Other eating disorders
+Feeding and Eating Disorders,F5081,Binge eating disorder
+Feeding and Eating Disorders,F5082,Avoidant/restrictive food intake disorder
+Feeding and Eating Disorders,F5089,Other specified eating disorder
+Feeding and Eating Disorders,F509,"Eating disorder, unspecified"
+Feeding and Eating Disorders,F9821,Rumination disorder of infancy
+Feeding and Eating Disorders,F9829,Other feeding disorders of infancy and early childhood
+Feeding and Eating Disorders,F983,Pica of infancy and childhood
+Mental Health Symptom,F59,Unspecified behavioral syndromes associated with physiological disturbances and physical factors
+Mental Health Symptom,R440,Auditory hallucinations
+Mental Health Symptom,R441,Visual hallucinations
+Mental Health Symptom,R442,Other hallucinations
+Mental Health Symptom,R443,"Hallucinations, unspecified"
+Mental Health Symptom,R450,Nervousness
+Mental Health Symptom,R451,Restlessness and agitation
+Mental Health Symptom,R452,Unhappiness
+Mental Health Symptom,R453,Demoralization and apathy
+Mental Health Symptom,R454,Irritability and anger
+Mental Health Symptom,R455,Hostility
+Mental Health Symptom,R456,Violent behavior
+Mental Health Symptom,R457,"State of emotional shock and stress, unspecified"
+Mental Health Symptom,R4581,Low self-esteem
+Mental Health Symptom,R4582,Worries
+Mental Health Symptom,R4583,"Excessive crying of child, adolescent or adult"
+Mental Health Symptom,R4584,Anhedonia
+Mental Health Symptom,R45850,Homicidal ideations
+Mental Health Symptom,R4586,Emotional lability
+Mental Health Symptom,R4587,Impulsiveness
+Mental Health Symptom,R4589,Other symptoms and signs involving emotional state
+Mental Health Symptom,R460,Very low level of personal hygiene
+Mental Health Symptom,R461,Bizarre personal appearance
+Mental Health Symptom,R462,Strange and inexplicable behavior
+Mental Health Symptom,R463,Overactivity
+Mental Health Symptom,R464,Slowness and poor responsiveness
+Mental Health Symptom,R465,Suspiciousness and marked evasiveness
+Mental Health Symptom,R466,Undue concern and preoccupation with stressful events
+Mental Health Symptom,R467,Verbosity and circumstantial detail obscuring reason for contact
+Mental Health Symptom,R4681,Obsessive-compulsive behavior
+Mental Health Symptom,Z72810,Child and adolescent antisocial behavior
+Mental Health Symptom,Z9183,Wandering in diseases classified elsewhere
+Miscellaneous,F070,Personality change due to known physiological condition
+Miscellaneous,F079,Unspecified personality and behavioral disorder due to known physiological condition
+Miscellaneous,F09,Unspecified mental disorder due to known physiological condition
+Miscellaneous,F28,Other psychotic disorder not due to a substance or known physiological condition
+Miscellaneous,F3281,Premenstrual dysphoric disorder
+Miscellaneous,F3489,Other specified persistent mood disorders
+Miscellaneous,F349,"Persistent mood [affective] disorder, unspecified"
+Miscellaneous,F39,Unspecified mood [affective] disorder
+Miscellaneous,F4489,Other dissociative and conversion disorders
+Miscellaneous,F449,"Dissociative and conversion disorder, unspecified"
+Miscellaneous,F488,Other specified nonpsychotic mental disorders
+Miscellaneous,F489,"Nonpsychotic mental disorder, unspecified"
+Miscellaneous,F54,Psychological and behavioral factors associated with disorders or diseases classified elsewhere
+Miscellaneous,F550,Abuse of antacids
+Miscellaneous,F551,Abuse of herbal or folk remedies
+Miscellaneous,F552,Abuse of laxatives
+Miscellaneous,F553,Abuse of steroids or hormones
+Miscellaneous,F554,Abuse of vitamins
+Miscellaneous,F558,Abuse of other non-psychoactive substances
+Miscellaneous,F688,Other specified disorders of adult personality and behavior
+Miscellaneous,F69,Unspecified disorder of adult personality and behavior
+Miscellaneous,F938,Other childhood emotional disorders
+Miscellaneous,F939,"Childhood emotional disorder, unspecified"
+Miscellaneous,F948,Other childhood disorders of social functioning
+Miscellaneous,F949,"Childhood disorder of social functioning, unspecified"
+Miscellaneous,F988,Other specified behavioral and emotional disorders with onset usually occurring in childhood and adolescence
+Miscellaneous,F989,Unspecified behavioral and emotional disorders with onset usually occurring in childhood and adolescence
+Miscellaneous,F99,"Mental disorder, not otherwise specified"
+Miscellaneous,R41840,Attention and concentration deficit
+Miscellaneous,R41841,Cognitive communication deficit
+Miscellaneous,R41842,Visuospatial deficit
+Miscellaneous,R41843,Psychomotor deficit
+Miscellaneous,R41844,Frontal lobe and executive function deficit
+Miscellaneous,R4189,Other symptoms and signs involving cognitive functions and awareness
+Miscellaneous,R419,Unspecified symptoms and signs involving cognitive functions and awareness
+Obsessive-Compulsive and Related Disorders,F42,Obsessive-compulsive disorder
+Obsessive-Compulsive and Related Disorders,F422,Mixed obsessional thoughts and acts
+Obsessive-Compulsive and Related Disorders,F423,Hoarding disorder
+Obsessive-Compulsive and Related Disorders,F424,Excoriation (skin-picking) disorder
+Obsessive-Compulsive and Related Disorders,F428,Other obsessive-compulsive disorder
+Obsessive-Compulsive and Related Disorders,F429,"Obsessive-compulsive disorder, unspecified"
+Obsessive-Compulsive and Related Disorders,F4522,Body dysmorphic disorder
+Obsessive-Compulsive and Related Disorders,F633,Trichotillomania
+Personality Disorders,F21,Schizotypal disorder
+Personality Disorders,F600,Paranoid personality disorder
+Personality Disorders,F601,Schizoid personality disorder
+Personality Disorders,F602,Antisocial personality disorder
+Personality Disorders,F603,Borderline personality disorder
+Personality Disorders,F604,Histrionic personality disorder
+Personality Disorders,F605,Obsessive-compulsive personality disorder
+Personality Disorders,F606,Avoidant personality disorder
+Personality Disorders,F607,Dependent personality disorder
+Personality Disorders,F6081,Narcissistic personality disorder
+Personality Disorders,F6089,Other specific personality disorders
+Personality Disorders,F609,"Personality disorder, unspecified"
+Schizophrenia Spectrum and Other Psychotic Disorders,F060,Psychotic disorder with hallucinations due to known physiological condition
+Schizophrenia Spectrum and Other Psychotic Disorders,F061,Catatonic disorder due to known physiological condition
+Schizophrenia Spectrum and Other Psychotic Disorders,F200,Paranoid schizophrenia
+Schizophrenia Spectrum and Other Psychotic Disorders,F201,Disorganized schizophrenia
+Schizophrenia Spectrum and Other Psychotic Disorders,F202,Catatonic schizophrenia
+Schizophrenia Spectrum and Other Psychotic Disorders,F203,Undifferentiated schizophrenia
+Schizophrenia Spectrum and Other Psychotic Disorders,F205,Residual schizophrenia
+Schizophrenia Spectrum and Other Psychotic Disorders,F2081,Schizophreniform disorder
+Schizophrenia Spectrum and Other Psychotic Disorders,F2089,Other schizophrenia
+Schizophrenia Spectrum and Other Psychotic Disorders,F209,"Schizophrenia, unspecified"
+Schizophrenia Spectrum and Other Psychotic Disorders,F22,Delusional disorders
+Schizophrenia Spectrum and Other Psychotic Disorders,F23,Brief psychotic disorder
+Schizophrenia Spectrum and Other Psychotic Disorders,F24,Shared psychotic disorder
+Schizophrenia Spectrum and Other Psychotic Disorders,F250,"Schizoaffective disorder, bipolar type"
+Schizophrenia Spectrum and Other Psychotic Disorders,F251,"Schizoaffective disorder, depressive type"
+Schizophrenia Spectrum and Other Psychotic Disorders,F258,Other schizoaffective disorders
+Schizophrenia Spectrum and Other Psychotic Disorders,F259,"Schizoaffective disorder, unspecified"
+Schizophrenia Spectrum and Other Psychotic Disorders,F29,Unspecified psychosis not due to a substance or known physiological condition
+Sleep-Wake Disorders,F5101,Primary insomnia
+Sleep-Wake Disorders,F5102,Adjustment insomnia
+Sleep-Wake Disorders,F5103,Paradoxical insomnia
+Sleep-Wake Disorders,F5104,Psychophysiologic insomnia
+Sleep-Wake Disorders,F5105,Insomnia due to other mental disorder
+Sleep-Wake Disorders,F5109,Other insomnia not due to a substance or known physiological condition
+Sleep-Wake Disorders,F5111,Primary hypersomnia
+Sleep-Wake Disorders,F5112,Insufficient sleep syndrome
+Sleep-Wake Disorders,F5113,Hypersomnia due to other mental disorder
+Sleep-Wake Disorders,F5119,Other hypersomnia not due to a substance or known physiological condition
+Sleep-Wake Disorders,F513,Sleepwalking [somnambulism]
+Sleep-Wake Disorders,F514,Sleep terrors [night terrors]
+Sleep-Wake Disorders,F515,Nightmare disorder
+Sleep-Wake Disorders,F518,Other sleep disorders not due to a substance or known physiological condition
+Sleep-Wake Disorders,F519,"Sleep disorder not due to a substance or known physiological condition, unspecified"
+Somatic Symptom and Related Disorders,F444,Conversion disorder with motor symptom or deficit
+Somatic Symptom and Related Disorders,F445,Conversion disorder with seizures or convulsions
+Somatic Symptom and Related Disorders,F446,Conversion disorder with sensory symptom or deficit
+Somatic Symptom and Related Disorders,F447,Conversion disorder with mixed symptom presentation
+Somatic Symptom and Related Disorders,F450,Somatization disorder
+Somatic Symptom and Related Disorders,F451,Undifferentiated somatoform disorder
+Somatic Symptom and Related Disorders,F4520,"Hypochondriacal disorder, unspecified"
+Somatic Symptom and Related Disorders,F4521,Hypochondriasis
+Somatic Symptom and Related Disorders,F4529,Other hypochondriacal disorders
+Somatic Symptom and Related Disorders,F4541,Pain disorder exclusively related to psychological factors
+Somatic Symptom and Related Disorders,F4542,Pain disorder with related psychological factors
+Somatic Symptom and Related Disorders,F458,Other somatoform disorders
+Somatic Symptom and Related Disorders,F459,"Somatoform disorder, unspecified"
+Somatic Symptom and Related Disorders,F6810,"Factitious disorder, unspecified"
+Somatic Symptom and Related Disorders,F6811,Factitious disorder with predominantly psychological signs and symptoms
+Somatic Symptom and Related Disorders,F6812,Factitious disorder with predominantly physical signs and symptoms
+Somatic Symptom and Related Disorders,F6813,Factitious disorder with combined psychological and physical signs and symptoms
+Somatic Symptom and Related Disorders,F68A,Factitious disorder imposed on another
+Substance-Related and Addictive Disorders,F1010,"Alcohol abuse, uncomplicated"
+Substance-Related and Addictive Disorders,F10120,"Alcohol abuse with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F10121,Alcohol abuse with intoxication delirium
+Substance-Related and Addictive Disorders,F10129,"Alcohol abuse with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1014,Alcohol abuse with alcohol-induced mood disorder
+Substance-Related and Addictive Disorders,F10150,Alcohol abuse with alcohol-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F10151,Alcohol abuse with alcohol-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F10159,"Alcohol abuse with alcohol-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F10180,Alcohol abuse with alcohol-induced anxiety disorder
+Substance-Related and Addictive Disorders,F10181,Alcohol abuse with alcohol-induced sexual dysfunction
+Substance-Related and Addictive Disorders,F10182,Alcohol abuse with alcohol-induced sleep disorder
+Substance-Related and Addictive Disorders,F10188,Alcohol abuse with other alcohol-induced disorder
+Substance-Related and Addictive Disorders,F1019,Alcohol abuse with unspecified alcohol-induced disorder
+Substance-Related and Addictive Disorders,F1020,"Alcohol dependence, uncomplicated"
+Substance-Related and Addictive Disorders,F1021,"Alcohol dependence, in remission"
+Substance-Related and Addictive Disorders,F10220,"Alcohol dependence with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F10221,Alcohol dependence with intoxication delirium
+Substance-Related and Addictive Disorders,F10229,"Alcohol dependence with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F10230,"Alcohol dependence with withdrawal, uncomplicated"
+Substance-Related and Addictive Disorders,F10231,Alcohol dependence with withdrawal delirium
+Substance-Related and Addictive Disorders,F10232,Alcohol dependence with withdrawal with perceptual disturbance
+Substance-Related and Addictive Disorders,F10239,"Alcohol dependence with withdrawal, unspecified"
+Substance-Related and Addictive Disorders,F1024,Alcohol dependence with alcohol-induced mood disorder
+Substance-Related and Addictive Disorders,F10250,Alcohol dependence with alcohol-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F10251,Alcohol dependence with alcohol-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F10259,"Alcohol dependence with alcohol-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F1026,Alcohol dependence with alcohol-induced persisting amnestic disorder
+Substance-Related and Addictive Disorders,F1027,Alcohol dependence with alcohol-induced persisting dementia
+Substance-Related and Addictive Disorders,F10280,Alcohol dependence with alcohol-induced anxiety disorder
+Substance-Related and Addictive Disorders,F10281,Alcohol dependence with alcohol-induced sexual dysfunction
+Substance-Related and Addictive Disorders,F10282,Alcohol dependence with alcohol-induced sleep disorder
+Substance-Related and Addictive Disorders,F10288,Alcohol dependence with other alcohol-induced disorder
+Substance-Related and Addictive Disorders,F1029,Alcohol dependence with unspecified alcohol-induced disorder
+Substance-Related and Addictive Disorders,F10920,"Alcohol use, unspecified with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F10921,"Alcohol use, unspecified with intoxication delirium"
+Substance-Related and Addictive Disorders,F10929,"Alcohol use, unspecified with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1094,"Alcohol use, unspecified with alcohol-induced mood disorder"
+Substance-Related and Addictive Disorders,F10950,"Alcohol use, unspecified with alcohol-induced psychotic disorder with delusions"
+Substance-Related and Addictive Disorders,F10951,"Alcohol use, unspecified with alcohol-induced psychotic disorder with hallucinations"
+Substance-Related and Addictive Disorders,F10959,"Alcohol use, unspecified with alcohol-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F1096,"Alcohol use, unspecified with alcohol-induced persisting amnestic disorder"
+Substance-Related and Addictive Disorders,F1097,"Alcohol use, unspecified with alcohol-induced persisting dementia"
+Substance-Related and Addictive Disorders,F10980,"Alcohol use, unspecified with alcohol-induced anxiety disorder"
+Substance-Related and Addictive Disorders,F10981,"Alcohol use, unspecified with alcohol-induced sexual dysfunction"
+Substance-Related and Addictive Disorders,F10982,"Alcohol use, unspecified with alcohol-induced sleep disorder"
+Substance-Related and Addictive Disorders,F10988,"Alcohol use, unspecified with other alcohol-induced disorder"
+Substance-Related and Addictive Disorders,F1099,"Alcohol use, unspecified with unspecified alcohol-induced disorder"
+Substance-Related and Addictive Disorders,F1110,"Opioid abuse, uncomplicated"
+Substance-Related and Addictive Disorders,F11120,"Opioid abuse with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F11121,Opioid abuse with intoxication delirium
+Substance-Related and Addictive Disorders,F11122,Opioid abuse with intoxication with perceptual disturbance
+Substance-Related and Addictive Disorders,F11129,"Opioid abuse with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1114,Opioid abuse with opioid-induced mood disorder
+Substance-Related and Addictive Disorders,F11150,Opioid abuse with opioid-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F11151,Opioid abuse with opioid-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F11159,"Opioid abuse with opioid-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F11181,Opioid abuse with opioid-induced sexual dysfunction
+Substance-Related and Addictive Disorders,F11182,Opioid abuse with opioid-induced sleep disorder
+Substance-Related and Addictive Disorders,F11188,Opioid abuse with other opioid-induced disorder
+Substance-Related and Addictive Disorders,F1119,Opioid abuse with unspecified opioid-induced disorder
+Substance-Related and Addictive Disorders,F1120,"Opioid dependence, uncomplicated"
+Substance-Related and Addictive Disorders,F1121,"Opioid dependence, in remission"
+Substance-Related and Addictive Disorders,F11220,"Opioid dependence with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F11221,Opioid dependence with intoxication delirium
+Substance-Related and Addictive Disorders,F11222,Opioid dependence with intoxication with perceptual disturbance
+Substance-Related and Addictive Disorders,F11229,"Opioid dependence with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1123,Opioid dependence with withdrawal
+Substance-Related and Addictive Disorders,F1124,Opioid dependence with opioid-induced mood disorder
+Substance-Related and Addictive Disorders,F11250,Opioid dependence with opioid-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F11251,Opioid dependence with opioid-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F11259,"Opioid dependence with opioid-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F11281,Opioid dependence with opioid-induced sexual dysfunction
+Substance-Related and Addictive Disorders,F11282,Opioid dependence with opioid-induced sleep disorder
+Substance-Related and Addictive Disorders,F11288,Opioid dependence with other opioid-induced disorder
+Substance-Related and Addictive Disorders,F1129,Opioid dependence with unspecified opioid-induced disorder
+Substance-Related and Addictive Disorders,F1190,"Opioid use, unspecified, uncomplicated"
+Substance-Related and Addictive Disorders,F11920,"Opioid use, unspecified with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F11921,"Opioid use, unspecified with intoxication delirium"
+Substance-Related and Addictive Disorders,F11922,"Opioid use, unspecified with intoxication with perceptual disturbance"
+Substance-Related and Addictive Disorders,F11929,"Opioid use, unspecified with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1193,"Opioid use, unspecified with withdrawal"
+Substance-Related and Addictive Disorders,F1194,"Opioid use, unspecified with opioid-induced mood disorder"
+Substance-Related and Addictive Disorders,F11950,"Opioid use, unspecified with opioid-induced psychotic disorder with delusions"
+Substance-Related and Addictive Disorders,F11951,"Opioid use, unspecified with opioid-induced psychotic disorder with hallucinations"
+Substance-Related and Addictive Disorders,F11959,"Opioid use, unspecified with opioid-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F11981,"Opioid use, unspecified with opioid-induced sexual dysfunction"
+Substance-Related and Addictive Disorders,F11982,"Opioid use, unspecified with opioid-induced sleep disorder"
+Substance-Related and Addictive Disorders,F11988,"Opioid use, unspecified with other opioid-induced disorder"
+Substance-Related and Addictive Disorders,F1199,"Opioid use, unspecified with unspecified opioid-induced disorder"
+Substance-Related and Addictive Disorders,F1210,"Cannabis abuse, uncomplicated"
+Substance-Related and Addictive Disorders,F12120,"Cannabis abuse with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F12121,Cannabis abuse with intoxication delirium
+Substance-Related and Addictive Disorders,F12122,Cannabis abuse with intoxication with perceptual disturbance
+Substance-Related and Addictive Disorders,F12129,"Cannabis abuse with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F12150,Cannabis abuse with psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F12151,Cannabis abuse with psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F12159,"Cannabis abuse with psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F12180,Cannabis abuse with cannabis-induced anxiety disorder
+Substance-Related and Addictive Disorders,F12188,Cannabis abuse with other cannabis-induced disorder
+Substance-Related and Addictive Disorders,F1219,Cannabis abuse with unspecified cannabis-induced disorder
+Substance-Related and Addictive Disorders,F1220,"Cannabis dependence, uncomplicated"
+Substance-Related and Addictive Disorders,F1221,"Cannabis dependence, in remission"
+Substance-Related and Addictive Disorders,F12220,"Cannabis dependence with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F12221,Cannabis dependence with intoxication delirium
+Substance-Related and Addictive Disorders,F12222,Cannabis dependence with intoxication with perceptual disturbance
+Substance-Related and Addictive Disorders,F12229,"Cannabis dependence with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1223,Cannabis dependence with withdrawal
+Substance-Related and Addictive Disorders,F12250,Cannabis dependence with psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F12251,Cannabis dependence with psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F12259,"Cannabis dependence with psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F12280,Cannabis dependence with cannabis-induced anxiety disorder
+Substance-Related and Addictive Disorders,F12288,Cannabis dependence with other cannabis-induced disorder
+Substance-Related and Addictive Disorders,F1229,Cannabis dependence with unspecified cannabis-induced disorder
+Substance-Related and Addictive Disorders,F1290,"Cannabis use, unspecified, uncomplicated"
+Substance-Related and Addictive Disorders,F12920,"Cannabis use, unspecified with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F12921,"Cannabis use, unspecified with intoxication delirium"
+Substance-Related and Addictive Disorders,F12922,"Cannabis use, unspecified with intoxication with perceptual disturbance"
+Substance-Related and Addictive Disorders,F12929,"Cannabis use, unspecified with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1293,"Cannabis use, unspecified with withdrawal"
+Substance-Related and Addictive Disorders,F12950,"Cannabis use, unspecified with psychotic disorder with delusions"
+Substance-Related and Addictive Disorders,F12951,"Cannabis use, unspecified with psychotic disorder with hallucinations"
+Substance-Related and Addictive Disorders,F12959,"Cannabis use, unspecified with psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F12980,"Cannabis use, unspecified with anxiety disorder"
+Substance-Related and Addictive Disorders,F12988,"Cannabis use, unspecified with other cannabis-induced disorder"
+Substance-Related and Addictive Disorders,F1299,"Cannabis use, unspecified with unspecified cannabis-induced disorder"
+Substance-Related and Addictive Disorders,F1310,"Sedative, hypnotic or anxiolytic abuse, uncomplicated"
+Substance-Related and Addictive Disorders,F13120,"Sedative, hypnotic or anxiolytic abuse with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F13121,"Sedative, hypnotic or anxiolytic abuse with intoxication delirium"
+Substance-Related and Addictive Disorders,F13129,"Sedative, hypnotic or anxiolytic abuse with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1314,"Sedative, hypnotic or anxiolytic abuse with sedative, hypnotic or anxiolytic-induced mood disorder"
+Substance-Related and Addictive Disorders,F13150,"Sedative, hypnotic or anxiolytic abuse with sedative, hypnotic or anxiolytic-induced psychotic disorder with delusions"
+Substance-Related and Addictive Disorders,F13151,"Sedative, hypnotic or anxiolytic abuse with sedative, hypnotic or anxiolytic-induced psychotic disorder with hallucinations"
+Substance-Related and Addictive Disorders,F13159,"Sedative, hypnotic or anxiolytic abuse with sedative, hypnotic or anxiolytic-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F13180,"Sedative, hypnotic or anxiolytic abuse with sedative, hypnotic or anxiolytic-induced anxiety disorder"
+Substance-Related and Addictive Disorders,F13181,"Sedative, hypnotic or anxiolytic abuse with sedative, hypnotic or anxiolytic-induced sexual dysfunction"
+Substance-Related and Addictive Disorders,F13182,"Sedative, hypnotic or anxiolytic abuse with sedative, hypnotic or anxiolytic-induced sleep disorder"
+Substance-Related and Addictive Disorders,F13188,"Sedative, hypnotic or anxiolytic abuse with other sedative, hypnotic or anxiolytic-induced disorder"
+Substance-Related and Addictive Disorders,F1319,"Sedative, hypnotic or anxiolytic abuse with unspecified sedative, hypnotic or anxiolytic-induced disorder"
+Substance-Related and Addictive Disorders,F1320,"Sedative, hypnotic or anxiolytic dependence, uncomplicated"
+Substance-Related and Addictive Disorders,F1321,"Sedative, hypnotic or anxiolytic dependence, in remission"
+Substance-Related and Addictive Disorders,F13220,"Sedative, hypnotic or anxiolytic dependence with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F13221,"Sedative, hypnotic or anxiolytic dependence with intoxication delirium"
+Substance-Related and Addictive Disorders,F13229,"Sedative, hypnotic or anxiolytic dependence with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F13230,"Sedative, hypnotic or anxiolytic dependence with withdrawal, uncomplicated"
+Substance-Related and Addictive Disorders,F13231,"Sedative, hypnotic or anxiolytic dependence with withdrawal delirium"
+Substance-Related and Addictive Disorders,F13232,"Sedative, hypnotic or anxiolytic dependence with withdrawal with perceptual disturbance"
+Substance-Related and Addictive Disorders,F13239,"Sedative, hypnotic or anxiolytic dependence with withdrawal, unspecified"
+Substance-Related and Addictive Disorders,F1324,"Sedative, hypnotic or anxiolytic dependence with sedative, hypnotic or anxiolytic-induced mood disorder"
+Substance-Related and Addictive Disorders,F13250,"Sedative, hypnotic or anxiolytic dependence with sedative, hypnotic or anxiolytic-induced psychotic disorder with delusions"
+Substance-Related and Addictive Disorders,F13251,"Sedative, hypnotic or anxiolytic dependence with sedative, hypnotic or anxiolytic-induced psychotic disorder with hallucinations"
+Substance-Related and Addictive Disorders,F13259,"Sedative, hypnotic or anxiolytic dependence with sedative, hypnotic or anxiolytic-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F1326,"Sedative, hypnotic or anxiolytic dependence with sedative, hypnotic or anxiolytic-induced persisting amnestic disorder"
+Substance-Related and Addictive Disorders,F1327,"Sedative, hypnotic or anxiolytic dependence with sedative, hypnotic or anxiolytic-induced persisting dementia"
+Substance-Related and Addictive Disorders,F13280,"Sedative, hypnotic or anxiolytic dependence with sedative, hypnotic or anxiolytic-induced anxiety disorder"
+Substance-Related and Addictive Disorders,F13281,"Sedative, hypnotic or anxiolytic dependence with sedative, hypnotic or anxiolytic-induced sexual dysfunction"
+Substance-Related and Addictive Disorders,F13282,"Sedative, hypnotic or anxiolytic dependence with sedative, hypnotic or anxiolytic-induced sleep disorder"
+Substance-Related and Addictive Disorders,F13288,"Sedative, hypnotic or anxiolytic dependence with other sedative, hypnotic or anxiolytic-induced disorder"
+Substance-Related and Addictive Disorders,F1329,"Sedative, hypnotic or anxiolytic dependence with unspecified sedative, hypnotic or anxiolytic-induced disorder"
+Substance-Related and Addictive Disorders,F1390,"Sedative, hypnotic, or anxiolytic use, unspecified, uncomplicated"
+Substance-Related and Addictive Disorders,F13920,"Sedative, hypnotic or anxiolytic use, unspecified with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F13921,"Sedative, hypnotic or anxiolytic use, unspecified with intoxication delirium"
+Substance-Related and Addictive Disorders,F13929,"Sedative, hypnotic or anxiolytic use, unspecified with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F13930,"Sedative, hypnotic or anxiolytic use, unspecified with withdrawal, uncomplicated"
+Substance-Related and Addictive Disorders,F13931,"Sedative, hypnotic or anxiolytic use, unspecified with withdrawal delirium"
+Substance-Related and Addictive Disorders,F13932,"Sedative, hypnotic or anxiolytic use, unspecified with withdrawal with perceptual disturbances"
+Substance-Related and Addictive Disorders,F13939,"Sedative, hypnotic or anxiolytic use, unspecified with withdrawal, unspecified"
+Substance-Related and Addictive Disorders,F1394,"Sedative, hypnotic or anxiolytic use, unspecified with sedative, hypnotic or anxiolytic-induced mood disorder"
+Substance-Related and Addictive Disorders,F13950,"Sedative, hypnotic or anxiolytic use, unspecified with sedative, hypnotic or anxiolytic-induced psychotic disorder with delusions"
+Substance-Related and Addictive Disorders,F13951,"Sedative, hypnotic or anxiolytic use, unspecified with sedative, hypnotic or anxiolytic-induced psychotic disorder with hallucinations"
+Substance-Related and Addictive Disorders,F13959,"Sedative, hypnotic or anxiolytic use, unspecified with sedative, hypnotic or anxiolytic-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F1396,"Sedative, hypnotic or anxiolytic use, unspecified with sedative, hypnotic or anxiolytic-induced persisting amnestic disorder"
+Substance-Related and Addictive Disorders,F1397,"Sedative, hypnotic or anxiolytic use, unspecified with sedative, hypnotic or anxiolytic-induced persisting dementia"
+Substance-Related and Addictive Disorders,F13980,"Sedative, hypnotic or anxiolytic use, unspecified with sedative, hypnotic or anxiolytic-induced anxiety disorder"
+Substance-Related and Addictive Disorders,F13981,"Sedative, hypnotic or anxiolytic use, unspecified with sedative, hypnotic or anxiolytic-induced sexual dysfunction"
+Substance-Related and Addictive Disorders,F13982,"Sedative, hypnotic or anxiolytic use, unspecified with sedative, hypnotic or anxiolytic-induced sleep disorder"
+Substance-Related and Addictive Disorders,F13988,"Sedative, hypnotic or anxiolytic use, unspecified with other sedative, hypnotic or anxiolytic-induced disorder"
+Substance-Related and Addictive Disorders,F1399,"Sedative, hypnotic or anxiolytic use, unspecified with unspecified sedative, hypnotic or anxiolytic-induced disorder"
+Substance-Related and Addictive Disorders,F1410,"Cocaine abuse, uncomplicated"
+Substance-Related and Addictive Disorders,F14120,"Cocaine abuse with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F14121,Cocaine abuse with intoxication with delirium
+Substance-Related and Addictive Disorders,F14122,Cocaine abuse with intoxication with perceptual disturbance
+Substance-Related and Addictive Disorders,F14129,"Cocaine abuse with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1414,Cocaine abuse with cocaine-induced mood disorder
+Substance-Related and Addictive Disorders,F14150,Cocaine abuse with cocaine-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F14151,Cocaine abuse with cocaine-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F14159,"Cocaine abuse with cocaine-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F14180,Cocaine abuse with cocaine-induced anxiety disorder
+Substance-Related and Addictive Disorders,F14181,Cocaine abuse with cocaine-induced sexual dysfunction
+Substance-Related and Addictive Disorders,F14182,Cocaine abuse with cocaine-induced sleep disorder
+Substance-Related and Addictive Disorders,F14188,Cocaine abuse with other cocaine-induced disorder
+Substance-Related and Addictive Disorders,F1419,Cocaine abuse with unspecified cocaine-induced disorder
+Substance-Related and Addictive Disorders,F1420,"Cocaine dependence, uncomplicated"
+Substance-Related and Addictive Disorders,F1421,"Cocaine dependence, in remission"
+Substance-Related and Addictive Disorders,F14220,"Cocaine dependence with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F14221,Cocaine dependence with intoxication delirium
+Substance-Related and Addictive Disorders,F14222,Cocaine dependence with intoxication with perceptual disturbance
+Substance-Related and Addictive Disorders,F14229,"Cocaine dependence with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1423,Cocaine dependence with withdrawal
+Substance-Related and Addictive Disorders,F1424,Cocaine dependence with cocaine-induced mood disorder
+Substance-Related and Addictive Disorders,F14250,Cocaine dependence with cocaine-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F14251,Cocaine dependence with cocaine-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F14259,"Cocaine dependence with cocaine-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F14280,Cocaine dependence with cocaine-induced anxiety disorder
+Substance-Related and Addictive Disorders,F14281,Cocaine dependence with cocaine-induced sexual dysfunction
+Substance-Related and Addictive Disorders,F14282,Cocaine dependence with cocaine-induced sleep disorder
+Substance-Related and Addictive Disorders,F14288,Cocaine dependence with other cocaine-induced disorder
+Substance-Related and Addictive Disorders,F1429,Cocaine dependence with unspecified cocaine-induced disorder
+Substance-Related and Addictive Disorders,F1490,"Cocaine use, unspecified, uncomplicated"
+Substance-Related and Addictive Disorders,F14920,"Cocaine use, unspecified with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F14921,"Cocaine use, unspecified with intoxication delirium"
+Substance-Related and Addictive Disorders,F14922,"Cocaine use, unspecified with intoxication with perceptual disturbance"
+Substance-Related and Addictive Disorders,F14929,"Cocaine use, unspecified with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1494,"Cocaine use, unspecified with cocaine-induced mood disorder"
+Substance-Related and Addictive Disorders,F14950,"Cocaine use, unspecified with cocaine-induced psychotic disorder with delusions"
+Substance-Related and Addictive Disorders,F14951,"Cocaine use, unspecified with cocaine-induced psychotic disorder with hallucinations"
+Substance-Related and Addictive Disorders,F14959,"Cocaine use, unspecified with cocaine-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F14980,"Cocaine use, unspecified with cocaine-induced anxiety disorder"
+Substance-Related and Addictive Disorders,F14981,"Cocaine use, unspecified with cocaine-induced sexual dysfunction"
+Substance-Related and Addictive Disorders,F14982,"Cocaine use, unspecified with cocaine-induced sleep disorder"
+Substance-Related and Addictive Disorders,F14988,"Cocaine use, unspecified with other cocaine-induced disorder"
+Substance-Related and Addictive Disorders,F1499,"Cocaine use, unspecified with unspecified cocaine-induced disorder"
+Substance-Related and Addictive Disorders,F1510,"Other stimulant abuse, uncomplicated"
+Substance-Related and Addictive Disorders,F15120,"Other stimulant abuse with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F15121,Other stimulant abuse with intoxication delirium
+Substance-Related and Addictive Disorders,F15122,Other stimulant abuse with intoxication with perceptual disturbance
+Substance-Related and Addictive Disorders,F15129,"Other stimulant abuse with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1514,Other stimulant abuse with stimulant-induced mood disorder
+Substance-Related and Addictive Disorders,F15150,Other stimulant abuse with stimulant-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F15151,Other stimulant abuse with stimulant-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F15159,"Other stimulant abuse with stimulant-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F15180,Other stimulant abuse with stimulant-induced anxiety disorder
+Substance-Related and Addictive Disorders,F15181,Other stimulant abuse with stimulant-induced sexual dysfunction
+Substance-Related and Addictive Disorders,F15182,Other stimulant abuse with stimulant-induced sleep disorder
+Substance-Related and Addictive Disorders,F15188,Other stimulant abuse with other stimulant-induced disorder
+Substance-Related and Addictive Disorders,F1519,Other stimulant abuse with unspecified stimulant-induced disorder
+Substance-Related and Addictive Disorders,F1520,"Other stimulant dependence, uncomplicated"
+Substance-Related and Addictive Disorders,F1521,"Other stimulant dependence, in remission"
+Substance-Related and Addictive Disorders,F15220,"Other stimulant dependence with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F15221,Other stimulant dependence with intoxication delirium
+Substance-Related and Addictive Disorders,F15222,Other stimulant dependence with intoxication with perceptual disturbance
+Substance-Related and Addictive Disorders,F15229,"Other stimulant dependence with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1523,Other stimulant dependence with withdrawal
+Substance-Related and Addictive Disorders,F1524,Other stimulant dependence with stimulant-induced mood disorder
+Substance-Related and Addictive Disorders,F15250,Other stimulant dependence with stimulant-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F15251,Other stimulant dependence with stimulant-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F15259,"Other stimulant dependence with stimulant-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F15280,Other stimulant dependence with stimulant-induced anxiety disorder
+Substance-Related and Addictive Disorders,F15281,Other stimulant dependence with stimulant-induced sexual dysfunction
+Substance-Related and Addictive Disorders,F15282,Other stimulant dependence with stimulant-induced sleep disorder
+Substance-Related and Addictive Disorders,F15288,Other stimulant dependence with other stimulant-induced disorder
+Substance-Related and Addictive Disorders,F1529,Other stimulant dependence with unspecified stimulant-induced disorder
+Substance-Related and Addictive Disorders,F1590,"Other stimulant use, unspecified, uncomplicated"
+Substance-Related and Addictive Disorders,F15920,"Other stimulant use, unspecified with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F15921,"Other stimulant use, unspecified with intoxication delirium"
+Substance-Related and Addictive Disorders,F15922,"Other stimulant use, unspecified with intoxication with perceptual disturbance"
+Substance-Related and Addictive Disorders,F15929,"Other stimulant use, unspecified with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1593,"Other stimulant use, unspecified with withdrawal"
+Substance-Related and Addictive Disorders,F1594,"Other stimulant use, unspecified with stimulant-induced mood disorder"
+Substance-Related and Addictive Disorders,F15950,"Other stimulant use, unspecified with stimulant-induced psychotic disorder with delusions"
+Substance-Related and Addictive Disorders,F15951,"Other stimulant use, unspecified with stimulant-induced psychotic disorder with hallucinations"
+Substance-Related and Addictive Disorders,F15959,"Other stimulant use, unspecified with stimulant-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F15980,"Other stimulant use, unspecified with stimulant-induced anxiety disorder"
+Substance-Related and Addictive Disorders,F15981,"Other stimulant use, unspecified with stimulant-induced sexual dysfunction"
+Substance-Related and Addictive Disorders,F15982,"Other stimulant use, unspecified with stimulant-induced sleep disorder"
+Substance-Related and Addictive Disorders,F15988,"Other stimulant use, unspecified with other stimulant-induced disorder"
+Substance-Related and Addictive Disorders,F1599,"Other stimulant use, unspecified with unspecified stimulant-induced disorder"
+Substance-Related and Addictive Disorders,F1610,"Hallucinogen abuse, uncomplicated"
+Substance-Related and Addictive Disorders,F16120,"Hallucinogen abuse with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F16121,Hallucinogen abuse with intoxication with delirium
+Substance-Related and Addictive Disorders,F16122,Hallucinogen abuse with intoxication with perceptual disturbance
+Substance-Related and Addictive Disorders,F16129,"Hallucinogen abuse with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1614,Hallucinogen abuse with hallucinogen-induced mood disorder
+Substance-Related and Addictive Disorders,F16150,Hallucinogen abuse with hallucinogen-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F16151,Hallucinogen abuse with hallucinogen-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F16159,"Hallucinogen abuse with hallucinogen-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F16180,Hallucinogen abuse with hallucinogen-induced anxiety disorder
+Substance-Related and Addictive Disorders,F16183,Hallucinogen abuse with hallucinogen persisting perception disorder (flashbacks)
+Substance-Related and Addictive Disorders,F16188,Hallucinogen abuse with other hallucinogen-induced disorder
+Substance-Related and Addictive Disorders,F1619,Hallucinogen abuse with unspecified hallucinogen-induced disorder
+Substance-Related and Addictive Disorders,F1620,"Hallucinogen dependence, uncomplicated"
+Substance-Related and Addictive Disorders,F1621,"Hallucinogen dependence, in remission"
+Substance-Related and Addictive Disorders,F16220,"Hallucinogen dependence with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F16221,Hallucinogen dependence with intoxication with delirium
+Substance-Related and Addictive Disorders,F16229,"Hallucinogen dependence with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1624,Hallucinogen dependence with hallucinogen-induced mood disorder
+Substance-Related and Addictive Disorders,F16250,Hallucinogen dependence with hallucinogen-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F16251,Hallucinogen dependence with hallucinogen-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F16259,"Hallucinogen dependence with hallucinogen-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F16280,Hallucinogen dependence with hallucinogen-induced anxiety disorder
+Substance-Related and Addictive Disorders,F16283,Hallucinogen dependence with hallucinogen persisting perception disorder (flashbacks)
+Substance-Related and Addictive Disorders,F16288,Hallucinogen dependence with other hallucinogen-induced disorder
+Substance-Related and Addictive Disorders,F1629,Hallucinogen dependence with unspecified hallucinogen-induced disorder
+Substance-Related and Addictive Disorders,F1690,"Hallucinogen use, unspecified, uncomplicated"
+Substance-Related and Addictive Disorders,F16920,"Hallucinogen use, unspecified with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F16921,"Hallucinogen use, unspecified with intoxication with delirium"
+Substance-Related and Addictive Disorders,F16929,"Hallucinogen use, unspecified with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1694,"Hallucinogen use, unspecified with hallucinogen-induced mood disorder"
+Substance-Related and Addictive Disorders,F16950,"Hallucinogen use, unspecified with hallucinogen-induced psychotic disorder with delusions"
+Substance-Related and Addictive Disorders,F16951,"Hallucinogen use, unspecified with hallucinogen-induced psychotic disorder with hallucinations"
+Substance-Related and Addictive Disorders,F16959,"Hallucinogen use, unspecified with hallucinogen-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F16980,"Hallucinogen use, unspecified with hallucinogen-induced anxiety disorder"
+Substance-Related and Addictive Disorders,F16983,"Hallucinogen use, unspecified with hallucinogen persisting perception disorder (flashbacks)"
+Substance-Related and Addictive Disorders,F16988,"Hallucinogen use, unspecified with other hallucinogen-induced disorder"
+Substance-Related and Addictive Disorders,F1699,"Hallucinogen use, unspecified with unspecified hallucinogen-induced disorder"
+Substance-Related and Addictive Disorders,F17200,"Nicotine dependence, unspecified, uncomplicated"
+Substance-Related and Addictive Disorders,F17201,"Nicotine dependence, unspecified, in remission"
+Substance-Related and Addictive Disorders,F17203,"Nicotine dependence unspecified, with withdrawal"
+Substance-Related and Addictive Disorders,F17208,"Nicotine dependence, unspecified, with other nicotine-induced disorders"
+Substance-Related and Addictive Disorders,F17209,"Nicotine dependence, unspecified, with unspecified nicotine-induced disorders"
+Substance-Related and Addictive Disorders,F17210,"Nicotine dependence, cigarettes, uncomplicated"
+Substance-Related and Addictive Disorders,F17211,"Nicotine dependence, cigarettes, in remission"
+Substance-Related and Addictive Disorders,F17213,"Nicotine dependence, cigarettes, with withdrawal"
+Substance-Related and Addictive Disorders,F17218,"Nicotine dependence, cigarettes, with other nicotine-induced disorders"
+Substance-Related and Addictive Disorders,F17219,"Nicotine dependence, cigarettes, with unspecified nicotine-induced disorders"
+Substance-Related and Addictive Disorders,F17220,"Nicotine dependence, chewing tobacco, uncomplicated"
+Substance-Related and Addictive Disorders,F17221,"Nicotine dependence, chewing tobacco, in remission"
+Substance-Related and Addictive Disorders,F17223,"Nicotine dependence, chewing tobacco, with withdrawal"
+Substance-Related and Addictive Disorders,F17228,"Nicotine dependence, chewing tobacco, with other nicotine-induced disorders"
+Substance-Related and Addictive Disorders,F17229,"Nicotine dependence, chewing tobacco, with unspecified nicotine-induced disorders"
+Substance-Related and Addictive Disorders,F17290,"Nicotine dependence, other tobacco product, uncomplicated"
+Substance-Related and Addictive Disorders,F17291,"Nicotine dependence, other tobacco product, in remission"
+Substance-Related and Addictive Disorders,F17293,"Nicotine dependence, other tobacco product, with withdrawal"
+Substance-Related and Addictive Disorders,F17298,"Nicotine dependence, other tobacco product, with other nicotine-induced disorders"
+Substance-Related and Addictive Disorders,F17299,"Nicotine dependence, other tobacco product, with unspecified nicotine-induced disorders"
+Substance-Related and Addictive Disorders,F1810,"Inhalant abuse, uncomplicated"
+Substance-Related and Addictive Disorders,F18120,"Inhalant abuse with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F18121,Inhalant abuse with intoxication delirium
+Substance-Related and Addictive Disorders,F18129,"Inhalant abuse with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1814,Inhalant abuse with inhalant-induced mood disorder
+Substance-Related and Addictive Disorders,F18150,Inhalant abuse with inhalant-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F18151,Inhalant abuse with inhalant-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F18159,"Inhalant abuse with inhalant-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F1817,Inhalant abuse with inhalant-induced dementia
+Substance-Related and Addictive Disorders,F18180,Inhalant abuse with inhalant-induced anxiety disorder
+Substance-Related and Addictive Disorders,F18188,Inhalant abuse with other inhalant-induced disorder
+Substance-Related and Addictive Disorders,F1819,Inhalant abuse with unspecified inhalant-induced disorder
+Substance-Related and Addictive Disorders,F1820,"Inhalant dependence, uncomplicated"
+Substance-Related and Addictive Disorders,F1821,"Inhalant dependence, in remission"
+Substance-Related and Addictive Disorders,F18220,"Inhalant dependence with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F18221,Inhalant dependence with intoxication delirium
+Substance-Related and Addictive Disorders,F18229,"Inhalant dependence with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1824,Inhalant dependence with inhalant-induced mood disorder
+Substance-Related and Addictive Disorders,F18250,Inhalant dependence with inhalant-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F18251,Inhalant dependence with inhalant-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F18259,"Inhalant dependence with inhalant-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F1827,Inhalant dependence with inhalant-induced dementia
+Substance-Related and Addictive Disorders,F18280,Inhalant dependence with inhalant-induced anxiety disorder
+Substance-Related and Addictive Disorders,F18288,Inhalant dependence with other inhalant-induced disorder
+Substance-Related and Addictive Disorders,F1829,Inhalant dependence with unspecified inhalant-induced disorder
+Substance-Related and Addictive Disorders,F1890,"Inhalant use, unspecified, uncomplicated"
+Substance-Related and Addictive Disorders,F18920,"Inhalant use, unspecified with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F18921,"Inhalant use, unspecified with intoxication with delirium"
+Substance-Related and Addictive Disorders,F18929,"Inhalant use, unspecified with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1894,"Inhalant use, unspecified with inhalant-induced mood disorder"
+Substance-Related and Addictive Disorders,F18950,"Inhalant use, unspecified with inhalant-induced psychotic disorder with delusions"
+Substance-Related and Addictive Disorders,F18951,"Inhalant use, unspecified with inhalant-induced psychotic disorder with hallucinations"
+Substance-Related and Addictive Disorders,F18959,"Inhalant use, unspecified with inhalant-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F1897,"Inhalant use, unspecified with inhalant-induced persisting dementia"
+Substance-Related and Addictive Disorders,F18980,"Inhalant use, unspecified with inhalant-induced anxiety disorder"
+Substance-Related and Addictive Disorders,F18988,"Inhalant use, unspecified with other inhalant-induced disorder"
+Substance-Related and Addictive Disorders,F1899,"Inhalant use, unspecified with unspecified inhalant-induced disorder"
+Substance-Related and Addictive Disorders,F1910,"Other psychoactive substance abuse, uncomplicated"
+Substance-Related and Addictive Disorders,F19120,"Other psychoactive substance abuse with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F19121,Other psychoactive substance abuse with intoxication delirium
+Substance-Related and Addictive Disorders,F19122,Other psychoactive substance abuse with intoxication with perceptual disturbances
+Substance-Related and Addictive Disorders,F19129,"Other psychoactive substance abuse with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F1914,Other psychoactive substance abuse with psychoactive substance-induced mood disorder
+Substance-Related and Addictive Disorders,F19150,Other psychoactive substance abuse with psychoactive substance-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F19151,Other psychoactive substance abuse with psychoactive substance-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F19159,"Other psychoactive substance abuse with psychoactive substance-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F1916,Other psychoactive substance abuse with psychoactive substance-induced persisting amnestic disorder
+Substance-Related and Addictive Disorders,F1917,Other psychoactive substance abuse with psychoactive substance-induced persisting dementia
+Substance-Related and Addictive Disorders,F19180,Other psychoactive substance abuse with psychoactive substance-induced anxiety disorder
+Substance-Related and Addictive Disorders,F19181,Other psychoactive substance abuse with psychoactive substance-induced sexual dysfunction
+Substance-Related and Addictive Disorders,F19182,Other psychoactive substance abuse with psychoactive substance-induced sleep disorder
+Substance-Related and Addictive Disorders,F19188,Other psychoactive substance abuse with other psychoactive substance-induced disorder
+Substance-Related and Addictive Disorders,F1919,Other psychoactive substance abuse with unspecified psychoactive substance-induced disorder
+Substance-Related and Addictive Disorders,F1920,"Other psychoactive substance dependence, uncomplicated"
+Substance-Related and Addictive Disorders,F1921,"Other psychoactive substance dependence, in remission"
+Substance-Related and Addictive Disorders,F19220,"Other psychoactive substance dependence with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F19221,Other psychoactive substance dependence with intoxication delirium
+Substance-Related and Addictive Disorders,F19222,Other psychoactive substance dependence with intoxication with perceptual disturbance
+Substance-Related and Addictive Disorders,F19229,"Other psychoactive substance dependence with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F19230,"Other psychoactive substance dependence with withdrawal, uncomplicated"
+Substance-Related and Addictive Disorders,F19231,Other psychoactive substance dependence with withdrawal delirium
+Substance-Related and Addictive Disorders,F19232,Other psychoactive substance dependence with withdrawal with perceptual disturbance
+Substance-Related and Addictive Disorders,F19239,"Other psychoactive substance dependence with withdrawal, unspecified"
+Substance-Related and Addictive Disorders,F1924,Other psychoactive substance dependence with psychoactive substance-induced mood disorder
+Substance-Related and Addictive Disorders,F19250,Other psychoactive substance dependence with psychoactive substance-induced psychotic disorder with delusions
+Substance-Related and Addictive Disorders,F19251,Other psychoactive substance dependence with psychoactive substance-induced psychotic disorder with hallucinations
+Substance-Related and Addictive Disorders,F19259,"Other psychoactive substance dependence with psychoactive substance-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F1926,Other psychoactive substance dependence with psychoactive substance-induced persisting amnestic disorder
+Substance-Related and Addictive Disorders,F1927,Other psychoactive substance dependence with psychoactive substance-induced persisting dementia
+Substance-Related and Addictive Disorders,F19280,Other psychoactive substance dependence with psychoactive substance-induced anxiety disorder
+Substance-Related and Addictive Disorders,F19281,Other psychoactive substance dependence with psychoactive substance-induced sexual dysfunction
+Substance-Related and Addictive Disorders,F19282,Other psychoactive substance dependence with psychoactive substance-induced sleep disorder
+Substance-Related and Addictive Disorders,F19288,Other psychoactive substance dependence with other psychoactive substance-induced disorder
+Substance-Related and Addictive Disorders,F1929,Other psychoactive substance dependence with unspecified psychoactive substance-induced disorder
+Substance-Related and Addictive Disorders,F1990,"Other psychoactive substance use, unspecified, uncomplicated"
+Substance-Related and Addictive Disorders,F19920,"Other psychoactive substance use, unspecified with intoxication, uncomplicated"
+Substance-Related and Addictive Disorders,F19921,"Other psychoactive substance use, unspecified with intoxication with delirium"
+Substance-Related and Addictive Disorders,F19922,"Other psychoactive substance use, unspecified with intoxication with perceptual disturbance"
+Substance-Related and Addictive Disorders,F19929,"Other psychoactive substance use, unspecified with intoxication, unspecified"
+Substance-Related and Addictive Disorders,F19930,"Other psychoactive substance use, unspecified with withdrawal, uncomplicated"
+Substance-Related and Addictive Disorders,F19931,"Other psychoactive substance use, unspecified with withdrawal delirium"
+Substance-Related and Addictive Disorders,F19932,"Other psychoactive substance use, unspecified with withdrawal with perceptual disturbance"
+Substance-Related and Addictive Disorders,F19939,"Other psychoactive substance use, unspecified with withdrawal, unspecified"
+Substance-Related and Addictive Disorders,F1994,"Other psychoactive substance use, unspecified with psychoactive substance-induced mood disorder"
+Substance-Related and Addictive Disorders,F19950,"Other psychoactive substance use, unspecified with psychoactive substance-induced psychotic disorder with delusions"
+Substance-Related and Addictive Disorders,F19951,"Other psychoactive substance use, unspecified with psychoactive substance-induced psychotic disorder with hallucinations"
+Substance-Related and Addictive Disorders,F19959,"Other psychoactive substance use, unspecified with psychoactive substance-induced psychotic disorder, unspecified"
+Substance-Related and Addictive Disorders,F1996,"Other psychoactive substance use, unspecified with psychoactive substance-induced persisting amnestic disorder"
+Substance-Related and Addictive Disorders,F1997,"Other psychoactive substance use, unspecified with psychoactive substance-induced persisting dementia"
+Substance-Related and Addictive Disorders,F19980,"Other psychoactive substance use, unspecified with psychoactive substance-induced anxiety disorder"
+Substance-Related and Addictive Disorders,F19981,"Other psychoactive substance use, unspecified with psychoactive substance-induced sexual dysfunction"
+Substance-Related and Addictive Disorders,F19982,"Other psychoactive substance use, unspecified with psychoactive substance-induced sleep disorder"
+Substance-Related and Addictive Disorders,F19988,"Other psychoactive substance use, unspecified with other psychoactive substance-induced disorder"
+Substance-Related and Addictive Disorders,F1999,"Other psychoactive substance use, unspecified with unspecified psychoactive substance-induced disorder"
+Suicide or Self-Injury,R45851,Suicidal ideations
+Suicide or Self-Injury,T1491,Suicide attempt
+Suicide or Self-Injury,T1491XA,"Suicide attempt, initial encounter"
+Suicide or Self-Injury,T1491XS,"Suicide attempt, sequela"
+Suicide or Self-Injury,T360X2A,"Poisoning by penicillins, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T360X2S,"Poisoning by penicillins, intentional self-harm, sequela"
+Suicide or Self-Injury,T361X2A,"Poisoning by cephalosporins and other beta-lactam antibiotics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T361X2S,"Poisoning by cephalosporins and other beta-lactam antibiotics, intentional self-harm, sequela"
+Suicide or Self-Injury,T362X2A,"Poisoning by chloramphenicol group, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T362X2S,"Poisoning by chloramphenicol group, intentional self-harm, sequela"
+Suicide or Self-Injury,T363X2A,"Poisoning by macrolides, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T363X2S,"Poisoning by macrolides, intentional self-harm, sequela"
+Suicide or Self-Injury,T364X2A,"Poisoning by tetracyclines, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T364X2S,"Poisoning by tetracyclines, intentional self-harm, sequela"
+Suicide or Self-Injury,T365X2A,"Poisoning by aminoglycosides, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T365X2S,"Poisoning by aminoglycosides, intentional self-harm, sequela"
+Suicide or Self-Injury,T366X2A,"Poisoning by rifampicins, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T366X2S,"Poisoning by rifampicins, intentional self-harm, sequela"
+Suicide or Self-Injury,T367X2A,"Poisoning by antifungal antibiotics, systemically used, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T367X2S,"Poisoning by antifungal antibiotics, systemically used, intentional self-harm, sequela"
+Suicide or Self-Injury,T368X2A,"Poisoning by other systemic antibiotics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T368X2S,"Poisoning by other systemic antibiotics, intentional self-harm, sequela"
+Suicide or Self-Injury,T3692XA,"Poisoning by unspecified systemic antibiotic, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T3692XS,"Poisoning by unspecified systemic antibiotic, intentional self-harm, sequela"
+Suicide or Self-Injury,T370X2A,"Poisoning by sulfonamides, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T370X2S,"Poisoning by sulfonamides, intentional self-harm, sequela"
+Suicide or Self-Injury,T371X2A,"Poisoning by antimycobacterial drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T371X2S,"Poisoning by antimycobacterial drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T372X2A,"Poisoning by antimalarials and drugs acting on other blood protozoa, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T372X2S,"Poisoning by antimalarials and drugs acting on other blood protozoa, intentional self-harm, sequela"
+Suicide or Self-Injury,T373X2A,"Poisoning by other antiprotozoal drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T373X2S,"Poisoning by other antiprotozoal drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T374X2A,"Poisoning by anthelminthics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T374X2S,"Poisoning by anthelminthics, intentional self-harm, sequela"
+Suicide or Self-Injury,T375X2A,"Poisoning by antiviral drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T375X2S,"Poisoning by antiviral drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T378X2A,"Poisoning by other specified systemic anti-infectives and antiparasitics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T378X2S,"Poisoning by other specified systemic anti-infectives and antiparasitics, intentional self-harm, sequela"
+Suicide or Self-Injury,T3792XA,"Poisoning by unspecified systemic anti-infective and antiparasitics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T3792XS,"Poisoning by unspecified systemic anti-infective and antiparasitics, intentional self-harm, sequela"
+Suicide or Self-Injury,T380X2A,"Poisoning by glucocorticoids and synthetic analogues, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T380X2S,"Poisoning by glucocorticoids and synthetic analogues, intentional self-harm, sequela"
+Suicide or Self-Injury,T381X2A,"Poisoning by thyroid hormones and substitutes, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T381X2S,"Poisoning by thyroid hormones and substitutes, intentional self-harm, sequela"
+Suicide or Self-Injury,T382X2A,"Poisoning by antithyroid drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T382X2S,"Poisoning by antithyroid drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T383X2A,"Poisoning by insulin and oral hypoglycemic [antidiabetic] drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T383X2S,"Poisoning by insulin and oral hypoglycemic [antidiabetic] drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T384X2A,"Poisoning by oral contraceptives, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T384X2S,"Poisoning by oral contraceptives, intentional self-harm, sequela"
+Suicide or Self-Injury,T385X2A,"Poisoning by other estrogens and progestogens, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T385X2S,"Poisoning by other estrogens and progestogens, intentional self-harm, sequela"
+Suicide or Self-Injury,T386X2A,"Poisoning by antigonadotrophins, antiestrogens, antiandrogens, not elsewhere classified, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T386X2S,"Poisoning by antigonadotrophins, antiestrogens, antiandrogens, not elsewhere classified, intentional self-harm, sequela"
+Suicide or Self-Injury,T387X2A,"Poisoning by androgens and anabolic congeners, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T387X2S,"Poisoning by androgens and anabolic congeners, intentional self-harm, sequela"
+Suicide or Self-Injury,T38802A,"Poisoning by unspecified hormones and synthetic substitutes, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T38802S,"Poisoning by unspecified hormones and synthetic substitutes, intentional self-harm, sequela"
+Suicide or Self-Injury,T38812A,"Poisoning by anterior pituitary [adenohypophyseal] hormones, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T38812S,"Poisoning by anterior pituitary [adenohypophyseal] hormones, intentional self-harm, sequela"
+Suicide or Self-Injury,T38892A,"Poisoning by other hormones and synthetic substitutes, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T38892S,"Poisoning by other hormones and synthetic substitutes, intentional self-harm, sequela"
+Suicide or Self-Injury,T38902A,"Poisoning by unspecified hormone antagonists, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T38902S,"Poisoning by unspecified hormone antagonists, intentional self-harm, sequela"
+Suicide or Self-Injury,T38992A,"Poisoning by other hormone antagonists, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T38992S,"Poisoning by other hormone antagonists, intentional self-harm, sequela"
+Suicide or Self-Injury,T39012A,"Poisoning by aspirin, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T39012S,"Poisoning by aspirin, intentional self-harm, sequela"
+Suicide or Self-Injury,T39092A,"Poisoning by salicylates, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T39092S,"Poisoning by salicylates, intentional self-harm, sequela"
+Suicide or Self-Injury,T391X2A,"Poisoning by 4-Aminophenol derivatives, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T391X2S,"Poisoning by 4-Aminophenol derivatives, intentional self-harm, sequela"
+Suicide or Self-Injury,T392X2A,"Poisoning by pyrazolone derivatives, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T392X2S,"Poisoning by pyrazolone derivatives, intentional self-harm, sequela"
+Suicide or Self-Injury,T39312A,"Poisoning by propionic acid derivatives, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T39312S,"Poisoning by propionic acid derivatives, intentional self-harm, sequela"
+Suicide or Self-Injury,T39392A,"Poisoning by other nonsteroidal anti-inflammatory drugs [NSAID], intentional self-harm, initial encounter"
+Suicide or Self-Injury,T39392S,"Poisoning by other nonsteroidal anti-inflammatory drugs [NSAID], intentional self-harm, sequela"
+Suicide or Self-Injury,T394X2A,"Poisoning by antirheumatics, not elsewhere classified, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T394X2S,"Poisoning by antirheumatics, not elsewhere classified, intentional self-harm, sequela"
+Suicide or Self-Injury,T398X2A,"Poisoning by other nonopioid analgesics and antipyretics, not elsewhere classified, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T398X2S,"Poisoning by other nonopioid analgesics and antipyretics, not elsewhere classified, intentional self-harm, sequela"
+Suicide or Self-Injury,T3992XA,"Poisoning by unspecified nonopioid analgesic, antipyretic and antirheumatic, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T3992XS,"Poisoning by unspecified nonopioid analgesic, antipyretic and antirheumatic, intentional self-harm, sequela"
+Suicide or Self-Injury,T400X2A,"Poisoning by opium, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T400X2S,"Poisoning by opium, intentional self-harm, sequela"
+Suicide or Self-Injury,T401X2A,"Poisoning by heroin, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T401X2S,"Poisoning by heroin, intentional self-harm, sequela"
+Suicide or Self-Injury,T402X2A,"Poisoning by other opioids, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T402X2S,"Poisoning by other opioids, intentional self-harm, sequela"
+Suicide or Self-Injury,T403X2A,"Poisoning by methadone, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T403X2S,"Poisoning by methadone, intentional self-harm, sequela"
+Suicide or Self-Injury,T404X2A,"Poisoning by other synthetic narcotics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T404X2S,"Poisoning by other synthetic narcotics, intentional self-harm, sequela"
+Suicide or Self-Injury,T405X2A,"Poisoning by cocaine, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T405X2S,"Poisoning by cocaine, intentional self-harm, sequela"
+Suicide or Self-Injury,T40602A,"Poisoning by unspecified narcotics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T40602S,"Poisoning by unspecified narcotics, intentional self-harm, sequela"
+Suicide or Self-Injury,T40692A,"Poisoning by other narcotics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T40692S,"Poisoning by other narcotics, intentional self-harm, sequela"
+Suicide or Self-Injury,T407X2A,"Poisoning by cannabis (derivatives), intentional self-harm, initial encounter"
+Suicide or Self-Injury,T407X2S,"Poisoning by cannabis (derivatives), intentional self-harm, sequela"
+Suicide or Self-Injury,T408X2A,"Poisoning by lysergide [LSD], intentional self-harm, initial encounter"
+Suicide or Self-Injury,T408X2S,"Poisoning by lysergide [LSD], intentional self-harm, sequela"
+Suicide or Self-Injury,T40902A,"Poisoning by unspecified psychodysleptics [hallucinogens], intentional self-harm, initial encounter"
+Suicide or Self-Injury,T40902S,"Poisoning by unspecified psychodysleptics [hallucinogens], intentional self-harm, sequela"
+Suicide or Self-Injury,T40992A,"Poisoning by other psychodysleptics [hallucinogens], intentional self-harm, initial encounter"
+Suicide or Self-Injury,T40992S,"Poisoning by other psychodysleptics [hallucinogens], intentional self-harm, sequela"
+Suicide or Self-Injury,T410X2A,"Poisoning by inhaled anesthetics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T410X2S,"Poisoning by inhaled anesthetics, intentional self-harm, sequela"
+Suicide or Self-Injury,T411X2A,"Poisoning by intravenous anesthetics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T411X2S,"Poisoning by intravenous anesthetics, intentional self-harm, sequela"
+Suicide or Self-Injury,T41202A,"Poisoning by unspecified general anesthetics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T41202S,"Poisoning by unspecified general anesthetics, intentional self-harm, sequela"
+Suicide or Self-Injury,T41292A,"Poisoning by other general anesthetics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T41292S,"Poisoning by other general anesthetics, intentional self-harm, sequela"
+Suicide or Self-Injury,T413X2A,"Poisoning by local anesthetics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T413X2S,"Poisoning by local anesthetics, intentional self-harm, sequela"
+Suicide or Self-Injury,T4142XA,"Poisoning by unspecified anesthetic, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T4142XS,"Poisoning by unspecified anesthetic, intentional self-harm, sequela"
+Suicide or Self-Injury,T415X2A,"Poisoning by therapeutic gases, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T415X2S,"Poisoning by therapeutic gases, intentional self-harm, sequela"
+Suicide or Self-Injury,T420X2A,"Poisoning by hydantoin derivatives, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T420X2S,"Poisoning by hydantoin derivatives, intentional self-harm, sequela"
+Suicide or Self-Injury,T421X2A,"Poisoning by iminostilbenes, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T421X2S,"Poisoning by iminostilbenes, intentional self-harm, sequela"
+Suicide or Self-Injury,T422X2A,"Poisoning by succinimides and oxazolidinediones, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T422X2S,"Poisoning by succinimides and oxazolidinediones, intentional self-harm, sequela"
+Suicide or Self-Injury,T423X2A,"Poisoning by barbiturates, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T423X2S,"Poisoning by barbiturates, intentional self-harm, sequela"
+Suicide or Self-Injury,T424X2A,"Poisoning by benzodiazepines, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T424X2S,"Poisoning by benzodiazepines, intentional self-harm, sequela"
+Suicide or Self-Injury,T425X2A,"Poisoning by mixed antiepileptics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T425X2S,"Poisoning by mixed antiepileptics, intentional self-harm, sequela"
+Suicide or Self-Injury,T426X2A,"Poisoning by other antiepileptic and sedative-hypnotic drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T426X2S,"Poisoning by other antiepileptic and sedative-hypnotic drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T4272XA,"Poisoning by unspecified antiepileptic and sedative-hypnotic drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T4272XS,"Poisoning by unspecified antiepileptic and sedative-hypnotic drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T428X2A,"Poisoning by antiparkinsonism drugs and other central muscle-tone depressants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T428X2S,"Poisoning by antiparkinsonism drugs and other central muscle-tone depressants, intentional self-harm, sequela"
+Suicide or Self-Injury,T43012A,"Poisoning by tricyclic antidepressants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43012S,"Poisoning by tricyclic antidepressants, intentional self-harm, sequela"
+Suicide or Self-Injury,T43022A,"Poisoning by tetracyclic antidepressants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43022S,"Poisoning by tetracyclic antidepressants, intentional self-harm, sequela"
+Suicide or Self-Injury,T431X2A,"Poisoning by monoamine-oxidase-inhibitor antidepressants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T431X2S,"Poisoning by monoamine-oxidase-inhibitor antidepressants, intentional self-harm, sequela"
+Suicide or Self-Injury,T43202A,"Poisoning by unspecified antidepressants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43202S,"Poisoning by unspecified antidepressants, intentional self-harm, sequela"
+Suicide or Self-Injury,T43212A,"Poisoning by selective serotonin and norepinephrine reuptake inhibitors, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43212S,"Poisoning by selective serotonin and norepinephrine reuptake inhibitors, intentional self-harm, sequela"
+Suicide or Self-Injury,T43222A,"Poisoning by selective serotonin reuptake inhibitors, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43222S,"Poisoning by selective serotonin reuptake inhibitors, intentional self-harm, sequela"
+Suicide or Self-Injury,T43292A,"Poisoning by other antidepressants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43292S,"Poisoning by other antidepressants, intentional self-harm, sequela"
+Suicide or Self-Injury,T433X2A,"Poisoning by phenothiazine antipsychotics and neuroleptics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T433X2S,"Poisoning by phenothiazine antipsychotics and neuroleptics, intentional self-harm, sequela"
+Suicide or Self-Injury,T434X2A,"Poisoning by butyrophenone and thiothixene neuroleptics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T434X2S,"Poisoning by butyrophenone and thiothixene neuroleptics, intentional self-harm, sequela"
+Suicide or Self-Injury,T43502A,"Poisoning by unspecified antipsychotics and neuroleptics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43502S,"Poisoning by unspecified antipsychotics and neuroleptics, intentional self-harm, sequela"
+Suicide or Self-Injury,T43592A,"Poisoning by other antipsychotics and neuroleptics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43592S,"Poisoning by other antipsychotics and neuroleptics, intentional self-harm, sequela"
+Suicide or Self-Injury,T43602A,"Poisoning by unspecified psychostimulants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43602S,"Poisoning by unspecified psychostimulants, intentional self-harm, sequela"
+Suicide or Self-Injury,T43612A,"Poisoning by caffeine, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43612S,"Poisoning by caffeine, intentional self-harm, sequela"
+Suicide or Self-Injury,T43622A,"Poisoning by amphetamines, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43622S,"Poisoning by amphetamines, intentional self-harm, sequela"
+Suicide or Self-Injury,T43632A,"Poisoning by methylphenidate, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43632S,"Poisoning by methylphenidate, intentional self-harm, sequela"
+Suicide or Self-Injury,T43642A,"Poisoning by ecstasy, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43642S,"Poisoning by ecstasy, intentional self-harm, sequela"
+Suicide or Self-Injury,T43692A,"Poisoning by other psychostimulants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T43692S,"Poisoning by other psychostimulants, intentional self-harm, sequela"
+Suicide or Self-Injury,T438X2A,"Poisoning by other psychotropic drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T438X2S,"Poisoning by other psychotropic drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T4392XA,"Poisoning by unspecified psychotropic drug, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T4392XS,"Poisoning by unspecified psychotropic drug, intentional self-harm, sequela"
+Suicide or Self-Injury,T440X2A,"Poisoning by anticholinesterase agents, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T440X2S,"Poisoning by anticholinesterase agents, intentional self-harm, sequela"
+Suicide or Self-Injury,T441X2A,"Poisoning by other parasympathomimetics [cholinergics], intentional self-harm, initial encounter"
+Suicide or Self-Injury,T441X2S,"Poisoning by other parasympathomimetics [cholinergics], intentional self-harm, sequela"
+Suicide or Self-Injury,T442X2A,"Poisoning by ganglionic blocking drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T442X2S,"Poisoning by ganglionic blocking drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T443X2A,"Poisoning by other parasympatholytics [anticholinergics and antimuscarinics] and spasmolytics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T443X2S,"Poisoning by other parasympatholytics [anticholinergics and antimuscarinics] and spasmolytics, intentional self-harm, sequela"
+Suicide or Self-Injury,T444X2A,"Poisoning by predominantly alpha-adrenoreceptor agonists, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T444X2S,"Poisoning by predominantly alpha-adrenoreceptor agonists, intentional self-harm, sequela"
+Suicide or Self-Injury,T445X2A,"Poisoning by predominantly beta-adrenoreceptor agonists, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T445X2S,"Poisoning by predominantly beta-adrenoreceptor agonists, intentional self-harm, sequela"
+Suicide or Self-Injury,T446X2A,"Poisoning by alpha-adrenoreceptor antagonists, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T446X2S,"Poisoning by alpha-adrenoreceptor antagonists, intentional self-harm, sequela"
+Suicide or Self-Injury,T447X2A,"Poisoning by beta-adrenoreceptor antagonists, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T447X2S,"Poisoning by beta-adrenoreceptor antagonists, intentional self-harm, sequela"
+Suicide or Self-Injury,T448X2A,"Poisoning by centrally-acting and adrenergic-neuron-blocking agents, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T448X2S,"Poisoning by centrally-acting and adrenergic-neuron-blocking agents, intentional self-harm, sequela"
+Suicide or Self-Injury,T44902A,"Poisoning by unspecified drugs primarily affecting the autonomic nervous system, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T44902S,"Poisoning by unspecified drugs primarily affecting the autonomic nervous system, intentional self-harm, sequela"
+Suicide or Self-Injury,T44992A,"Poisoning by other drug primarily affecting the autonomic nervous system, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T44992S,"Poisoning by other drug primarily affecting the autonomic nervous system, intentional self-harm, sequela"
+Suicide or Self-Injury,T450X2A,"Poisoning by antiallergic and antiemetic drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T450X2S,"Poisoning by antiallergic and antiemetic drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T451X2A,"Poisoning by antineoplastic and immunosuppressive drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T451X2S,"Poisoning by antineoplastic and immunosuppressive drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T452X2A,"Poisoning by vitamins, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T452X2S,"Poisoning by vitamins, intentional self-harm, sequela"
+Suicide or Self-Injury,T453X2A,"Poisoning by enzymes, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T453X2S,"Poisoning by enzymes, intentional self-harm, sequela"
+Suicide or Self-Injury,T454X2A,"Poisoning by iron and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T454X2S,"Poisoning by iron and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T45512A,"Poisoning by anticoagulants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T45512S,"Poisoning by anticoagulants, intentional self-harm, sequela"
+Suicide or Self-Injury,T45522A,"Poisoning by antithrombotic drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T45522S,"Poisoning by antithrombotic drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T45602A,"Poisoning by unspecified fibrinolysis-affecting drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T45602S,"Poisoning by unspecified fibrinolysis-affecting drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T45612A,"Poisoning by thrombolytic drug, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T45612S,"Poisoning by thrombolytic drug, intentional self-harm, sequela"
+Suicide or Self-Injury,T45622A,"Poisoning by hemostatic drug, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T45622S,"Poisoning by hemostatic drug, intentional self-harm, sequela"
+Suicide or Self-Injury,T45692A,"Poisoning by other fibrinolysis-affecting drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T45692S,"Poisoning by other fibrinolysis-affecting drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T457X2A,"Poisoning by anticoagulant antagonists, vitamin K and other coagulants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T457X2S,"Poisoning by anticoagulant antagonists, vitamin K and other coagulants, intentional self-harm, sequela"
+Suicide or Self-Injury,T458X2A,"Poisoning by other primarily systemic and hematological agents, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T458X2S,"Poisoning by other primarily systemic and hematological agents, intentional self-harm, sequela"
+Suicide or Self-Injury,T4592XA,"Poisoning by unspecified primarily systemic and hematological agent, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T4592XS,"Poisoning by unspecified primarily systemic and hematological agent, intentional self-harm, sequela"
+Suicide or Self-Injury,T460X2A,"Poisoning by cardiac-stimulant glycosides and drugs of similar action, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T460X2S,"Poisoning by cardiac-stimulant glycosides and drugs of similar action, intentional self-harm, sequela"
+Suicide or Self-Injury,T461X2A,"Poisoning by calcium-channel blockers, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T461X2S,"Poisoning by calcium-channel blockers, intentional self-harm, sequela"
+Suicide or Self-Injury,T462X2A,"Poisoning by other antidysrhythmic drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T462X2S,"Poisoning by other antidysrhythmic drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T463X2A,"Poisoning by coronary vasodilators, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T463X2S,"Poisoning by coronary vasodilators, intentional self-harm, sequela"
+Suicide or Self-Injury,T464X2A,"Poisoning by angiotensin-converting-enzyme inhibitors, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T464X2S,"Poisoning by angiotensin-converting-enzyme inhibitors, intentional self-harm, sequela"
+Suicide or Self-Injury,T465X2A,"Poisoning by other antihypertensive drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T465X2S,"Poisoning by other antihypertensive drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T466X2A,"Poisoning by antihyperlipidemic and antiarteriosclerotic drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T466X2S,"Poisoning by antihyperlipidemic and antiarteriosclerotic drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T467X2A,"Poisoning by peripheral vasodilators, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T467X2S,"Poisoning by peripheral vasodilators, intentional self-harm, sequela"
+Suicide or Self-Injury,T468X2A,"Poisoning by antivaricose drugs, including sclerosing agents, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T468X2S,"Poisoning by antivaricose drugs, including sclerosing agents, intentional self-harm, sequela"
+Suicide or Self-Injury,T46902A,"Poisoning by unspecified agents primarily affecting the cardiovascular system, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T46902S,"Poisoning by unspecified agents primarily affecting the cardiovascular system, intentional self-harm, sequela"
+Suicide or Self-Injury,T46992A,"Poisoning by other agents primarily affecting the cardiovascular system, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T46992S,"Poisoning by other agents primarily affecting the cardiovascular system, intentional self-harm, sequela"
+Suicide or Self-Injury,T470X2A,"Poisoning by histamine H2-receptor blockers, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T470X2S,"Poisoning by histamine H2-receptor blockers, intentional self-harm, sequela"
+Suicide or Self-Injury,T471X2A,"Poisoning by other antacids and anti-gastric-secretion drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T471X2S,"Poisoning by other antacids and anti-gastric-secretion drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T472X2A,"Poisoning by stimulant laxatives, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T472X2S,"Poisoning by stimulant laxatives, intentional self-harm, sequela"
+Suicide or Self-Injury,T473X2A,"Poisoning by saline and osmotic laxatives, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T473X2S,"Poisoning by saline and osmotic laxatives, intentional self-harm, sequela"
+Suicide or Self-Injury,T474X2A,"Poisoning by other laxatives, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T474X2S,"Poisoning by other laxatives, intentional self-harm, sequela"
+Suicide or Self-Injury,T475X2A,"Poisoning by digestants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T475X2S,"Poisoning by digestants, intentional self-harm, sequela"
+Suicide or Self-Injury,T476X2A,"Poisoning by antidiarrheal drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T476X2S,"Poisoning by antidiarrheal drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T477X2A,"Poisoning by emetics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T477X2S,"Poisoning by emetics, intentional self-harm, sequela"
+Suicide or Self-Injury,T478X2A,"Poisoning by other agents primarily affecting gastrointestinal system, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T478X2S,"Poisoning by other agents primarily affecting gastrointestinal system, intentional self-harm, sequela"
+Suicide or Self-Injury,T4792XA,"Poisoning by unspecified agents primarily affecting the gastrointestinal system, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T4792XS,"Poisoning by unspecified agents primarily affecting the gastrointestinal system, intentional self-harm, sequela"
+Suicide or Self-Injury,T480X2A,"Poisoning by oxytocic drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T480X2S,"Poisoning by oxytocic drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T481X2A,"Poisoning by skeletal muscle relaxants [neuromuscular blocking agents], intentional self-harm, initial encounter"
+Suicide or Self-Injury,T481X2S,"Poisoning by skeletal muscle relaxants [neuromuscular blocking agents], intentional self-harm, sequela"
+Suicide or Self-Injury,T48202A,"Poisoning by unspecified drugs acting on muscles, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T48202S,"Poisoning by unspecified drugs acting on muscles, intentional self-harm, sequela"
+Suicide or Self-Injury,T48292A,"Poisoning by other drugs acting on muscles, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T48292S,"Poisoning by other drugs acting on muscles, intentional self-harm, sequela"
+Suicide or Self-Injury,T483X2A,"Poisoning by antitussives, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T483X2S,"Poisoning by antitussives, intentional self-harm, sequela"
+Suicide or Self-Injury,T484X2A,"Poisoning by expectorants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T484X2S,"Poisoning by expectorants, intentional self-harm, sequela"
+Suicide or Self-Injury,T485X2A,"Poisoning by other anti-common-cold drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T485X2S,"Poisoning by other anti-common-cold drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T486X2A,"Poisoning by antiasthmatics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T486X2S,"Poisoning by antiasthmatics, intentional self-harm, sequela"
+Suicide or Self-Injury,T48902A,"Poisoning by unspecified agents primarily acting on the respiratory system, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T48902S,"Poisoning by unspecified agents primarily acting on the respiratory system, intentional self-harm, sequela"
+Suicide or Self-Injury,T48992A,"Poisoning by other agents primarily acting on the respiratory system, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T48992S,"Poisoning by other agents primarily acting on the respiratory system, intentional self-harm, sequela"
+Suicide or Self-Injury,T490X2A,"Poisoning by local antifungal, anti-infective and anti-inflammatory drugs, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T490X2S,"Poisoning by local antifungal, anti-infective and anti-inflammatory drugs, intentional self-harm, sequela"
+Suicide or Self-Injury,T491X2A,"Poisoning by antipruritics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T491X2S,"Poisoning by antipruritics, intentional self-harm, sequela"
+Suicide or Self-Injury,T492X2A,"Poisoning by local astringents and local detergents, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T492X2S,"Poisoning by local astringents and local detergents, intentional self-harm, sequela"
+Suicide or Self-Injury,T493X2A,"Poisoning by emollients, demulcents and protectants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T493X2S,"Poisoning by emollients, demulcents and protectants, intentional self-harm, sequela"
+Suicide or Self-Injury,T494X2A,"Poisoning by keratolytics, keratoplastics, and other hair treatment drugs and preparations, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T494X2S,"Poisoning by keratolytics, keratoplastics, and other hair treatment drugs and preparations, intentional self-harm, sequela"
+Suicide or Self-Injury,T495X2A,"Poisoning by ophthalmological drugs and preparations, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T495X2S,"Poisoning by ophthalmological drugs and preparations, intentional self-harm, sequela"
+Suicide or Self-Injury,T496X2A,"Poisoning by otorhinolaryngological drugs and preparations, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T496X2S,"Poisoning by otorhinolaryngological drugs and preparations, intentional self-harm, sequela"
+Suicide or Self-Injury,T497X2A,"Poisoning by dental drugs, topically applied, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T497X2S,"Poisoning by dental drugs, topically applied, intentional self-harm, sequela"
+Suicide or Self-Injury,T498X2A,"Poisoning by other topical agents, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T498X2S,"Poisoning by other topical agents, intentional self-harm, sequela"
+Suicide or Self-Injury,T4992XA,"Poisoning by unspecified topical agent, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T4992XS,"Poisoning by unspecified topical agent, intentional self-harm, sequela"
+Suicide or Self-Injury,T500X2A,"Poisoning by mineralocorticoids and their antagonists, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T500X2S,"Poisoning by mineralocorticoids and their antagonists, intentional self-harm, sequela"
+Suicide or Self-Injury,T501X2A,"Poisoning by loop [high-ceiling] diuretics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T501X2S,"Poisoning by loop [high-ceiling] diuretics, intentional self-harm, sequela"
+Suicide or Self-Injury,T502X2A,"Poisoning by carbonic-anhydrase inhibitors, benzothiadiazides and other diuretics, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T502X2S,"Poisoning by carbonic-anhydrase inhibitors, benzothiadiazides and other diuretics, intentional self-harm, sequela"
+Suicide or Self-Injury,T503X2A,"Poisoning by electrolytic, caloric and water-balance agents, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T503X2S,"Poisoning by electrolytic, caloric and water-balance agents, intentional self-harm, sequela"
+Suicide or Self-Injury,T504X2A,"Poisoning by drugs affecting uric acid metabolism, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T504X2S,"Poisoning by drugs affecting uric acid metabolism, intentional self-harm, sequela"
+Suicide or Self-Injury,T505X2A,"Poisoning by appetite depressants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T505X2S,"Poisoning by appetite depressants, intentional self-harm, sequela"
+Suicide or Self-Injury,T506X2A,"Poisoning by antidotes and chelating agents, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T506X2S,"Poisoning by antidotes and chelating agents, intentional self-harm, sequela"
+Suicide or Self-Injury,T507X2A,"Poisoning by analeptics and opioid receptor antagonists, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T507X2S,"Poisoning by analeptics and opioid receptor antagonists, intentional self-harm, sequela"
+Suicide or Self-Injury,T508X2A,"Poisoning by diagnostic agents, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T508X2S,"Poisoning by diagnostic agents, intentional self-harm, sequela"
+Suicide or Self-Injury,T50902A,"Poisoning by unspecified drugs, medicaments and biological substances, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T50902S,"Poisoning by unspecified drugs, medicaments and biological substances, intentional self-harm, sequela"
+Suicide or Self-Injury,T50912A,"Poisoning by multiple unspecified drugs, medicaments and biological substances, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T50912S,"Poisoning by multiple unspecified drugs, medicaments and biological substances, intentional self-harm, sequela"
+Suicide or Self-Injury,T50992A,"Poisoning by other drugs, medicaments and biological substances, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T50992S,"Poisoning by other drugs, medicaments and biological substances, intentional self-harm, sequela"
+Suicide or Self-Injury,T50A12A,"Poisoning by pertussis vaccine, including combinations with a pertussis component, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T50A12S,"Poisoning by pertussis vaccine, including combinations with a pertussis component, intentional self-harm, sequela"
+Suicide or Self-Injury,T50A22A,"Poisoning by mixed bacterial vaccines without a pertussis component, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T50A22S,"Poisoning by mixed bacterial vaccines without a pertussis component, intentional self-harm, sequela"
+Suicide or Self-Injury,T50A92A,"Poisoning by other bacterial vaccines, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T50A92S,"Poisoning by other bacterial vaccines, intentional self-harm, sequela"
+Suicide or Self-Injury,T50B12A,"Poisoning by smallpox vaccines, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T50B12S,"Poisoning by smallpox vaccines, intentional self-harm, sequela"
+Suicide or Self-Injury,T50B92A,"Poisoning by other viral vaccines, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T50B92S,"Poisoning by other viral vaccines, intentional self-harm, sequela"
+Suicide or Self-Injury,T50Z12A,"Poisoning by immunoglobulin, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T50Z12S,"Poisoning by immunoglobulin, intentional self-harm, sequela"
+Suicide or Self-Injury,T50Z92A,"Poisoning by other vaccines and biological substances, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T50Z92S,"Poisoning by other vaccines and biological substances, intentional self-harm, sequela"
+Suicide or Self-Injury,T510X2A,"Toxic effect of ethanol, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T510X2S,"Toxic effect of ethanol, intentional self-harm, sequela"
+Suicide or Self-Injury,T511X2A,"Toxic effect of methanol, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T511X2S,"Toxic effect of methanol, intentional self-harm, sequela"
+Suicide or Self-Injury,T512X2A,"Toxic effect of 2-Propanol, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T512X2S,"Toxic effect of 2-Propanol, intentional self-harm, sequela"
+Suicide or Self-Injury,T513X2A,"Toxic effect of fusel oil, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T513X2S,"Toxic effect of fusel oil, intentional self-harm, sequela"
+Suicide or Self-Injury,T518X2A,"Toxic effect of other alcohols, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T518X2S,"Toxic effect of other alcohols, intentional self-harm, sequela"
+Suicide or Self-Injury,T5192XA,"Toxic effect of unspecified alcohol, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T5192XS,"Toxic effect of unspecified alcohol, intentional self-harm, sequela"
+Suicide or Self-Injury,T520X2A,"Toxic effect of petroleum products, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T520X2S,"Toxic effect of petroleum products, intentional self-harm, sequela"
+Suicide or Self-Injury,T521X2A,"Toxic effect of benzene, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T521X2S,"Toxic effect of benzene, intentional self-harm, sequela"
+Suicide or Self-Injury,T522X2A,"Toxic effect of homologues of benzene, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T522X2S,"Toxic effect of homologues of benzene, intentional self-harm, sequela"
+Suicide or Self-Injury,T523X2A,"Toxic effect of glycols, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T523X2S,"Toxic effect of glycols, intentional self-harm, sequela"
+Suicide or Self-Injury,T524X2A,"Toxic effect of ketones, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T524X2S,"Toxic effect of ketones, intentional self-harm, sequela"
+Suicide or Self-Injury,T528X2A,"Toxic effect of other organic solvents, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T528X2S,"Toxic effect of other organic solvents, intentional self-harm, sequela"
+Suicide or Self-Injury,T5292XA,"Toxic effect of unspecified organic solvent, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T5292XS,"Toxic effect of unspecified organic solvent, intentional self-harm, sequela"
+Suicide or Self-Injury,T530X2A,"Toxic effect of carbon tetrachloride, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T530X2S,"Toxic effect of carbon tetrachloride, intentional self-harm, sequela"
+Suicide or Self-Injury,T531X2A,"Toxic effect of chloroform, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T531X2S,"Toxic effect of chloroform, intentional self-harm, sequela"
+Suicide or Self-Injury,T532X2A,"Toxic effect of trichloroethylene, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T532X2S,"Toxic effect of trichloroethylene, intentional self-harm, sequela"
+Suicide or Self-Injury,T533X2A,"Toxic effect of tetrachloroethylene, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T533X2S,"Toxic effect of tetrachloroethylene, intentional self-harm, sequela"
+Suicide or Self-Injury,T534X2A,"Toxic effect of dichloromethane, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T534X2S,"Toxic effect of dichloromethane, intentional self-harm, sequela"
+Suicide or Self-Injury,T535X2A,"Toxic effect of chlorofluorocarbons, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T535X2S,"Toxic effect of chlorofluorocarbons, intentional self-harm, sequela"
+Suicide or Self-Injury,T536X2A,"Toxic effect of other halogen derivatives of aliphatic hydrocarbons, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T536X2S,"Toxic effect of other halogen derivatives of aliphatic hydrocarbons, intentional self-harm, sequela"
+Suicide or Self-Injury,T537X2A,"Toxic effect of other halogen derivatives of aromatic hydrocarbons, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T537X2S,"Toxic effect of other halogen derivatives of aromatic hydrocarbons, intentional self-harm, sequela"
+Suicide or Self-Injury,T5392XA,"Toxic effect of unspecified halogen derivatives of aliphatic and aromatic hydrocarbons, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T5392XS,"Toxic effect of unspecified halogen derivatives of aliphatic and aromatic hydrocarbons, intentional self-harm, sequela"
+Suicide or Self-Injury,T540X2A,"Toxic effect of phenol and phenol homologues, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T540X2S,"Toxic effect of phenol and phenol homologues, intentional self-harm, sequela"
+Suicide or Self-Injury,T541X2A,"Toxic effect of other corrosive organic compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T541X2S,"Toxic effect of other corrosive organic compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T542X2A,"Toxic effect of corrosive acids and acid-like substances, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T542X2S,"Toxic effect of corrosive acids and acid-like substances, intentional self-harm, sequela"
+Suicide or Self-Injury,T543X2A,"Toxic effect of corrosive alkalis and alkali-like substances, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T543X2S,"Toxic effect of corrosive alkalis and alkali-like substances, intentional self-harm, sequela"
+Suicide or Self-Injury,T5492XA,"Toxic effect of unspecified corrosive substance, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T5492XS,"Toxic effect of unspecified corrosive substance, intentional self-harm, sequela"
+Suicide or Self-Injury,T550X2A,"Toxic effect of soaps, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T550X2S,"Toxic effect of soaps, intentional self-harm, sequela"
+Suicide or Self-Injury,T551X2A,"Toxic effect of detergents, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T551X2S,"Toxic effect of detergents, intentional self-harm, sequela"
+Suicide or Self-Injury,T560X2A,"Toxic effect of lead and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T560X2S,"Toxic effect of lead and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T561X2A,"Toxic effect of mercury and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T561X2S,"Toxic effect of mercury and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T562X2A,"Toxic effect of chromium and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T562X2S,"Toxic effect of chromium and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T563X2A,"Toxic effect of cadmium and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T563X2S,"Toxic effect of cadmium and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T564X2A,"Toxic effect of copper and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T564X2S,"Toxic effect of copper and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T565X2A,"Toxic effect of zinc and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T565X2S,"Toxic effect of zinc and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T566X2A,"Toxic effect of tin and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T566X2S,"Toxic effect of tin and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T567X2A,"Toxic effect of beryllium and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T567X2S,"Toxic effect of beryllium and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T56812A,"Toxic effect of thallium, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T56812S,"Toxic effect of thallium, intentional self-harm, sequela"
+Suicide or Self-Injury,T56892A,"Toxic effect of other metals, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T56892S,"Toxic effect of other metals, intentional self-harm, sequela"
+Suicide or Self-Injury,T5692XA,"Toxic effect of unspecified metal, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T5692XS,"Toxic effect of unspecified metal, intentional self-harm, sequela"
+Suicide or Self-Injury,T570X2A,"Toxic effect of arsenic and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T570X2S,"Toxic effect of arsenic and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T571X2A,"Toxic effect of phosphorus and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T571X2S,"Toxic effect of phosphorus and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T572X2A,"Toxic effect of manganese and its compounds, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T572X2S,"Toxic effect of manganese and its compounds, intentional self-harm, sequela"
+Suicide or Self-Injury,T573X2A,"Toxic effect of hydrogen cyanide, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T573X2S,"Toxic effect of hydrogen cyanide, intentional self-harm, sequela"
+Suicide or Self-Injury,T578X2A,"Toxic effect of other specified inorganic substances, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T578X2S,"Toxic effect of other specified inorganic substances, intentional self-harm, sequela"
+Suicide or Self-Injury,T5792XA,"Toxic effect of unspecified inorganic substance, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T5792XS,"Toxic effect of unspecified inorganic substance, intentional self-harm, sequela"
+Suicide or Self-Injury,T5802XA,"Toxic effect of carbon monoxide from motor vehicle exhaust, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T5802XS,"Toxic effect of carbon monoxide from motor vehicle exhaust, intentional self-harm, sequela"
+Suicide or Self-Injury,T5812XA,"Toxic effect of carbon monoxide from utility gas, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T582X2A,"Toxic effect of carbon monoxide from incomplete combustion of other domestic fuels, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T582X2S,"Toxic effect of carbon monoxide from incomplete combustion of other domestic fuels, intentional self-harm, sequela"
+Suicide or Self-Injury,T588X2A,"Toxic effect of carbon monoxide from other source, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T588X2S,"Toxic effect of carbon monoxide from other source, intentional self-harm, sequela"
+Suicide or Self-Injury,T5892XA,"Toxic effect of carbon monoxide from unspecified source, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T5892XS,"Toxic effect of carbon monoxide from unspecified source, intentional self-harm, sequela"
+Suicide or Self-Injury,T590X2A,"Toxic effect of nitrogen oxides, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T590X2S,"Toxic effect of nitrogen oxides, intentional self-harm, sequela"
+Suicide or Self-Injury,T591X2A,"Toxic effect of sulfur dioxide, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T591X2S,"Toxic effect of sulfur dioxide, intentional self-harm, sequela"
+Suicide or Self-Injury,T592X2A,"Toxic effect of formaldehyde, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T592X2S,"Toxic effect of formaldehyde, intentional self-harm, sequela"
+Suicide or Self-Injury,T593X2A,"Toxic effect of lacrimogenic gas, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T593X2S,"Toxic effect of lacrimogenic gas, intentional self-harm, sequela"
+Suicide or Self-Injury,T594X2A,"Toxic effect of chlorine gas, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T594X2S,"Toxic effect of chlorine gas, intentional self-harm, sequela"
+Suicide or Self-Injury,T595X2A,"Toxic effect of fluorine gas and hydrogen fluoride, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T595X2S,"Toxic effect of fluorine gas and hydrogen fluoride, intentional self-harm, sequela"
+Suicide or Self-Injury,T596X2A,"Toxic effect of hydrogen sulfide, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T596X2S,"Toxic effect of hydrogen sulfide, intentional self-harm, sequela"
+Suicide or Self-Injury,T597X2A,"Toxic effect of carbon dioxide, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T597X2S,"Toxic effect of carbon dioxide, intentional self-harm, sequela"
+Suicide or Self-Injury,T59812A,"Toxic effect of smoke, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T59812S,"Toxic effect of smoke, intentional self-harm, sequela"
+Suicide or Self-Injury,T59892A,"Toxic effect of other specified gases, fumes and vapors, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T59892S,"Toxic effect of other specified gases, fumes and vapors, intentional self-harm, sequela"
+Suicide or Self-Injury,T5992XA,"Toxic effect of unspecified gases, fumes and vapors, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T5992XS,"Toxic effect of unspecified gases, fumes and vapors, intentional self-harm, sequela"
+Suicide or Self-Injury,T600X2A,"Toxic effect of organophosphate and carbamate insecticides, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T600X2S,"Toxic effect of organophosphate and carbamate insecticides, intentional self-harm, sequela"
+Suicide or Self-Injury,T601X2A,"Toxic effect of halogenated insecticides, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T601X2S,"Toxic effect of halogenated insecticides, intentional self-harm, sequela"
+Suicide or Self-Injury,T602X2A,"Toxic effect of other insecticides, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T602X2S,"Toxic effect of other insecticides, intentional self-harm, sequela"
+Suicide or Self-Injury,T603X2A,"Toxic effect of herbicides and fungicides, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T603X2S,"Toxic effect of herbicides and fungicides, intentional self-harm, sequela"
+Suicide or Self-Injury,T604X2A,"Toxic effect of rodenticides, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T604X2S,"Toxic effect of rodenticides, intentional self-harm, sequela"
+Suicide or Self-Injury,T608X2A,"Toxic effect of other pesticides, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T608X2S,"Toxic effect of other pesticides, intentional self-harm, sequela"
+Suicide or Self-Injury,T6092XA,"Toxic effect of unspecified pesticide, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T6092XS,"Toxic effect of unspecified pesticide, intentional self-harm, sequela"
+Suicide or Self-Injury,T6102XA,"Ciguatera fish poisoning, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T6102XS,"Ciguatera fish poisoning, intentional self-harm, sequela"
+Suicide or Self-Injury,T6112XA,"Scombroid fish poisoning, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T6112XS,"Scombroid fish poisoning, intentional self-harm, sequela"
+Suicide or Self-Injury,T61772A,"Other fish poisoning, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T61772S,"Other fish poisoning, intentional self-harm, sequela"
+Suicide or Self-Injury,T61782A,"Other shellfish poisoning, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T61782S,"Other shellfish poisoning, intentional self-harm, sequela"
+Suicide or Self-Injury,T618X2A,"Toxic effect of other seafood, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T618X2S,"Toxic effect of other seafood, intentional self-harm, sequela"
+Suicide or Self-Injury,T6192XA,"Toxic effect of unspecified seafood, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T6192XS,"Toxic effect of unspecified seafood, intentional self-harm, sequela"
+Suicide or Self-Injury,T620X2A,"Toxic effect of ingested mushrooms, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T620X2S,"Toxic effect of ingested mushrooms, intentional self-harm, sequela"
+Suicide or Self-Injury,T621X2A,"Toxic effect of ingested berries, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T621X2S,"Toxic effect of ingested berries, intentional self-harm, sequela"
+Suicide or Self-Injury,T622X2A,"Toxic effect of other ingested (parts of) plant(s), intentional self-harm, initial encounter"
+Suicide or Self-Injury,T622X2S,"Toxic effect of other ingested (parts of) plant(s), intentional self-harm, sequela"
+Suicide or Self-Injury,T628X2A,"Toxic effect of other specified noxious substances eaten as food, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T628X2S,"Toxic effect of other specified noxious substances eaten as food, intentional self-harm, sequela"
+Suicide or Self-Injury,T6292XA,"Toxic effect of unspecified noxious substance eaten as food, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T6292XS,"Toxic effect of unspecified noxious substance eaten as food, intentional self-harm, sequela"
+Suicide or Self-Injury,T63002A,"Toxic effect of unspecified snake venom, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63002S,"Toxic effect of unspecified snake venom, intentional self-harm, sequela"
+Suicide or Self-Injury,T63012A,"Toxic effect of rattlesnake venom, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63012S,"Toxic effect of rattlesnake venom, intentional self-harm, sequela"
+Suicide or Self-Injury,T63022A,"Toxic effect of coral snake venom, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63022S,"Toxic effect of coral snake venom, intentional self-harm, sequela"
+Suicide or Self-Injury,T63032A,"Toxic effect of taipan venom, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63032S,"Toxic effect of taipan venom, intentional self-harm, sequela"
+Suicide or Self-Injury,T63042A,"Toxic effect of cobra venom, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63042S,"Toxic effect of cobra venom, intentional self-harm, sequela"
+Suicide or Self-Injury,T63062A,"Toxic effect of venom of other North and South American snake, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63062S,"Toxic effect of venom of other North and South American snake, intentional self-harm, sequela"
+Suicide or Self-Injury,T63072A,"Toxic effect of venom of other Australian snake, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63072S,"Toxic effect of venom of other Australian snake, intentional self-harm, sequela"
+Suicide or Self-Injury,T63082A,"Toxic effect of venom of other African and Asian snake, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63082S,"Toxic effect of venom of other African and Asian snake, intentional self-harm, sequela"
+Suicide or Self-Injury,T63092A,"Toxic effect of venom of other snake, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63092S,"Toxic effect of venom of other snake, intentional self-harm, sequela"
+Suicide or Self-Injury,T63112A,"Toxic effect of venom of gila monster, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63112S,"Toxic effect of venom of gila monster, intentional self-harm, sequela"
+Suicide or Self-Injury,T63122A,"Toxic effect of venom of other venomous lizard, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63122S,"Toxic effect of venom of other venomous lizard, intentional self-harm, sequela"
+Suicide or Self-Injury,T63192A,"Toxic effect of venom of other reptiles, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63192S,"Toxic effect of venom of other reptiles, intentional self-harm, sequela"
+Suicide or Self-Injury,T632X2A,"Toxic effect of venom of scorpion, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T632X2S,"Toxic effect of venom of scorpion, intentional self-harm, sequela"
+Suicide or Self-Injury,T63302A,"Toxic effect of unspecified spider venom, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63302S,"Toxic effect of unspecified spider venom, intentional self-harm, sequela"
+Suicide or Self-Injury,T63312A,"Toxic effect of venom of black widow spider, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63312S,"Toxic effect of venom of black widow spider, intentional self-harm, sequela"
+Suicide or Self-Injury,T63322A,"Toxic effect of venom of tarantula, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63322S,"Toxic effect of venom of tarantula, intentional self-harm, sequela"
+Suicide or Self-Injury,T63332A,"Toxic effect of venom of brown recluse spider, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63332S,"Toxic effect of venom of brown recluse spider, intentional self-harm, sequela"
+Suicide or Self-Injury,T63392A,"Toxic effect of venom of other spider, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63392S,"Toxic effect of venom of other spider, intentional self-harm, sequela"
+Suicide or Self-Injury,T63412A,"Toxic effect of venom of centipedes and venomous millipedes, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63412S,"Toxic effect of venom of centipedes and venomous millipedes, intentional self-harm, sequela"
+Suicide or Self-Injury,T63422A,"Toxic effect of venom of ants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63422S,"Toxic effect of venom of ants, intentional self-harm, sequela"
+Suicide or Self-Injury,T63432A,"Toxic effect of venom of caterpillars, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63432S,"Toxic effect of venom of caterpillars, intentional self-harm, sequela"
+Suicide or Self-Injury,T63442A,"Toxic effect of venom of bees, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63442S,"Toxic effect of venom of bees, intentional self-harm, sequela"
+Suicide or Self-Injury,T63452A,"Toxic effect of venom of hornets, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63452S,"Toxic effect of venom of hornets, intentional self-harm, sequela"
+Suicide or Self-Injury,T63462A,"Toxic effect of venom of wasps, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63462S,"Toxic effect of venom of wasps, intentional self-harm, sequela"
+Suicide or Self-Injury,T63482A,"Toxic effect of venom of other arthropod, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63482S,"Toxic effect of venom of other arthropod, intentional self-harm, sequela"
+Suicide or Self-Injury,T63512A,"Toxic effect of contact with stingray, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63512S,"Toxic effect of contact with stingray, intentional self-harm, sequela"
+Suicide or Self-Injury,T63592A,"Toxic effect of contact with other venomous fish, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63592S,"Toxic effect of contact with other venomous fish, intentional self-harm, sequela"
+Suicide or Self-Injury,T63612A,"Toxic effect of contact with Portugese Man-o-war, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63612S,"Toxic effect of contact with Portugese Man-o-war, intentional self-harm, sequela"
+Suicide or Self-Injury,T63622A,"Toxic effect of contact with other jellyfish, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63622S,"Toxic effect of contact with other jellyfish, intentional self-harm, sequela"
+Suicide or Self-Injury,T63632A,"Toxic effect of contact with sea anemone, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63632S,"Toxic effect of contact with sea anemone, intentional self-harm, sequela"
+Suicide or Self-Injury,T63692A,"Toxic effect of contact with other venomous marine animals, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63692S,"Toxic effect of contact with other venomous marine animals, intentional self-harm, sequela"
+Suicide or Self-Injury,T63712A,"Toxic effect of contact with venomous marine plant, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63712S,"Toxic effect of contact with venomous marine plant, intentional self-harm, sequela"
+Suicide or Self-Injury,T63792A,"Toxic effect of contact with other venomous plant, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63792S,"Toxic effect of contact with other venomous plant, intentional self-harm, sequela"
+Suicide or Self-Injury,T63812A,"Toxic effect of contact with venomous frog, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63812S,"Toxic effect of contact with venomous frog, intentional self-harm, sequela"
+Suicide or Self-Injury,T63822A,"Toxic effect of contact with venomous toad, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63822S,"Toxic effect of contact with venomous toad, intentional self-harm, sequela"
+Suicide or Self-Injury,T63832A,"Toxic effect of contact with other venomous amphibian, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63832S,"Toxic effect of contact with other venomous amphibian, intentional self-harm, sequela"
+Suicide or Self-Injury,T63892A,"Toxic effect of contact with other venomous animals, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T63892S,"Toxic effect of contact with other venomous animals, intentional self-harm, sequela"
+Suicide or Self-Injury,T6392XA,"Toxic effect of contact with unspecified venomous animal, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T6392XS,"Toxic effect of contact with unspecified venomous animal, intentional self-harm, sequela"
+Suicide or Self-Injury,T6402XA,"Toxic effect of aflatoxin, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T6402XS,"Toxic effect of aflatoxin, intentional self-harm, sequela"
+Suicide or Self-Injury,T6482XA,"Toxic effect of other mycotoxin food contaminants, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T6482XS,"Toxic effect of other mycotoxin food contaminants, intentional self-harm, sequela"
+Suicide or Self-Injury,T650X2A,"Toxic effect of cyanides, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T650X2S,"Toxic effect of cyanides, intentional self-harm, sequela"
+Suicide or Self-Injury,T651X2A,"Toxic effect of strychnine and its salts, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T651X2S,"Toxic effect of strychnine and its salts, intentional self-harm, sequela"
+Suicide or Self-Injury,T65212A,"Toxic effect of chewing tobacco, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T65212S,"Toxic effect of chewing tobacco, intentional self-harm, sequela"
+Suicide or Self-Injury,T65222A,"Toxic effect of tobacco cigarettes, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T65222S,"Toxic effect of tobacco cigarettes, intentional self-harm, sequela"
+Suicide or Self-Injury,T65292A,"Toxic effect of other tobacco and nicotine, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T65292S,"Toxic effect of other tobacco and nicotine, intentional self-harm, sequela"
+Suicide or Self-Injury,T653X2A,"Toxic effect of nitroderivatives and aminoderivatives of benzene and its homologues, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T653X2S,"Toxic effect of nitroderivatives and aminoderivatives of benzene and its homologues, intentional self-harm, sequela"
+Suicide or Self-Injury,T654X2A,"Toxic effect of carbon disulfide, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T654X2S,"Toxic effect of carbon disulfide, intentional self-harm, sequela"
+Suicide or Self-Injury,T655X2A,"Toxic effect of nitroglycerin and other nitric acids and esters, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T655X2S,"Toxic effect of nitroglycerin and other nitric acids and esters, intentional self-harm, sequela"
+Suicide or Self-Injury,T656X2A,"Toxic effect of paints and dyes, not elsewhere classified, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T656X2S,"Toxic effect of paints and dyes, not elsewhere classified, intentional self-harm, sequela"
+Suicide or Self-Injury,T65812A,"Toxic effect of latex, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T65812S,"Toxic effect of latex, intentional self-harm, sequela"
+Suicide or Self-Injury,T65822A,"Toxic effect of harmful algae and algae toxins, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T65822S,"Toxic effect of harmful algae and algae toxins, intentional self-harm, sequela"
+Suicide or Self-Injury,T65832A,"Toxic effect of fiberglass, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T65832S,"Toxic effect of fiberglass, intentional self-harm, sequela"
+Suicide or Self-Injury,T65892A,"Toxic effect of other specified substances, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T65892S,"Toxic effect of other specified substances, intentional self-harm, sequela"
+Suicide or Self-Injury,T6592XA,"Toxic effect of unspecified substance, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T6592XS,"Toxic effect of unspecified substance, intentional self-harm, sequela"
+Suicide or Self-Injury,T71112A,"Asphyxiation due to smothering under pillow, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T71112S,"Asphyxiation due to smothering under pillow, intentional self-harm, sequela"
+Suicide or Self-Injury,T71122A,"Asphyxiation due to plastic bag, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T71122S,"Asphyxiation due to plastic bag, intentional self-harm, sequela"
+Suicide or Self-Injury,T71132A,"Asphyxiation due to being trapped in bed linens, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T71132S,"Asphyxiation due to being trapped in bed linens, intentional self-harm, sequela"
+Suicide or Self-Injury,T71152A,"Asphyxiation due to smothering in furniture, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T71152S,"Asphyxiation due to smothering in furniture, intentional self-harm, sequela"
+Suicide or Self-Injury,T71162A,"Asphyxiation due to hanging, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T71162S,"Asphyxiation due to hanging, intentional self-harm, sequela"
+Suicide or Self-Injury,T71192A,"Asphyxiation due to mechanical threat to breathing due to other causes, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T71192S,"Asphyxiation due to mechanical threat to breathing due to other causes, intentional self-harm, sequela"
+Suicide or Self-Injury,T71222A,"Asphyxiation due to being trapped in a car trunk, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T71222S,"Asphyxiation due to being trapped in a car trunk, intentional self-harm, sequela"
+Suicide or Self-Injury,T71232A,"Asphyxiation due to being trapped in a (discarded) refrigerator, intentional self-harm, initial encounter"
+Suicide or Self-Injury,T71232S,"Asphyxiation due to being trapped in a (discarded) refrigerator, intentional self-harm, sequela"
+Suicide or Self-Injury,X710XXA,"Intentional self-harm by drowning and submersion while in bathtub, initial encounter"
+Suicide or Self-Injury,X710XXD,"Intentional self-harm by drowning and submersion while in bathtub, subsequent encounter"
+Suicide or Self-Injury,X710XXS,"Intentional self-harm by drowning and submersion while in bathtub, sequela"
+Suicide or Self-Injury,X711XXA,"Intentional self-harm by drowning and submersion while in swimming pool, initial encounter"
+Suicide or Self-Injury,X711XXD,"Intentional self-harm by drowning and submersion while in swimming pool, subsequent encounter"
+Suicide or Self-Injury,X711XXS,"Intentional self-harm by drowning and submersion while in swimming pool, sequela"
+Suicide or Self-Injury,X712XXA,"Intentional self-harm by drowning and submersion after jump into swimming pool, initial encounter"
+Suicide or Self-Injury,X712XXD,"Intentional self-harm by drowning and submersion after jump into swimming pool, subsequent encounter"
+Suicide or Self-Injury,X712XXS,"Intentional self-harm by drowning and submersion after jump into swimming pool, sequela"
+Suicide or Self-Injury,X713XXA,"Intentional self-harm by drowning and submersion in natural water, initial encounter"
+Suicide or Self-Injury,X713XXD,"Intentional self-harm by drowning and submersion in natural water, subsequent encounter"
+Suicide or Self-Injury,X713XXS,"Intentional self-harm by drowning and submersion in natural water, sequela"
+Suicide or Self-Injury,X718XXA,"Other intentional self-harm by drowning and submersion, initial encounter"
+Suicide or Self-Injury,X718XXD,"Other intentional self-harm by drowning and submersion, subsequent encounter"
+Suicide or Self-Injury,X718XXS,"Other intentional self-harm by drowning and submersion, sequela"
+Suicide or Self-Injury,X719XXA,"Intentional self-harm by drowning and submersion, unspecified, initial encounter"
+Suicide or Self-Injury,X719XXD,"Intentional self-harm by drowning and submersion, unspecified, subsequent encounter"
+Suicide or Self-Injury,X719XXS,"Intentional self-harm by drowning and submersion, unspecified, sequela"
+Suicide or Self-Injury,X72XXXA,"Intentional self-harm by handgun discharge, initial encounter"
+Suicide or Self-Injury,X72XXXD,"Intentional self-harm by handgun discharge, subsequent encounter"
+Suicide or Self-Injury,X72XXXS,"Intentional self-harm by handgun discharge, sequela"
+Suicide or Self-Injury,X730XXA,"Intentional self-harm by shotgun discharge, initial encounter"
+Suicide or Self-Injury,X730XXD,"Intentional self-harm by shotgun discharge, subsequent encounter"
+Suicide or Self-Injury,X730XXS,"Intentional self-harm by shotgun discharge, sequela"
+Suicide or Self-Injury,X731XXA,"Intentional self-harm by hunting rifle discharge, initial encounter"
+Suicide or Self-Injury,X731XXD,"Intentional self-harm by hunting rifle discharge, subsequent encounter"
+Suicide or Self-Injury,X731XXS,"Intentional self-harm by hunting rifle discharge, sequela"
+Suicide or Self-Injury,X732XXA,"Intentional self-harm by machine gun discharge, initial encounter"
+Suicide or Self-Injury,X732XXD,"Intentional self-harm by machine gun discharge, subsequent encounter"
+Suicide or Self-Injury,X732XXS,"Intentional self-harm by machine gun discharge, sequela"
+Suicide or Self-Injury,X738XXA,"Intentional self-harm by other larger firearm discharge, initial encounter"
+Suicide or Self-Injury,X738XXD,"Intentional self-harm by other larger firearm discharge, subsequent encounter"
+Suicide or Self-Injury,X738XXS,"Intentional self-harm by other larger firearm discharge, sequela"
+Suicide or Self-Injury,X739XXA,"Intentional self-harm by unspecified larger firearm discharge, initial encounter"
+Suicide or Self-Injury,X739XXD,"Intentional self-harm by unspecified larger firearm discharge, subsequent encounter"
+Suicide or Self-Injury,X739XXS,"Intentional self-harm by unspecified larger firearm discharge, sequela"
+Suicide or Self-Injury,X7401XA,"Intentional self-harm by airgun, initial encounter"
+Suicide or Self-Injury,X7401XD,"Intentional self-harm by airgun, subsequent encounter"
+Suicide or Self-Injury,X7401XS,"Intentional self-harm by airgun, sequela"
+Suicide or Self-Injury,X7402XA,"Intentional self-harm by paintball gun, initial encounter"
+Suicide or Self-Injury,X7402XD,"Intentional self-harm by paintball gun, subsequent encounter"
+Suicide or Self-Injury,X7402XS,"Intentional self-harm by paintball gun, sequela"
+Suicide or Self-Injury,X7409XA,"Intentional self-harm by other gas, air or spring-operated gun, initial encounter"
+Suicide or Self-Injury,X7409XD,"Intentional self-harm by other gas, air or spring-operated gun, subsequent encounter"
+Suicide or Self-Injury,X7409XS,"Intentional self-harm by other gas, air or spring-operated gun, sequela"
+Suicide or Self-Injury,X748XXA,"Intentional self-harm by other firearm discharge, initial encounter"
+Suicide or Self-Injury,X748XXD,"Intentional self-harm by other firearm discharge, subsequent encounter"
+Suicide or Self-Injury,X748XXS,"Intentional self-harm by other firearm discharge, sequela"
+Suicide or Self-Injury,X749XXA,"Intentional self-harm by unspecified firearm discharge, initial encounter"
+Suicide or Self-Injury,X749XXD,"Intentional self-harm by unspecified firearm discharge, subsequent encounter"
+Suicide or Self-Injury,X749XXS,"Intentional self-harm by unspecified firearm discharge, sequela"
+Suicide or Self-Injury,X75XXXA,"Intentional self-harm by explosive material, initial encounter"
+Suicide or Self-Injury,X75XXXD,"Intentional self-harm by explosive material, subsequent encounter"
+Suicide or Self-Injury,X75XXXS,"Intentional self-harm by explosive material, sequela"
+Suicide or Self-Injury,X76XXXA,"Intentional self-harm by smoke, fire and flames, initial encounter"
+Suicide or Self-Injury,X76XXXD,"Intentional self-harm by smoke, fire and flames, subsequent encounter"
+Suicide or Self-Injury,X76XXXS,"Intentional self-harm by smoke, fire and flames, sequela"
+Suicide or Self-Injury,X770XXA,"Intentional self-harm by steam or hot vapors, initial encounter"
+Suicide or Self-Injury,X770XXD,"Intentional self-harm by steam or hot vapors, subsequent encounter"
+Suicide or Self-Injury,X770XXS,"Intentional self-harm by steam or hot vapors, sequela"
+Suicide or Self-Injury,X771XXA,"Intentional self-harm by hot tap water, initial encounter"
+Suicide or Self-Injury,X771XXD,"Intentional self-harm by hot tap water, subsequent encounter"
+Suicide or Self-Injury,X771XXS,"Intentional self-harm by hot tap water, sequela"
+Suicide or Self-Injury,X772XXA,"Intentional self-harm by other hot fluids, initial encounter"
+Suicide or Self-Injury,X772XXD,"Intentional self-harm by other hot fluids, subsequent encounter"
+Suicide or Self-Injury,X772XXS,"Intentional self-harm by other hot fluids, sequela"
+Suicide or Self-Injury,X773XXA,"Intentional self-harm by hot household appliances, initial encounter"
+Suicide or Self-Injury,X773XXD,"Intentional self-harm by hot household appliances, subsequent encounter"
+Suicide or Self-Injury,X773XXS,"Intentional self-harm by hot household appliances, sequela"
+Suicide or Self-Injury,X778XXA,"Intentional self-harm by other hot objects, initial encounter"
+Suicide or Self-Injury,X778XXD,"Intentional self-harm by other hot objects, subsequent encounter"
+Suicide or Self-Injury,X778XXS,"Intentional self-harm by other hot objects, sequela"
+Suicide or Self-Injury,X779XXA,"Intentional self-harm by unspecified hot objects, initial encounter"
+Suicide or Self-Injury,X779XXD,"Intentional self-harm by unspecified hot objects, subsequent encounter"
+Suicide or Self-Injury,X779XXS,"Intentional self-harm by unspecified hot objects, sequela"
+Suicide or Self-Injury,X780XXA,"Intentional self-harm by sharp glass, initial encounter"
+Suicide or Self-Injury,X780XXD,"Intentional self-harm by sharp glass, subsequent encounter"
+Suicide or Self-Injury,X780XXS,"Intentional self-harm by sharp glass, sequela"
+Suicide or Self-Injury,X781XXA,"Intentional self-harm by knife, initial encounter"
+Suicide or Self-Injury,X781XXD,"Intentional self-harm by knife, subsequent encounter"
+Suicide or Self-Injury,X781XXS,"Intentional self-harm by knife, sequela"
+Suicide or Self-Injury,X782XXA,"Intentional self-harm by sword or dagger, initial encounter"
+Suicide or Self-Injury,X782XXD,"Intentional self-harm by sword or dagger, subsequent encounter"
+Suicide or Self-Injury,X782XXS,"Intentional self-harm by sword or dagger, sequela"
+Suicide or Self-Injury,X788XXA,"Intentional self-harm by other sharp object, initial encounter"
+Suicide or Self-Injury,X788XXD,"Intentional self-harm by other sharp object, subsequent encounter"
+Suicide or Self-Injury,X788XXS,"Intentional self-harm by other sharp object, sequela"
+Suicide or Self-Injury,X789XXA,"Intentional self-harm by unspecified sharp object, initial encounter"
+Suicide or Self-Injury,X789XXD,"Intentional self-harm by unspecified sharp object, subsequent encounter"
+Suicide or Self-Injury,X789XXS,"Intentional self-harm by unspecified sharp object, sequela"
+Suicide or Self-Injury,X79XXXA,"Intentional self-harm by blunt object, initial encounter"
+Suicide or Self-Injury,X79XXXD,"Intentional self-harm by blunt object, subsequent encounter"
+Suicide or Self-Injury,X79XXXS,"Intentional self-harm by blunt object, sequela"
+Suicide or Self-Injury,X80XXXA,"Intentional self-harm by jumping from a high place, initial encounter"
+Suicide or Self-Injury,X80XXXD,"Intentional self-harm by jumping from a high place, subsequent encounter"
+Suicide or Self-Injury,X80XXXS,"Intentional self-harm by jumping from a high place, sequela"
+Suicide or Self-Injury,X810XXA,"Intentional self-harm by jumping or lying in front of motor vehicle, initial encounter"
+Suicide or Self-Injury,X810XXD,"Intentional self-harm by jumping or lying in front of motor vehicle, subsequent encounter"
+Suicide or Self-Injury,X810XXS,"Intentional self-harm by jumping or lying in front of motor vehicle, sequela"
+Suicide or Self-Injury,X811XXA,"Intentional self-harm by jumping or lying in front of (subway) train, initial encounter"
+Suicide or Self-Injury,X811XXD,"Intentional self-harm by jumping or lying in front of (subway) train, subsequent encounter"
+Suicide or Self-Injury,X811XXS,"Intentional self-harm by jumping or lying in front of (subway) train, sequela"
+Suicide or Self-Injury,X818XXA,"Intentional self-harm by jumping or lying in front of other moving object, initial encounter"
+Suicide or Self-Injury,X818XXD,"Intentional self-harm by jumping or lying in front of other moving object, subsequent encounter"
+Suicide or Self-Injury,X818XXS,"Intentional self-harm by jumping or lying in front of other moving object, sequela"
+Suicide or Self-Injury,X820XXA,"Intentional collision of motor vehicle with other motor vehicle, initial encounter"
+Suicide or Self-Injury,X820XXD,"Intentional collision of motor vehicle with other motor vehicle, subsequent encounter"
+Suicide or Self-Injury,X820XXS,"Intentional collision of motor vehicle with other motor vehicle, sequela"
+Suicide or Self-Injury,X821XXA,"Intentional collision of motor vehicle with train, initial encounter"
+Suicide or Self-Injury,X821XXD,"Intentional collision of motor vehicle with train, subsequent encounter"
+Suicide or Self-Injury,X821XXS,"Intentional collision of motor vehicle with train, sequela"
+Suicide or Self-Injury,X822XXA,"Intentional collision of motor vehicle with tree, initial encounter"
+Suicide or Self-Injury,X822XXD,"Intentional collision of motor vehicle with tree, subsequent encounter"
+Suicide or Self-Injury,X822XXS,"Intentional collision of motor vehicle with tree, sequela"
+Suicide or Self-Injury,X828XXA,"Other intentional self-harm by crashing of motor vehicle, initial encounter"
+Suicide or Self-Injury,X828XXD,"Other intentional self-harm by crashing of motor vehicle, subsequent encounter"
+Suicide or Self-Injury,X828XXS,"Other intentional self-harm by crashing of motor vehicle, sequela"
+Suicide or Self-Injury,X830XXA,"Intentional self-harm by crashing of aircraft, initial encounter"
+Suicide or Self-Injury,X830XXD,"Intentional self-harm by crashing of aircraft, subsequent encounter"
+Suicide or Self-Injury,X830XXS,"Intentional self-harm by crashing of aircraft, sequela"
+Suicide or Self-Injury,X831XXA,"Intentional self-harm by electrocution, initial encounter"
+Suicide or Self-Injury,X831XXD,"Intentional self-harm by electrocution, subsequent encounter"
+Suicide or Self-Injury,X831XXS,"Intentional self-harm by electrocution, sequela"
+Suicide or Self-Injury,X832XXA,"Intentional self-harm by exposure to extremes of cold, initial encounter"
+Suicide or Self-Injury,X832XXD,"Intentional self-harm by exposure to extremes of cold, subsequent encounter"
+Suicide or Self-Injury,X832XXS,"Intentional self-harm by exposure to extremes of cold, sequela"
+Suicide or Self-Injury,X838XXA,"Intentional self-harm by other specified means, initial encounter"
+Suicide or Self-Injury,X838XXD,"Intentional self-harm by other specified means, subsequent encounter"
+Suicide or Self-Injury,X838XXS,"Intentional self-harm by other specified means, sequela"
+Trauma and Stressor-Related Disorders,F430,Acute stress reaction
+Trauma and Stressor-Related Disorders,F4310,"Post-traumatic stress disorder, unspecified"
+Trauma and Stressor-Related Disorders,F4311,"Post-traumatic stress disorder, acute"
+Trauma and Stressor-Related Disorders,F4312,"Post-traumatic stress disorder, chronic"
+Trauma and Stressor-Related Disorders,F4320,"Adjustment disorder, unspecified"
+Trauma and Stressor-Related Disorders,F4321,Adjustment disorder with depressed mood
+Trauma and Stressor-Related Disorders,F4322,Adjustment disorder with anxiety
+Trauma and Stressor-Related Disorders,F4323,Adjustment disorder with mixed anxiety and depressed mood
+Trauma and Stressor-Related Disorders,F4324,Adjustment disorder with disturbance of conduct
+Trauma and Stressor-Related Disorders,F4325,Adjustment disorder with mixed disturbance of emotions and conduct
+Trauma and Stressor-Related Disorders,F4329,Adjustment disorder with other symptoms
+Trauma and Stressor-Related Disorders,F438,Other reactions to severe stress
+Trauma and Stressor-Related Disorders,F439,"Reaction to severe stress, unspecified"
+Trauma and Stressor-Related Disorders,F941,Reactive attachment disorder of childhood
+Trauma and Stressor-Related Disorders,F942,Disinhibited attachment disorder of childhood
