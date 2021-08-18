@@ -409,6 +409,21 @@ patient_count_per_week_byCategory %>%
 
 ggsave("output/overall_weekly_count_all_comparison_other_categories.png", width = 18, height = 9, units="cm")
 
+patient_count_per_week_byCategory %>%
+  filter( icd_description_category %in% c("Neoplams","Diseases of the respiratory system", "Diseases of the nervous system", "Diseases of the digestive system", "Diseases of the blood", "Congenital malformations, deformations and chromosomal abnormalities" )) %>%
+  ggplot(aes(weeks, n, color = factor(icd_description_category))) +
+  geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  geom_point() + 
+  theme(axis.text.x = element_text(angle=45, vjust = 1, hjust=1), legend.position = "none" ) +
+  labs(title = "Weekly patient counts",
+       subtitle = "(by ICD category)",
+       y = "Counts", x = "Calendar weeks") + 
+  facet_wrap(~ icd_description_category)
+
+ggsave("output/overall_weekly_count_all_comparison_other_categories_facet_wrap.png", width = 18, height = 9, units="cm")
+
 ```
 
 
