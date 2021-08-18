@@ -72,7 +72,7 @@ dateFormat <- "%d-%b-%y"
 
 ```{r}
 # cut-off dates used in the analysis, these should not be changed
-history_start_date <- "2019-01-01"
+history_start_date <- "2017-01-01"
 history_end_date <- "2021-05-31"
 pandemic_start_date <- "2020-03-15"
 ```
@@ -345,7 +345,6 @@ ggsave("output/overall_weekly_count_all.png", width = 18, height = 9, units="cm"
 ```
 
 
-
 ```{r}
 patient_count_per_week <- all_codes %>% 
   mutate(icd_code_category = ifelse(concept_code %in% icdCodes$ICD10_Code, 
@@ -377,6 +376,39 @@ patient_count_per_week %>%
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
 
 ggsave("output/overall_weekly_count_all_comparison.png", width = 18, height = 9, units="cm")
+```
+```{r}
+icdCategory <- read.delim("public-data/icd10Codes.txt", header = FALSE, colClasses = "character")
+colnames(icdCategory) <- c("icd_code_category", "icd_description_category")
+patient_count_per_week_byCategory <- all_codes %>% 
+  mutate( icd_code_category = ifelse(substr(concept_code, 1, 1) %in% c("D", "H"), substr(concept_code, 1, 2), substr(concept_code, 1, 1) ))
+
+patient_count_per_week_byCategory <- left_join( patient_count_per_week_byCategory, icdCategory) %>%
+  select(patient_num, cohort, weeks, icd_description_category, period) %>% 
+  unique() %>%
+  group_by(weeks, icd_description_category, period) %>%
+  tally() %>%
+  mutate(n = ifelse( n < obfuscation | isFALSE(obfuscation),
+                     n,
+                     0.5),
+         siteid = site )
+
+patient_count_per_week_byCategory %>%
+  filter( icd_description_category %in% c("Neoplams","Diseases of the respiratory system", "Diseases of the nervous system", "Diseases of the digestive system", "Diseases of the blood", "Congenital malformations, deformations and chromosomal abnormalities" )) %>%
+  ggplot(aes(x = weeks, y = n, fill = icd_description_category, color = icd_description_category)) +
+  geom_point() +
+  geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Counts",
+       x = "Calendar Weeks",
+       title = "Weekly patient counts") + 
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
+
+ggsave("output/overall_weekly_count_all_comparison_other_categories.png", width = 18, height = 9, units="cm")
+
 ```
 
 
