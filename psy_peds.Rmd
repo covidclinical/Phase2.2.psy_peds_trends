@@ -218,12 +218,15 @@ site <- unique(as.character(demo_raw$siteid))
 #early_pandemic_start_date <- "2020-03-15"
 #late_pandemic_start_date <- "2021-01-01"
 
+icdCategory <- read.delim("public-data/icd10Codes.txt", header = FALSE, colClasses = "character")
+colnames(icdCategory) <- c("icd_code_letter", "icd_description_category")
+
 all_codes <- obs_raw %>% 
   full_join( clinical_raw,  by = c("patient_num", "cohort", "days_since_admission")) %>%
   full_join( demo_raw, by = c("patient_num", "cohort")) %>% 
   mutate(icd_code_category = ifelse(concept_code %in% icdCodes$ICD10_Code, 
                                "psy", 
-                               "somatic")) %>% 
+                               "others")) %>% 
   dplyr::filter( concept_type == "DIAG-ICD10", 
                  in_hospital == 1,
                  age < 18 & age > 10,
@@ -232,8 +235,14 @@ all_codes <- obs_raw %>%
                  in_hospital, n_hospitalisation, len_hospitalisation, date, weeks, month, year,
                  period, disorder_group, description, icd_code_category )
 
+all_codes <- all_codes %>% 
+  mutate( icd_code_letter = ifelse(substr(concept_code, 1, 1) %in% c("D", "H"), substr(concept_code, 1, 2), substr(concept_code, 1, 1) ))
+
+all_codes <- left_join( all_codes, icdCategory) %>%
+  mutate( icd_description_category = replace_na( ifelse( concept_code %in% icdCodes$ICD10_Code, "Psy", icd_description_category), "Others")) 
+
 input_data <- all_codes %>% 
-  filter(concept_code %in% icdCodes$ICD10_Code) %>% 
+  filter(concept_code %in% icdCodes$ICD10_Code)
 
 if( raceAvailable == TRUE ){
   input_data <- input_data %>%
@@ -323,87 +332,72 @@ Here we calculate the number of patients hospitalized per week (exactly, the num
 The barplot shows the weeks on the x-axis, and the patient counts on the y-axis. The horizontal lines is the (quadratic) temporal trend of these patient counts.
 
 ```{r}
-all_codes[, c("patient_num", "cohort", "month")] 
-```
-
-
-```{r}
-patient_count_per_week <- all_codes[, c("patient_num", "cohort", "weeks", "icd_code_category")] %>%
+patient_count_per_week_category <- all_codes[, c("patient_num", "cohort", "weeks", "icd_description_category")] %>%
   unique() %>%
-  group_by(weeks, icd_code_category) %>%
+  group_by(weeks, icd_description_category) %>%
   tally() %>%
   mutate(n = ifelse( n < obfuscation | isFALSE(obfuscation),
                      n,
                      0.5),
          siteid = site )
 
-patient_count_per_month <- all_codes[, c("patient_num", "cohort", "month", "icd_code_category")] %>%
+patient_count_per_week <- all_codes[, c("patient_num", "cohort", "weeks")] %>%
   unique() %>%
-  group_by(month, icd_code_category) %>%
-  tally() %>%
-  mutate(n = ifelse( n < obfuscation | isFALSE(obfuscation),
-                     n,
+  group_by(weeks) %>%
+  tally( name = "total_patients") %>%
+  mutate(total_patients = ifelse( total_patients < obfuscation | isFALSE(obfuscation),
+                     total_patients,
                      0.5),
          siteid = site )
 
+patient_count_per_month_category <- all_codes[, c("patient_num", "cohort", "month", "icd_description_category")] %>%
+  unique() %>%
+  group_by(month, icd_description_category) %>%
+  tally( name = "patients_per_category" ) %>%
+  mutate(patients_per_category = ifelse( patients_per_category < obfuscation | isFALSE(obfuscation),
+                     patients_per_category,
+                     0.5),
+         siteid = site )
+
+patient_count_per_month <- all_codes[, c("patient_num", "cohort", "month")] %>%
+  unique() %>%
+  group_by(month) %>%
+  tally( name = "total_patients") %>%
+  mutate(total_patients = ifelse( total_patients < obfuscation | isFALSE(obfuscation),
+                     total_patients,
+                     0.5),
+         siteid = site )
+
+patient_count_monthly <- merge( patient_count_per_month_category, patient_count_per_month)
 ```
 
 ```{r}
 #estimate the number of patients per week
-patient_count_per_week %>%
-  tidyr::pivot_wider(names_from = icd_code_category, 
-                     values_from = n) %>% 
-  dplyr::mutate(weeks = as.Date(weeks)) %>% 
-  dplyr::mutate(period = ifelse( weeks < pandemic_start_date,
+patient_count_monthly %>%
+  dplyr::filter(icd_description_category == "Psy") %>% 
+  dplyr::mutate(month = as.Date(month)) %>% 
+  dplyr::mutate(period = ifelse( month < pandemic_start_date,
                                   "before_pandemic",
                                  "during_pandemic"), 
-                percentage = psy * 100 / (somatic + psy)) %>% 
-  ggplot(aes(x = weeks, y = percentage, fill = period)) +
-  # geom_bar(stat="identity")+
-  scale_fill_manual(values = cbPalette) +
-  labs(y = "Counts",
-       x = "Calendar Weeks",
-       title = "Percentage of patients with mental health related ICD codes (weekly)") + 
+                percentage = patients_per_category * 100 / total_patients) %>% 
+  ggplot(aes(x = month, y = percentage, fill = period)) +
+  #geom_line()+
+  scale_fill_manual(values = cbPalette[c(3,4)]) +
+  labs(y = "Percentage",
+       x = "Calendar Months",
+       title = "Percentage of patients with mental health related ICD codes (monthly)") + 
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
 
-ggsave("output/overall_weekly_count_all.png", width = 18, height = 9, units="cm")
+ggsave("output/overall_monthly_count_all.png", width = 18, height = 9, units="cm")
 ```
 
 
 ```{r}
-#estimate the number of patients per week
-patient_count_per_week %>%
-  dplyr::mutate(weeks = as.Date(weeks)) %>% 
-  dplyr::mutate(period = ifelse( weeks < pandemic_start_date,
-                                  "before_pandemic",
-                                 "during_pandemic")) %>% 
-  ggplot(aes(x = weeks, y = n, fill = icd_code_category)) +
-  # geom_bar(stat="identity")+
-  scale_fill_manual(values = cbPalette) +
-  labs(y = "Counts",
-       x = "Calendar Weeks",
-       title = "Weekly patient counts with mental health related ICD codes") + 
-  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=icd_code_category), colour= "black", size = 0.5)
-
-ggsave("output/overall_weekly_count_all.png", width = 18, height = 9, units="cm")
-```
-
-
-```{r}
-patient_count_per_week <- all_codes %>% 
-  select(patient_num, cohort, weeks, icd_code_category, period) %>% 
-  unique() %>%
-  group_by(weeks, icd_code_category, period) %>%
-  tally() %>%
-  mutate(n = ifelse( n < obfuscation | isFALSE(obfuscation),
-                     n,
-                     0.5),
-         siteid = site )
-
-
-#estimate the number of patients per week
-patient_count_per_week %>%
-  ggplot(aes(x = weeks, y = n, fill = icd_code_category, color = icd_code_category)) +
+patient_count_monthly %>%
+  filter( icd_description_category %in% c("Psy")) %>%
+  pivot_longer(names_to = "patients", cols=c(patients_per_category, total_patients)) %>%
+  mutate( patients = ifelse( patients == "patients_per_category", "Psy", "Total")) %>%
+  ggplot(aes(x = month, y = value, fill = patients, color = patients)) +
   geom_point() +
   geom_line() +
   geom_vline(xintercept = as.Date(pandemic_start_date),
@@ -411,32 +405,17 @@ patient_count_per_week %>%
   scale_fill_manual(values = cbPalette) +
   scale_color_manual(values = cbPalette) +
   labs(y = "Counts",
-       x = "Calendar Weeks",
-       title = "Weekly patient counts with mental health related ICD codes") + 
+       x = "Calendar Months",
+       title = "Monthly patient counts with mental health related ICD codes") + 
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
 
 ggsave("output/overall_weekly_count_all_comparison.png", width = 18, height = 9, units="cm")
 ```
+
 ```{r}
-icdCategory <- read.delim("public-data/icd10Codes.txt", header = FALSE, colClasses = "character")
-colnames(icdCategory) <- c("icd_code_category", "icd_description_category")
-patient_count_per_week_byCategory <- all_codes %>% 
-  mutate( icd_code_category = ifelse(substr(concept_code, 1, 1) %in% c("D", "H"), substr(concept_code, 1, 2), substr(concept_code, 1, 1) ))
-
-patient_count_per_week_byCategory <- left_join( patient_count_per_week_byCategory, icdCategory) %>%
-  mutate( icd_description_category = ifelse( concept_code %in% icdCodes$ICD10_Code, "psy", icd_description_category)) %>%
-  select(patient_num, cohort, weeks, icd_description_category, period) %>% 
-  unique() %>%
-  group_by(weeks, icd_description_category, period) %>%
-  tally() %>%
-  mutate(n = ifelse( n < obfuscation | isFALSE(obfuscation),
-                     n,
-                     0.5),
-         siteid = site )
-
-patient_count_per_week_byCategory %>%
-  filter( icd_description_category %in% c("psy","Neoplams","Diseases of the respiratory system", "Diseases of the nervous system", "Diseases of the digestive system", "Diseases of the blood", "Congenital malformations, deformations and chromosomal abnormalities" )) %>%
-  ggplot(aes(x = weeks, y = n, fill = icd_description_category, color = icd_description_category)) +
+patient_count_monthly %>%
+  filter( icd_description_category %in% c("Psy","Neoplams","Diseases of the respiratory system","Diseases of the digestive system")) %>%
+  ggplot(aes(x = month, y = patients_per_category, fill = icd_description_category, color = icd_description_category)) +
   #geom_point(alpha=0.2) +
   geom_line() +
   geom_vline(xintercept = as.Date(pandemic_start_date),
@@ -444,28 +423,12 @@ patient_count_per_week_byCategory %>%
   scale_fill_manual(values = cbPalette) +
   scale_color_manual(values = cbPalette) +
   labs(y = "Counts",
-       x = "Calendar Weeks",
-       title = "Weekly patient counts") +   
+       x = "Calendar Months",
+       title = "Months patient counts") +   
   theme(axis.text.x = element_text(angle=45, vjust = 1, hjust=1), legend.position = "bottom", legend.text = element_text(size=7), legend.title = element_text(size=7) ) +
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
 
-  ggsave("output/overall_weekly_count_all_comparison_other_categories.png", width = 18, height = 9, units="cm")
-
-patient_count_per_week_byCategory %>%
-  filter( icd_description_category %in% c("Neoplams","Diseases of the respiratory system", "Diseases of the nervous system", "Diseases of the digestive system", "Diseases of the blood", "Congenital malformations, deformations and chromosomal abnormalities" )) %>%
-  ggplot(aes(weeks, n, color = factor(icd_description_category))) +
-  geom_line() +
-  geom_vline(xintercept = as.Date(pandemic_start_date),
-             linetype = "dashed") +
-  geom_point() + 
-  theme(axis.text.x = element_text(angle=45, vjust = 1, hjust=1), legend.position = "none" ) +
-  labs(title = "Weekly patient counts",
-       subtitle = "(by ICD category)",
-       y = "Counts", x = "Calendar weeks") + 
-  facet_wrap(~ icd_description_category)
-
-ggsave("output/overall_weekly_count_all_comparison_other_categories_facet_wrap.png", width = 18, height = 9, units="cm")
-
+ggsave("output/overall_monthly_count_all_comparison_other_categories.png", width = 18, height = 9, units="cm")
 ```
 
 
@@ -545,6 +508,22 @@ patient_count_per_week_sex %>%
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=sex), colour= "black", size = 0.5)
 ggsave("output/overall_weekly_count_all.png", width = 18, height = 9, units="cm")
 
+###percentage
+patient_count_per_week_sex <- merge( patient_count_per_week_sex, patient_count_per_week )
+
+patient_count_per_week_sex %>%
+  mutate(percentage = n * 100 / total_patients ) %>%
+  ggplot(aes(x = as.Date(weeks), y = percentage, fill = sex)) +
+  geom_bar(stat="identity", position = "dodge")+
+  scale_fill_manual(values = cbPalette) +
+  labs(y = "Percentage",
+       x = "Week",
+       title = "Weekly patient percentage with mental health related ICD codes aggregated by sex",
+       subtitle = "Per Sex") + 
+  theme(legend.position = "bottom") + 
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=sex), colour= "black", size = 0.5)
+ggsave("output/overall_weekly_count_all.png", width = 18, height = 9, units="cm")
+
 ```
 
 ### Patients count per week aggregated by age group 
@@ -578,20 +557,22 @@ Each barplot represent a disorder group.
 
 ```{r}
 
-patient_count_per_week_disorder_group <- input_data[input_data$in_hospital == 1, c("patient_num", "cohort", "weeks", "disorder_group")] %>%
+patient_count_per_week_disorder_group <- input_data[, c("patient_num", "cohort", "weeks", "disorder_group")] %>%
   unique() %>%
-  group_by(weeks, disorder_group) %>% tally() %>%
-  mutate(n = ifelse( n > obfuscation | isFALSE(obfuscation), n, 0.5), siteid = site)
+  group_by(weeks, disorder_group) %>% tally( name = "psychiatric_patient_count") %>%
+  mutate(psychiatric_patient_count = ifelse( psychiatric_patient_count > obfuscation | isFALSE(obfuscation), psychiatric_patient_count, 0.5), siteid = site)
 
+patient_count_per_week_disorder_group <- merge( patient_count_per_week_disorder_group, patient_count_per_week)
 
 patient_count_per_week_disorder_group %>%
   mutate(weeks = as.Date(weeks), 
          period = if_else(weeks < pandemic_start_date,
                           "Before the Start of the Pandemic",
                           "After the Start of the Pandemic"
-         )
+         ), 
+         percentage = psychiatric_patient_count * 100 / total_patients
   ) %>% 
-  ggplot(aes(x = as.Date(weeks), y= n, fill = period, group = disorder_group )) +
+  ggplot(aes(x = as.Date(weeks), y= percentage, fill = period, group = disorder_group )) +
   geom_bar(stat = "identity")+
   geom_vline(xintercept = as.Date(pandemic_start_date),
              linetype = "dashed") +
@@ -599,8 +580,8 @@ patient_count_per_week_disorder_group %>%
   #           linetype = "dashed") +
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se= TRUE, aes(colour=period), colour= "black", size = 0.5) + 
   labs(x = "Week",
-       y = "Patient Counts",
-       title = "Weekly patient counts with mental health related ICD codes", 
+       y = "Patient Percentage",
+       title = "Weekly patient percentage with mental health related ICD codes", 
        subtitle = "Grouped by mental health ICD subcategories") + 
   ylim(0, NA) + 
   facet_wrap(. ~ disorder_group, scales = "free_y") +
