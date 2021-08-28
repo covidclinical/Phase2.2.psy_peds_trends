@@ -145,7 +145,14 @@ The last two columns are not available in the input data files. We will generate
 ## Adding columns with hospitalization number and hospitalization length to the clinical raw file
 ```{r}
 count_sequences_hospitalisation <- function(df, ...) {
-  count_sequences <- rle(df$in_hospital)
+  # TODO: To be optimized to make it faster 
+  total_span <- data.frame(total_span = seq(min(df$days_since_admission),
+                    max(df$days_since_admission))
+  )
+  total_span <- left_join(total_span, df[,c("in_hospital", "days_since_admission")],
+            by = c("total_span" = "days_since_admission")
+  ) %>% replace_na(list(in_hospital = 0))
+  count_sequences <- rle(total_span$in_hospital)
   count_sequences_1 <- lapply(count_sequences, function(x) x[count_sequences$values == 1])
   n_sequences <- seq_along(count_sequences_1$lengths)
   sequences <- rep.int(n_sequences, count_sequences_1$lengths)
@@ -155,7 +162,7 @@ count_sequences_hospitalisation <- function(df, ...) {
   return(df)
 }
 clinical_raw <- clinical_raw %>%
-  group_by(patient_num) %>% 
+  group_by(patient_num, cohort) %>% 
   group_modify(count_sequences_hospitalisation)
 ```
 
@@ -206,7 +213,7 @@ clinical_raw <- clinical_raw %>%
                  year = format( date, "%Y"), 
                  period = ifelse( date < pandemic_start_date,
                                   "before_pandemic","during_pandemic")) %>% 
-  dplyr::filter(cohort  %in% c("AllAdm", "AllNotAdm"))
+  dplyr::filter(cohort  %in% c("AllAdm"))
 ```
 
 
