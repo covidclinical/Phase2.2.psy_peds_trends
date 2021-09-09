@@ -150,36 +150,39 @@ The last two columns are not available in the input data files. We will generate
 
 
 ```{r}
-# Adjusting patient age to the time of visit, assuming the age used is the patients' age at the time of extraction (last discharge date available in the data)
+# Adjusting patient age at the time of visit, assuming the age used is the patients' age at the time of extraction (last discharge date available in the data)
 last_data_date <- max(as.Date(demo_raw$last_discharge_date, "%Y-%m-%d"))
 clinical_raw <- left_join(clinical_raw, demo_raw[c("patient_num", "cohort", "age")], by = c("patient_num", "cohort"))
 clinical_raw$age_time_visit <- clinical_raw$age - floor(as.numeric(last_data_date - as.Date(clinical_raw$calendar_date, dateFormat)) / 365.25)
-
 ```
 
 
 ## Adding columns with hospitalization number and hospitalization length to the clinical raw file
 ```{r}
 count_sequences_hospitalisation <- function(df, ...) {
-  # TODO: To be optimized
-  total_span <- data.frame(total_span = seq(min(df$days_since_admission),
-                                            max(df$days_since_admission))
-  ) %>% 
-    left_join(df[,c("in_hospital", "days_since_admission")],
-              by = c("total_span" = "days_since_admission")
-    ) %>% replace_na(list(in_hospital = 0))
-  count_sequences <- rle(total_span$in_hospital)
+  seq_hospitalisation_df <- data.frame(total_span = seq(min(df$days_since_admission),
+                                                        max(df$days_since_admission))
+  ) %>%
+    left_join(df, by = c("total_span" = "days_since_admission")) %>%
+    replace_na(list(in_hospital = 0))
+  count_sequences <- rle(seq_hospitalisation_df$in_hospital)
   count_sequences_1 <- lapply(count_sequences, function(x) x[count_sequences$values == 1])
   n_sequences <- seq_along(count_sequences_1$lengths)
   sequences <- rep.int(n_sequences, count_sequences_1$lengths)
   sequences_len <- rep.int(count_sequences_1$lengths, count_sequences_1$lengths)
-  df[df$in_hospital == 1, "n_hospitalisation"] <- sequences
-  df[df$in_hospital == 1, "len_hospitalisation"] <- sequences_len
-  return(df)
+  stopifnot(length(df$days_since_admission) == length(sequences))
+  data.frame(days_since_admission = df$days_since_admission,
+             n_hospitalisation = sequences,
+             len_hospitalisation = sequences_len)
 }
-clinical_raw <- clinical_raw %>%
-  group_by(patient_num, cohort) %>% 
+stopifnot(all(clinical_raw$in_hospital == 1))
+hospitalisations_seq_df <- clinical_raw %>%
+  distinct(patient_num, cohort, days_since_admission, in_hospital) %>%
+  group_by(patient_num, cohort) %>%
   group_modify(count_sequences_hospitalisation)
+clinical_raw <- left_join(clinical_raw,
+                          hospitalisations_seq_df,
+                          by = c("patient_num", "cohort", "days_since_admission"))
 ```
 
 ## Creating the inputTable
@@ -961,7 +964,7 @@ diagnosis_table1 <- summary_diagnosis %>%
   ) %>%
   pivot_wider( names_from = period, values_from = count) %>% 
   mutate(diag = paste(concept_code, description, sep = ": ")) %>% 
-  select(diag, during_pandemic) %>% 
+  select(diag, before_pandemic, during_pandemic) %>% 
   rename(name = diag)
   
 disorder_table1 <- summary_disorder_group_by_period %>% 
@@ -971,9 +974,7 @@ disorder_table1 <- summary_disorder_group_by_period %>%
   mutate(result = format_counts(count, percentage)) %>% 
   select(-c(count, percentage)) %>% 
   pivot_wider( names_from = period, values_from = result ) %>% 
-  # replace_na( list(early_pandemic = "0 (0 %)", 
-  #                  late_pandemic = "0 (0 %)")) %>% 
-    replace_na( list(during_pandemic = "0 (0 %)")) %>% 
+  replace_na( list(during_pandemic = "0 (0 %)")) %>% 
   rename(name = disorder_group)
 
 
