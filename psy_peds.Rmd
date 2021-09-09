@@ -17,7 +17,7 @@ paket <- function(pak){
   sapply(pak, library, character.only = TRUE)
 }
 
-listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra")
+listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel")
 paket(listOfPackages)
 ```
 
@@ -148,6 +148,16 @@ This transformed table will contain 9 columns:
 
 The last two columns are not available in the input data files. We will generate those counts using the information available in the clinical raw file.  
 
+
+```{r}
+# Adjusting patient age to the time of visit, assuming the age used is the patients' age at the time of extraction (last discharge date available in the data)
+last_data_date <- max(as.Date(demo_raw$last_discharge_date, "%Y-%m-%d"))
+clinical_raw <- left_join(clinical_raw, demo_raw[c("patient_num", "cohort", "age")], by = c("patient_num", "cohort"))
+clinical_raw$age_time_visit <- clinical_raw$age - floor(as.numeric(last_data_date - as.Date(clinical_raw$calendar_date, dateFormat)) / 365.25)
+
+```
+
+
 ## Adding columns with hospitalization number and hospitalization length to the clinical raw file
 ```{r}
 count_sequences_hospitalisation <- function(df, ...) {
@@ -191,7 +201,7 @@ codesToReview <- obs_raw %>% dplyr::filter(concept_type == "DIAG-ICD10",
                                            ! grepl( "[A-Z][0-9][0-9AB]\\.?[0-9A-TV-Z]{0,4}", concept_code))
 print(codesToReview)
 
-### Estimate how many of the mental codes are in the dataset
+### Calculate how many of the mental codes are in the dataset
 mentalHealthCodes <- unique( obs_raw %>%
   dplyr::filter( concept_type == "DIAG-ICD10", 
                  concept_code %in% icdCodes$ICD10_Code ) %>%
