@@ -123,12 +123,16 @@ clinical_raw <- filter(clinical_raw, in_hospital == 1)
 The file containing the ICD10 psychiatric related codes is located in the `public-data` folder of the GitHub repository. 
 
 ```{r}
-icdCodes <- read.csv("public-data/pediatric_psychiatric_ICD10_codes.csv", header = TRUE, colClasses = "character") %>% 
-  rename(disorder_group = Mental.Health.Disorder.Group, 
-         description = Description, 
-         originalCode = ICD10_Code) %>%
-  mutate( ICD10_Code= ifelse( nchar( originalCode) > 3, paste0(substr( originalCode, 1, 3), ".", substr(  originalCode, 4, nchar(originalCode))),originalCode)) %>%
-  select( disorder_group, ICD10_Code, description)
+#icdCodes <- read.csv("public-data/pediatric_psychiatric_ICD10_codes.csv", header = TRUE, colClasses = "character") %>% 
+#  rename(disorder_group = Mental.Health.Disorder.Group, 
+#         description = Description, 
+#         originalCode = ICD10_Code) %>%
+#  mutate( ICD10_Code= ifelse( nchar( originalCode) > 3, paste0(substr( originalCode, 1, 3), ".", substr(  originalCode, 4, nchar(originalCode))),originalCode)) %>%
+#  select( disorder_group, ICD10_Code, description)
+
+icdCodes <- read.csv("public-data/pediatric_psychiatric_ICD10_codesV2.csv", header = TRUE, colClasses = "character") %>%
+   filter( flag %in% c("originalCodes", "FrenchSpecificCodes")) %>%
+   select( disorder_group, ICD10_Code, description )
 ```
 
 
