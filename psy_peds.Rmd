@@ -123,15 +123,12 @@ clinical_raw <- filter(clinical_raw, in_hospital == 1)
 The file containing the ICD10 psychiatric related codes is located in the `public-data` folder of the GitHub repository. 
 
 ```{r}
-#icdCodes <- read.csv("public-data/pediatric_psychiatric_ICD10_codes.csv", header = TRUE, colClasses = "character") %>% 
-#  rename(disorder_group = Mental.Health.Disorder.Group, 
-#         description = Description, 
-#         originalCode = ICD10_Code) %>%
-#  mutate( ICD10_Code= ifelse( nchar( originalCode) > 3, paste0(substr( originalCode, 1, 3), ".", substr(  originalCode, 4, #nchar(originalCode))),originalCode)) %>%
-#  select( disorder_group, ICD10_Code, description)
-icdCodes <- read.csv("public-data/pediatric_psychiatric_ICD10_codesV2.csv", header = TRUE, colClasses = "character") %>%
-  filter( flag %in% c("originalCodes", "FrenchSpecificCodes")) %>%
-  select( disorder_group, ICD10_Code, description )
+icdCodes <- read.csv("public-data/pediatric_psychiatric_ICD10_codes.csv", header = TRUE, colClasses = "character") %>% 
+  rename(disorder_group = Mental.Health.Disorder.Group, 
+         description = Description, 
+         originalCode = ICD10_Code) %>%
+  mutate( ICD10_Code= ifelse( nchar( originalCode) > 3, paste0(substr( originalCode, 1, 3), ".", substr(  originalCode, 4, nchar(originalCode))),originalCode)) %>%
+  select( disorder_group, ICD10_Code, description)
 ```
 
 
@@ -210,8 +207,7 @@ print(codesToReview)
 
 ### Calculate how many of the mental codes are in the dataset
 mentalHealthCodes <- unique( obs_raw %>%
-  dplyr::filter( cohort == "AllAdm",
-                 concept_type == "DIAG-ICD10", 
+  dplyr::filter( concept_type == "DIAG-ICD10", 
                  concept_code %in% icdCodes$ICD10_Code ) %>%
   dplyr::mutate( concept_code = as.character( concept_code ), 
                  concept_length = nchar( concept_code ), 
@@ -237,11 +233,7 @@ clinical_raw <- clinical_raw %>%
                  year = format( date, "%Y"), 
                  period = ifelse( date < pandemic_start_date,
                                   "before_pandemic","during_pandemic")) %>% 
-<<<<<<< HEAD
-  dplyr::filter(cohort == "AllAdm")
-=======
   dplyr::filter(cohort  %in% c("AllAdm"))
->>>>>>> e33bae663cc501bd16ff3a77ae7430f0c3299cc3
 ```
 
 
@@ -262,8 +254,7 @@ all_codes <- obs_raw %>%
   mutate(icd_code_category = ifelse(concept_code %in% icdCodes$ICD10_Code, 
                                "psy", 
                                "others")) %>% 
-  dplyr::filter( cohort == "AllAdm",
-                 concept_type == "DIAG-ICD10", 
+  dplyr::filter( concept_type == "DIAG-ICD10", 
                  in_hospital == 1,
                  age < 18 & age > 10,
                  date >= history_start_date & date <= history_end_date) %>%
@@ -288,49 +279,6 @@ if( raceAvailable == TRUE ){
 
 
 # Data analysis 
-
-## Overview of daily hospitalizations in the site
-
-```{r}
-# using the patient level data
-all_bch_patients <- obs_raw %>% 
-  full_join( clinical_raw,  by = c("patient_num", "cohort", "days_since_admission")) %>%
-  full_join( demo_raw, by = c("patient_num", "cohort")) %>% 
-  dplyr::filter( cohort == "AllAdm",
-                 in_hospital == 1,
-                 age < 18 & age > 10,
-                 date >= history_start_date & date <= history_end_date) %>%
-  dplyr::select( patient_num, cohort, sex, age, concept_type, concept_code, calendar_date,
-                 in_hospital, n_hospitalisation, len_hospitalisation, date, weeks, month, year,
-                 period)
-
-patient_count_per_day <- all_bch_patients[, c("patient_num", "calendar_date")] %>%
-  mutate( calendar_date = as.Date(calendar_date, format=dateFormat)) %>%
-  unique() %>%
-  group_by(calendar_date) %>%
-  tally( )
-
-patient_count_per_day %>%
-  ggplot(aes(x = calendar_date, y = n)) +
-  geom_point()+
-  labs(y = "Counts",
-       x = "Days",
-       title = "Hospitalized patients by day") 
-
-### using the aggregate counts (1.2 data)
-daily_agg <- read.csv("/4ceData/Input/DailyCounts.csv")
-
-daily_agg %>%
-  filter( cohort == "AllAdm") %>%
-  ggplot(aes(x = calendar_date, y = pts_in_hosp_on_this_date)) +
-  geom_point()+
-  #scale_fill_manual() +
-  labs(y = "Counts",
-       x = "Days",
-       title = "Hospitalized patients by day") 
-
-```
-
 
 ## Patients having presented history of mental health related issues before pandemic
 We estimate the number of patients that presented a mental health disorder (grouped by mental health disorder groups - icdCodes$disorder_group):
@@ -614,18 +562,13 @@ encounters_obs <- clinical_raw %>%
   select(patient_num, cohort, days_since_admission, n_hospitalisation) %>% 
   left_join(obs_raw[obs_raw$concept_type == "DIAG-ICD10",], on = c("patient_num", "cohort", "days_since_admission")) %>% 
   drop_na(concept_type) %>% 
-  distinct(patient_num, cohort, n_hospitalisation, concept_type, concept_code) %>% 
-  mutate(psychiatric_code = ifelse(concept_code %in% icdCodes$ICD10_Code, TRUE, FALSE)) %>% 
-  group_by(patient_num, n_hospitalisation) %>% 
-  summarise(psy_encounters = any(psychiatric_code)) %>% 
-  mutate(psy_encounters = ifelse(isTRUE(psy_encounters), "is_psy_encounter", "not_psy_encounter"))
-
+  distinct(patient_num, cohort, n_hospitalisation, concept_type, concept_code)
 
 obs_by_day <- encounters_obs %>% 
-  # filter(concept_code %in% icdCodes$ICD10_Code) %>% 
+  filter(concept_code %in% icdCodes$ICD10_Code) %>% 
   left_join(clinical_raw[clinical_raw$in_hospital == 1, c("patient_num", "cohort", "n_hospitalisation", "calendar_date")], 
             on = c("patient_num", "n_hospitalisation")) %>% 
-  group_by(calendar_date, psy_encounters) %>% 
+  group_by(calendar_date) %>% 
   summarise(patient_count = n_distinct(patient_num, cohort)) %>% 
   mutate(calendar_date = as.Date(calendar_date, format=dateFormat), 
          period = if_else(calendar_date < pandemic_start_date,
@@ -635,22 +578,16 @@ obs_by_day <- encounters_obs %>%
          patient_count = ifelse(patient_count > obfuscation | isFALSE(obfuscation), 
                                  patient_count, 
                                  0.5)
-  ) %>% 
-  pivot_wider(names_from = psy_encounters, 
-              values_from = patient_count) %>% 
-  mutate(percentage = is_psy_encounter / (is_psy_encounter + not_psy_encounter)) %>% 
-  filter(calendar_date <= as.Date("2021-06-01"))
+  )
 
 ggplot(obs_by_day, aes(x = calendar_date,
-                       y = percentage,
+                       y = patient_count,
                        color = period))  +
   geom_line() +
   geom_vline(xintercept = as.Date(pandemic_start_date),
              linetype = "dashed") +
   #geom_vline(xintercept = as.Date(late_pandemic_start_date),
   #           linetype = "dashed") +
-  xlim(as.Date("2019-01-01"), as.Date("2021-05-01")) +
-  ylim(0, 0.4) +
   scale_color_manual(values = cbPalette) +
   labs(x = "Calendar date",
        y = "Patients count", 
@@ -770,49 +707,13 @@ patient_count_per_week_disorder_group %>%
   theme(strip.text.x = element_text(size = 4),
         axis.text.x = element_text(size = 5, angle = 90), 
         axis.text.y = element_text(size = 6), 
-        axis.title.x = element_text(size = 12),
-        axis.title.y = element_text(size = 10),
-        title = element_text(size = 12),
-        plot.subtitle = element_text(size = 11),
-        legend.position = "none") +
-  scale_fill_manual(values = cbPalette[-1])
-
-
-ggsave("output/categorical_counts_inpatient_teens_all.png", width = 18, height = 9, units="cm")
-```
-```{r}
-patient_count_per_week_disorder_group %>%
-  mutate(weeks = as.Date(weeks), 
-         period = if_else(weeks < pandemic_start_date,
-                          "Before the Start of the Pandemic",
-                          "After the Start of the Pandemic"
-         ), 
-         percentage = psychiatric_patient_count * 100 / total_patients
-  ) %>% 
-  filter(disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury")) %>% 
-  ggplot(aes(x = as.Date(weeks), y= percentage, fill = period, group = disorder_group )) +
-  geom_bar(stat = "identity")+
-  geom_vline(xintercept = as.Date(pandemic_start_date),
-             linetype = "dashed") +
-  #geom_vline(xintercept = as.Date(late_pandemic_start_date),
-  #           linetype = "dashed") +
-  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se= TRUE, aes(colour=period), colour= "black", size = 0.5) + 
-  labs(x = "Week",
-       y = "Patient Percentage",
-       title = "Weekly patient percentage with mental health related ICD codes", 
-       subtitle = "Grouped by mental health ICD subcategories") + 
-  ylim(0, NA) + 
-  facet_wrap(. ~ disorder_group, scales = "free_y") +
-  theme(strip.text.x = element_text(size = 10),
-        axis.text.x = element_text(size = 5, angle = 90), 
-        axis.text.y = element_text(size = 6), 
         axis.title.x = element_text(size = 10),
         axis.title.y = element_text(size = 10),
         title = element_text(size = 12),
         plot.subtitle = element_text(size = 11),
         legend.position = "none") +
   scale_fill_manual(values = cbPalette[-1])
-
+ggsave("output/categorical_counts_inpatient_teens_all.png", width = 18, height = 9, units="cm")
 ```
 
 # Summary table 1
