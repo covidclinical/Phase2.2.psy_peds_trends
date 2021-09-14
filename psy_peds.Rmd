@@ -73,7 +73,7 @@ dateFormat <- "%d-%b-%y"
 ```{r}
 # cut-off dates used in the analysis, these should not be changed
 history_start_date <- "2019-01-01"
-history_end_date <- "2021-05-31"
+history_end_date <- "2021-08-31"
 pandemic_start_date <- "2020-03-15"
 ```
 
