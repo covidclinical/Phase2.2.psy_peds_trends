@@ -507,20 +507,20 @@ ts_linear_percent <- lm(percentage ~ period * time, patient_count_monthly_psy)
 time_serie_analysis_plotting(ts_linear_percent, patient_count_monthly_psy) + 
     labs(title = "Interrupted Time-Serie Analysis: Percentage of encounters with psychiatric ICD codes", 
          subtitle = "Without seasonality effect",
-         x = "Percentage", 
-         y = "Month")
+         x = "Month", 
+         y = "Percentage")
 ggsave("output/time_series_percent_linear.png", width = 18, height = 9, units="cm")
 
 ```
 
 ```{r}
 # Time series analysis of percentage of psy codes per encounter, with seasonality
-ts_seasonal_percent <- lm(percentage ~ period*time + harmonic(month_year, 2, 12), patient_count_monthly_psy)
+ts_seasonal_percent <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), patient_count_monthly_psy)
 time_serie_analysis_plotting(ts_seasonal_percent, patient_count_monthly_psy) +
   labs(title = "Interrupted Time-Serie Analysis: Percentage of encounters with psychiatric ICD codes", 
        subtitle = "With seasonality effect",
-       x = "Percentage", 
-       y = "Month")
+       x = "Month", 
+       y = "Percentage")
 ggsave("output/time_series_percent_seasonal.png", width = 18, height = 9, units="cm")
 
 ```
@@ -549,8 +549,8 @@ ggplot(pred_ts_seasonal_count, aes(x = month, y = patients_per_category)) +
   annotate("text", x = as.Date("2019-10-01"), y = max(pred_ts_seasonal_count$patients_per_category) + 5, label = annotation) +
   labs(title = "Interrupted Time-Serie Analysis: Count of encounters with psychiatric ICD codes", 
        subtitle = "With seasonality effect",
-       x = "Percentage", 
-       y = "Month") + 
+       x = "Month", 
+       y = "Count") + 
   theme(legend.position = "bottom")
 ggsave("output/time_series_count_seasonal.png", width = 18, height = 9, units="cm")
 ```
