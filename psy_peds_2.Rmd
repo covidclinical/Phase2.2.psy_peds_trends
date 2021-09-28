@@ -188,14 +188,15 @@ clinical_raw_filter <- clinical_raw %>%
                  period = ifelse( date < pandemic_start_date,
                                   "before_pandemic","during_pandemic")) %>% 
   dplyr::filter(cohort  %in% c("AllAdm"))
-stopifnot(unique(all_codes$in_hospital) == 1)
-stopifnot(unique(all_codes$len_hospitalisation > min_hosp_days))
+
 ```
 
 ```{r}
 all_codes <- clinical_raw_filter %>% 
   left_join( obs_raw,  by = c("patient_num", "cohort", "days_since_admission")) %>%
   filter( concept_type == 'DIAG-ICD10')
+stopifnot(unique(all_codes$in_hospital) == 1)
+stopifnot(unique(all_codes$len_hospitalisation > min_hosp_days))
 ```
 
 ## First estimation: total number of patients without filtering by any disease subtype
@@ -217,7 +218,7 @@ new_hospitalizations_per_week <- new_hospitalizations_per_day %>%
   summarise(count = sum(count))
 
 
-new_hospitalizations_per_month3 <- new_hospitalizations_per_day %>%
+new_hospitalizations_per_month <- new_hospitalizations_per_day %>%
   group_by( month) %>%
   summarise(count = sum(count))
 
@@ -371,3 +372,79 @@ if( raceAvailable == TRUE ){
     left_join( race_raw, by = c("patient_num", "cohort") )
 }
 ```
+
+#### Psychiatric related conditions vs. any other condition
+
+##### New admissions
+
+
+##### Total hospitalizations
+We have estimated the total number of hospitalizations in the previous steps:
+- total_hospitalization_per_day
+- total_hospitalization_per_week
+- total_hospitalization_per_month
+
+We will use these counts to estimate the percentage and to compare total counts, vs psychiatric related conditions. 
+
+```{r}
+total_hospitalizations_per_day_psy <- input_data %>%
+  filter(date < '2021-05-01' &
+         date >= '2019-03-01' ) %>%
+    group_by( date ) %>%
+  summarise(count_psy = n_distinct(patient_num)) %>%
+  left_join( total_hospitalizations_per_day ) %>%
+  mutate( period = ifelse( date < pandemic_start_date,
+                                  "before_pandemic",
+                                 "during_pandemic"), 
+                percentage = count_psy * 100 / count)
+
+thpd_psyPer <- total_hospitalizations_per_day_psy %>%
+  ggplot(aes(x = date, y = percentage, fill = period)) +
+  #geom_line()+
+  scale_fill_manual(values = cbPalette[c(3,4)]) +
+  labs(y = "Percentage",
+       x = "Date (by day)",
+       title = "Percentage of patients with mental health related ICD codes (daily)") + 
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
+
+thpd_psyCount <- total_hospitalizations_per_day_psy %>%
+  pivot_longer(names_to = "counts", cols=c(count_psy, count)) %>%
+  mutate( counts = ifelse( counts == "count_psy", "Psy", "Total")) %>%
+  ggplot(aes(x = date, y = value, fill = counts, color = counts)) +
+  geom_point() +
+  geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Counts",
+       x = "Date (by day)",
+       title = "Daily patient counts with mental health related ICD codes") + 
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
+
+```
+
+We will compare the psychiatric conditions with some other disorders (e.g, digestive, respiratory, etc.)
+We will use these counts to estimate the percentage and to compare total counts, vs psychiatric related conditions. 
+
+```{r}
+total_hospitalizations_per_day_disorder_group <- all_codes_desc %>%
+  filter(date < '2021-05-01' &
+         date >= '2019-03-01' & 
+        icd_description_category %in% c("Psy","Neoplams","Diseases of the respiratory system","Diseases of the digestive system" ))%>%
+    group_by( date, icd_description_category ) %>%
+  summarise(counts = n_distinct(patient_num))
+
+thpd_disorderGroup <- total_hospitalizations_per_day_disorder_group %>%
+  ggplot(aes(x = date, y = counts, fill = icd_description_category, color = icd_description_category)) +
+  #geom_point(alpha=0.2) +
+  geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "patient number",
+       x = "days",
+       title = "Total number of hospitalized patients (daily)") +   
+  theme(axis.text.x = element_text(angle=45, vjust = 1, hjust=1), legend.position = "bottom", legend.text = element_text(size=7), legend.title = element_text(size=7) ) +
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
