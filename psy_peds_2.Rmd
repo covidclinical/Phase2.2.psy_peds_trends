@@ -260,21 +260,23 @@ grid.arrange(nh_day,
 ### Total hospitalize patients
 ```{r, fig.height=12, fig.width=12}
 total_hospitalizations_per_day <- all_codes %>%
-  group_by(patient_num, date ) %>%
   filter(date < '2021-05-01' &
          date >= '2019-03-01' ) %>%
-    group_by( date, weeks, month) %>%
-  summarise(count = n_distinct(patient_num)) %>% 
-  ungroup()
+    group_by( date ) %>%
+  summarise(count = n_distinct(patient_num))
 
-total_hospitalizations_per_week <- total_hospitalizations_per_day %>% 
-  filter(weeks > '2019-03-01') %>% 
+total_hospitalizations_per_week <- all_codes %>%
+  filter(date < '2021-05-01' &
+         date >= '2019-03-01' ) %>%
     group_by( weeks ) %>%
-  summarise(count = sum(count))
+  summarise(count = n_distinct(patient_num))
 
-total_hospitalizations_per_month <- total_hospitalizations_per_day %>%
-  group_by( month ) %>%
-  summarise(count = sum(count))
+total_hospitalizations_per_month <- all_codes %>%
+  filter(date < '2021-05-01' &
+         date >= '2019-03-01' ) %>%
+    group_by( month ) %>%
+  summarise(count = n_distinct(patient_num))
+
 
 
 th_day <- ggplot(total_hospitalizations_per_day, aes(x = date,
