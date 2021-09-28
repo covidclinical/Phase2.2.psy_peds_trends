@@ -61,7 +61,7 @@ Change the values of the following variables according to the specificities of y
 - "dateFormat": specify the format of the date at your site (e.g., for "03-AUG-20", the format would be "%d-%b-%y", [see documentation](https://www.stat.berkeley.edu/~s133/dates.html))
 
 ```{r message=FALSE, warning=FALSE}
-folder_4ce_files <- "/Input/09212021_2/"
+folder_4ce_files <- "Input/09212021_2/"
 obfuscation =  FALSE
 #obfuscation = 3
 raceAvailable = TRUE
@@ -76,6 +76,8 @@ min_hosp_days <- 2
 history_start_date <- "2019-01-01"
 history_end_date <- "2021-05-31"
 pandemic_start_date <- "2020-03-15"
+start_date_plots <- "2019-03-01"
+end_date_plots <- "2021-05-01"
 ```
 
 # Data input
@@ -96,7 +98,7 @@ For sites recording the race, we will also use an additional file:
 source("R/readInputFiles.R")
 
 
-files <- readInputFiles( path      = "../Input/09212021_2/", 
+files <- readInputFiles( path      = folder_4ce_files, 
                          separator = ",",
                          skip      = 0, 
                          verbose   = FALSE )
@@ -111,7 +113,7 @@ clinical_raw <- files[["patientClinicalCourse"]]
 
 ### Read the file containing race information for those sites recording this variable
 if( raceAvailable == TRUE ){
-  race_raw <- read.delim(paste0("../", folder_4ce_files, "/LocalPatientRace.csv"), sep = ",", skip = 0)
+  race_raw <- read.delim(file.path(folder_4ce_files, "/LocalPatientRace.csv"), sep = ",", skip = 0)
 }
 ```
 
@@ -180,20 +182,20 @@ clinical_raw$age_time_visit <- clinical_raw$age - floor(as.numeric(last_data_dat
 clinical_raw <- select(clinical_raw, -age)
 
 clinical_raw_filter <- clinical_raw %>%
-  filter( len_hospitalisation > min_hosp_days) %>%
+  filter( len_hospitalisation > min_hosp_days, 
+          cohort  %in% c("AllAdm")) %>%
   dplyr::mutate( date = as.Date( calendar_date, format = dateFormat ),
                  weeks = as.Date(cut( date, breaks = "week")),
                  month = as.Date(cut( date, breaks = "month")),
                  year = format( date, "%Y"), 
                  period = ifelse( date < pandemic_start_date,
-                                  "before_pandemic","during_pandemic")) %>% 
-  dplyr::filter(cohort  %in% c("AllAdm"))
-
+                                  "before_pandemic", "during_pandemic"))
 ```
 
 ```{r}
+stopifnot(unique(clinical_raw_filter$cohort) == "AllAdm")
 all_codes <- clinical_raw_filter %>% 
-  left_join( obs_raw,  by = c("patient_num", "cohort", "days_since_admission")) %>%
+  left_join( obs_raw,  by = c("patient_num", "days_since_admission")) %>%
   filter( concept_type == 'DIAG-ICD10')
 stopifnot(unique(all_codes$in_hospital) == 1)
 stopifnot(unique(all_codes$len_hospitalisation > min_hosp_days))
@@ -206,14 +208,14 @@ stopifnot(unique(all_codes$len_hospitalisation > min_hosp_days))
 new_hospitalizations_per_day <- all_codes %>%
   group_by(patient_num, n_hospitalisation) %>% slice(which.min(date)) %>%
   filter( in_hospital == 1, 
-         date < '2021-05-01' &
-         date >= '2019-03-01' ) %>%
+         date < end_date_plots &
+         date >= start_date_plots ) %>%
     group_by( date, weeks, month) %>%
   summarise(count = n_distinct(patient_num)) %>% 
   ungroup()
 
 new_hospitalizations_per_week <- new_hospitalizations_per_day %>%
-  filter(weeks >= '2019-03-01') %>% 
+  filter(weeks >= start_date_plots) %>% 
   group_by( weeks) %>%
   summarise(count = sum(count))
 
@@ -261,20 +263,20 @@ grid.arrange(nh_day,
 ### Total hospitalize patients
 ```{r, fig.height=12, fig.width=12}
 total_hospitalizations_per_day <- all_codes %>%
-  filter(date < '2021-05-01' &
-         date >= '2019-03-01' ) %>%
+  filter(date < end_date_plots &
+         date >= start_date_plots ) %>%
     group_by( date ) %>%
   summarise(count = n_distinct(patient_num))
 
 total_hospitalizations_per_week <- all_codes %>%
-  filter(date < '2021-05-01' &
-         date >= '2019-03-01' ) %>%
+  filter(date < end_date_plots &
+         date >= start_date_plots ) %>%
     group_by( weeks ) %>%
   summarise(count = n_distinct(patient_num))
 
 total_hospitalizations_per_month <- all_codes %>%
-  filter(date < '2021-05-01' &
-         date >= '2019-03-01' ) %>%
+  filter(date < end_date_plots &
+         date >= start_date_plots ) %>%
     group_by( month ) %>%
   summarise(count = n_distinct(patient_num))
 
@@ -388,8 +390,8 @@ We will use these counts to estimate the percentage and to compare total counts,
 
 ```{r}
 total_hospitalizations_per_day_psy <- input_data %>%
-  filter(date < '2021-05-01' &
-         date >= '2019-03-01' ) %>%
+  filter(date < end_date_plots &
+         date >= start_date_plots ) %>%
     group_by( date ) %>%
   summarise(count_psy = n_distinct(patient_num)) %>%
   left_join( total_hospitalizations_per_day ) %>%
@@ -406,6 +408,7 @@ thpd_psyPer <- total_hospitalizations_per_day_psy %>%
        x = "Date (by day)",
        title = "Percentage of patients with mental health related ICD codes (daily)") + 
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
+thpd_psyPer
 
 thpd_psyCount <- total_hospitalizations_per_day_psy %>%
   pivot_longer(names_to = "counts", cols=c(count_psy, count)) %>%
@@ -421,6 +424,7 @@ thpd_psyCount <- total_hospitalizations_per_day_psy %>%
        x = "Date (by day)",
        title = "Daily patient counts with mental health related ICD codes") + 
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
+thpd_psyCount
 
 ```
 
@@ -429,8 +433,8 @@ We will use these counts to estimate the percentage and to compare total counts,
 
 ```{r}
 total_hospitalizations_per_day_disorder_group <- all_codes_desc %>%
-  filter(date < '2021-05-01' &
-         date >= '2019-03-01' & 
+  filter(date < end_date_plots &
+         date >= start_date_plots & 
         icd_description_category %in% c("Psy","Neoplams","Diseases of the respiratory system","Diseases of the digestive system" ))%>%
     group_by( date, icd_description_category ) %>%
   summarise(counts = n_distinct(patient_num))
@@ -448,3 +452,5 @@ thpd_disorderGroup <- total_hospitalizations_per_day_disorder_group %>%
        title = "Total number of hospitalized patients (daily)") +   
   theme(axis.text.x = element_text(angle=45, vjust = 1, hjust=1), legend.position = "bottom", legend.text = element_text(size=7), legend.title = element_text(size=7) ) +
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
+thpd_disorderGroup
+```
