@@ -1,0 +1,371 @@
+---
+title: "Hospitalizations for psychiatric conditions among adolescents during the COVID-19 pandemic"
+output:
+  html_document:
+    code_folding: show
+    toc: yes
+    toc_float: yes
+---
+
+
+```{r libraries, message=FALSE, warning=FALSE, results='hide'}
+# Install packages
+paket <- function(pak){
+  new_pak <- pak[!(pak %in% rownames(installed.packages()))]
+  if (length(new_pak)) 
+    install.packages(new_pak, dependencies = TRUE,repos="https://cloud.r-project.org/")
+  sapply(pak, library, character.only = TRUE)
+}
+
+listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel")
+paket(listOfPackages)
+```
+
+# R session information
+```{r}
+sessionInfo()
+```
+
+
+```{r}
+# options(repr.plot.width = 18, repr.plot.height = 9)
+theme_plots <- theme_bw() +
+  theme(strip.text = element_text(size = 5),
+        axis.text.x = element_text(size = 8), 
+        axis.text.y = element_text(size = 6), 
+        axis.title.x = element_text(size = 8),
+        axis.title.y = element_text(size = 8),
+        title = element_text(size = 10),
+        plot.subtitle = element_text(size = 9, face = "italic")) 
+theme_set(theme_plots)
+
+# Colorblind palette
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+
+
+# Inclusion criteria
+The inclusion criteria for this study is:
+- Patients inclusion criteria: 
+  - Age between 11-17 at the date of visit
+- Visits inclusion criteria:
+  - Inpatients (at least one hospitalization > 1 day)
+  - Starting date between January 1st, 2019 and July 31st, 2021
+  - Comprising least one ICD-10 code pertaining to the specified ICD-10 codes list (mental health related codes)
+
+# Variables that need to be checked/modified by each site 
+Change the values of the following variables according to the specificities of your site:
+- "folder_4ce_files": folder path where your phase 2.2 data files are located
+- "obfuscation": determine the obfuscation threshold (FALSE if no obfuscation, or the numeric value of the obfuscation threshold if any)
+- "raceAvailable": set as TRUE or FALSE depending on whether the variable is being collected at your site
+- "dateFormat": specify the format of the date at your site (e.g., for "03-AUG-20", the format would be "%d-%b-%y", [see documentation](https://www.stat.berkeley.edu/~s133/dates.html))
+
+```{r message=FALSE, warning=FALSE}
+folder_4ce_files <- "/Input/09212021_2/"
+obfuscation =  FALSE
+#obfuscation = 3
+raceAvailable = TRUE
+#raceAvailable = FALSE
+dateFormat <- "%d-%b-%y"
+min_hosp_days <- 2
+```
+
+
+```{r}
+# cut-off dates used in the analysis, these should not be changed
+history_start_date <- "2019-01-01"
+history_end_date <- "2021-05-31"
+pandemic_start_date <- "2020-03-15"
+```
+
+# Data input
+We will use as input the 2.2 data files. Specifically: 
+- LocalPatientSummary
+- LocalPatientObservation
+- LocalPatientClinicalcourse
+
+For sites recording the race, we will also use an additional file:
+- LocalPatientRace
+
+## Read csv files
+
+### 4CE phase 2.2 files
+
+```{r message=FALSE, warning=FALSE}
+### Read the CSV input files
+source("R/readInputFiles.R")
+
+
+files <- readInputFiles( path      = "../Input/09212021_2/", 
+                         separator = ",",
+                         skip      = 0, 
+                         verbose   = FALSE )
+  
+## Create the output folder if it doesn't exist
+#if (! "output" %in% list.dirs()) dir.create("output")
+
+### Extract the patient summary and observation information. 
+demo_raw <- files[["patientSummary"]]
+obs_raw <- files[["patientObservations"]]
+clinical_raw <- files[["patientClinicalCourse"]]
+
+### Read the file containing race information for those sites recording this variable
+if( raceAvailable == TRUE ){
+  race_raw <- read.delim(paste0("../", folder_4ce_files, "/LocalPatientRace.csv"), sep = ",", skip = 0)
+}
+```
+
+
+```{r}
+# Adding filtering on in_hospital == 1 here to reduce subsequent compute time
+clinical_raw <- filter(clinical_raw, in_hospital == 1)
+```
+
+### Adding columns with hospitalization number and hospitalization length to the clinical raw file
+```{r}
+count_sequences_hospitalisation <- function(df, ...) {
+  seq_hospitalisation_df <- data.frame(total_span = seq(min(df$days_since_admission),
+                                                        max(df$days_since_admission))
+  ) %>%
+    left_join(df, by = c("total_span" = "days_since_admission")) %>%
+    replace_na(list(in_hospital = 0))
+  count_sequences <- rle(seq_hospitalisation_df$in_hospital)
+  count_sequences_1 <- lapply(count_sequences, function(x) x[count_sequences$values == 1])
+  n_sequences <- seq_along(count_sequences_1$lengths)
+  sequences <- rep.int(n_sequences, count_sequences_1$lengths)
+  sequences_len <- rep.int(count_sequences_1$lengths, count_sequences_1$lengths)
+  stopifnot(length(df$days_since_admission) == length(sequences))
+  data.frame(days_since_admission = df$days_since_admission,
+             n_hospitalisation = sequences,
+             len_hospitalisation = sequences_len)
+}
+stopifnot(all(clinical_raw$in_hospital == 1))
+hospitalisations_seq_df <- clinical_raw %>%
+  distinct(patient_num, cohort, days_since_admission, in_hospital) %>%
+  group_by(patient_num, cohort) %>%
+  group_modify(count_sequences_hospitalisation)
+
+clinical_raw <- left_join(clinical_raw,
+                          hospitalisations_seq_df,
+                          by = c("patient_num", "cohort", "days_since_admission"))
+```
+
+### Read the ICD10 codes file
+The file containing the ICD10 psychiatric related codes is located in the `public-data` folder of the GitHub repository. 
+
+```{r}
+#icdCodes <- read.csv("public-data/pediatric_psychiatric_ICD10_codes.csv", header = TRUE, colClasses = "character") %>% 
+#  rename(disorder_group = Mental.Health.Disorder.Group, 
+#         description = Description, 
+#         originalCode = ICD10_Code) %>%
+#  mutate( ICD10_Code= ifelse( nchar( originalCode) > 3, paste0(substr( originalCode, 1, 3), ".", substr(  originalCode, 4, nchar(originalCode))),originalCode)) %>%
+#  select( disorder_group, ICD10_Code, description)
+
+icdCodes <- read.csv("public-data/pediatric_psychiatric_ICD10_codesV2.csv", header = TRUE, colClasses = "character") %>%
+   filter( flag %in% c("originalCodes", "FrenchSpecificCodes")) %>%
+   select( disorder_group, ICD10_Code, description )
+```
+
+## All cohort
+We are selecting encounters based on the following criteria:
+- associated with at least 1 ICD codes
+- with a duration of hospitalization spanning over at least two consecutive days
+- Starting on or after 2019/01/01
+
+```{r}
+# Adjusting patient age at the time of visit, assuming the age used is the patients' age at the time of extraction (last discharge date available in the data)
+last_data_date <- max(as.Date(demo_raw$last_discharge_date, "%Y-%m-%d"))
+clinical_raw <- left_join(clinical_raw, demo_raw[c("patient_num", "cohort", "age", "sex")], by = c("patient_num", "cohort"))
+clinical_raw$age_time_visit <- clinical_raw$age - floor(as.numeric(last_data_date - as.Date(clinical_raw$calendar_date, dateFormat)) / 365.25)
+clinical_raw <- select(clinical_raw, -age)
+
+clinical_raw_filter <- clinical_raw %>%
+  filter( len_hospitalisation > min_hosp_days) %>%
+  dplyr::mutate( date = as.Date( calendar_date, format = dateFormat ),
+                 weeks = as.Date(cut( date, breaks = "week")),
+                 month = as.Date(cut( date, breaks = "month")),
+                 year = format( date, "%Y"), 
+                 period = ifelse( date < pandemic_start_date,
+                                  "before_pandemic","during_pandemic")) %>% 
+  dplyr::filter(cohort  %in% c("AllAdm"))
+stopifnot(unique(all_codes$in_hospital) == 1)
+stopifnot(unique(all_codes$len_hospitalisation > min_hosp_days))
+```
+
+```{r}
+all_codes <- clinical_raw_filter %>% 
+  left_join( obs_raw,  by = c("patient_num", "cohort", "days_since_admission")) %>%
+  filter( concept_type == 'DIAG-ICD10')
+```
+
+## First estimation: total number of patients without filtering by any disease subtype
+
+### New hospitalizations
+```{r, fig.width=12, fig.height=12}
+new_hospitalizations_per_day <- all_codes %>%
+  group_by(patient_num, n_hospitalisation) %>% slice(which.min(date)) %>%
+  filter( in_hospital == 1, 
+         date < '2021-05-01' &
+         date >= '2019-03-01' ) %>%
+    group_by( date, weeks, month) %>%
+  summarise(count = n_distinct(patient_num)) %>% 
+  ungroup()
+
+new_hospitalizations_per_week <- new_hospitalizations_per_day %>%
+  filter(weeks >= '2019-03-01') %>% 
+  group_by( weeks) %>%
+  summarise(count = sum(count))
+
+
+new_hospitalizations_per_month3 <- new_hospitalizations_per_day %>%
+  group_by( month) %>%
+  summarise(count = sum(count))
+
+
+nh_day <- ggplot(new_hospitalizations_per_day,
+                 aes(x = date, y = count))  +
+  geom_point() +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  theme(axis.text.x=element_text(angle=60, hjust=1))+
+  labs(x = "Calendar date",
+       y = "Patients count", 
+       title = "New admissions (per day)")
+
+nh_week <- ggplot(new_hospitalizations_per_week, aes(x = weeks,
+                       y = count))  +
+  geom_point() +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  theme(axis.text.x=element_text(angle=60, hjust=1))+
+  labs(x = "Calendar date",
+       y = "Patients count", 
+       title = "New admissions (per week)")
+
+nh_month <- ggplot(new_hospitalizations_per_month, aes(x = month,
+                       y = count))  +
+  geom_point() +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  theme(axis.text.x=element_text(angle=60, hjust=1))+
+  labs(x = "Calendar date",
+       y = "Patients count", 
+       title = "New admissions (per month)")
+
+require(gridExtra)
+grid.arrange(nh_day,
+             nh_week,
+             nh_month,
+             ncol=1)
+```
+
+
+### Total hospitalize patients
+```{r, fig.height=12, fig.width=12}
+total_hospitalizations_per_day <- all_codes %>%
+  group_by(patient_num, date ) %>%
+  filter(date < '2021-05-01' &
+         date >= '2019-03-01' ) %>%
+    group_by( date, weeks, month) %>%
+  summarise(count = n_distinct(patient_num)) %>% 
+  ungroup()
+
+total_hospitalizations_per_week <- total_hospitalizations_per_day %>% 
+  filter(weeks > '2019-03-01') %>% 
+    group_by( weeks ) %>%
+  summarise(count = sum(count))
+
+total_hospitalizations_per_month <- total_hospitalizations_per_day %>%
+  group_by( month ) %>%
+  summarise(count = sum(count))
+
+
+th_day <- ggplot(total_hospitalizations_per_day, aes(x = date,
+                       y = count))  +
+  geom_line() +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  theme(axis.text.x=element_text(angle=60, hjust=1))+
+  labs(x = "Calendar date",
+       y = "Patients count", 
+       title = "Total admissions (per day)")
+
+th_week <- ggplot(total_hospitalizations_per_week, aes(x = weeks,
+                       y = count))  +
+  geom_line() +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  theme(axis.text.x=element_text(angle=60, hjust=1))+
+  labs(x = "Calendar date",
+       y = "Patients count", 
+       title = "Total admissions (per week)")
+
+th_month <- ggplot(total_hospitalizations_per_month, aes(x = month,
+                       y = count))  +
+  geom_line() +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  theme(axis.text.x=element_text(angle=60, hjust=1))+
+  labs(x = "Calendar date",
+       y = "Patients count", 
+       title = "Currently hospitalized patients (per month)")
+
+require(gridExtra)
+grid.arrange(th_day, th_week, th_month, ncol=1)
+```
+
+## Second estimation: total number of patients filtering by psychiatric disorders
+## Creating the inputTable
+Creation of the inputTable that will be the only table used throughout the rest of the analysis
+- selecting only visits with at least one ICD codes pertaining to the mental health categories
+- filter visits where patients are between 11 and 17 years old
+- add the demographic and hospitalization related information 
+- add the ICD code description and the related disorder group
+
+
+### Check that we have patients with the ICD10 mental codes
+```{r}
+### check that the ICD codes follow the regular expression [A-Z][0-9][0-9AB]\.?[0-9A-TV-Z]{0,4}
+codesToReview <- obs_raw %>% dplyr::filter(concept_type == "DIAG-ICD10",
+                                           ! grepl( "[A-Z][0-9][0-9AB]\\.?[0-9A-TV-Z]{0,4}", concept_code))
+print(codesToReview)
+
+### Calculate how many of the mental codes are in the dataset
+mentalHealthCodes <- unique( all_codes %>%
+  dplyr::filter( concept_type == "DIAG-ICD10", 
+                 concept_code %in% icdCodes$ICD10_Code ) %>%
+  dplyr::mutate( concept_code = as.character( concept_code ), 
+                 concept_length = nchar( concept_code ), 
+                 concept_check = ifelse( concept_length == 4 | concept_length > 8, "Check", "OK")) %>%
+  dplyr::select( concept_code, concept_length, concept_check) )
+
+summary(as.factor( mentalHealthCodes$concept_check ) )
+
+print( paste0("There are ", length(mentalHealthCodes$concept_code), " ICD10 mental codes out of the total ",length(unique(icdCodes$ICD10_Code)), " in the dataset"))
+```
+
+### Add the mental ICD code description and filter 
+```{r message=FALSE, warning=FALSE}
+# Getting site name, will be used later in the analysis
+site <- unique(as.character(demo_raw$siteid))
+
+icdCategory <- read.delim("public-data/icd10Codes.txt", header = FALSE, colClasses = "character")
+colnames(icdCategory) <- c("icd_code_letter", "icd_description_category")
+
+all_codes_desc <- all_codes %>% 
+    left_join( icdCodes, by=c("concept_code" = "ICD10_Code") ) %>%
+  mutate(icd_code_category = ifelse(concept_code %in% icdCodes$ICD10_Code, 
+                               "psy", 
+                               "others")) %>%
+  dplyr::select( patient_num, cohort, sex, age_time_visit, concept_type, concept_code, calendar_date,
+                 in_hospital, n_hospitalisation, len_hospitalisation, date, weeks, month, year,
+                 period, disorder_group, description, icd_code_category )
+
+all_codes_desc <- all_codes_desc %>% 
+  mutate( icd_code_letter = ifelse(substr(concept_code, 1, 1) %in% c("D", "H"), substr(concept_code, 1, 2), substr(concept_code, 1, 1) ))
+
+all_codes_desc <- left_join( all_codes_desc, icdCategory) %>%
+  mutate( icd_description_category = replace_na( ifelse( concept_code %in% icdCodes$ICD10_Code, "Psy", icd_description_category), "Others")) 
+
+input_data <- all_codes_desc %>% 
+  filter(concept_code %in% icdCodes$ICD10_Code)
+
+if( raceAvailable == TRUE ){
+  input_data <- input_data %>%
+    left_join( race_raw, by = c("patient_num", "cohort") )
+}
+```

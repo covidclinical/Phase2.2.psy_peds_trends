@@ -61,7 +61,7 @@ Change the values of the following variables according to the specificities of y
 - "dateFormat": specify the format of the date at your site (e.g., for "03-AUG-20", the format would be "%d-%b-%y", [see documentation](https://www.stat.berkeley.edu/~s133/dates.html))
 
 ```{r message=FALSE, warning=FALSE}
-folder_4ce_files <- "Input"
+folder_4ce_files <- "/Input/09212021_2/"
 obfuscation =  FALSE
 #obfuscation = 3
 raceAvailable = TRUE
@@ -72,7 +72,7 @@ dateFormat <- "%d-%b-%y"
 
 ```{r}
 # cut-off dates used in the analysis, these should not be changed
-history_start_date <- "2017-01-01"
+history_start_date <- "2019-01-01"
 history_end_date <- "2021-05-31"
 pandemic_start_date <- "2020-03-15"
 ```
@@ -94,13 +94,14 @@ For sites recording the race, we will also use an additional file:
 ### Read the CSV input files
 source("R/readInputFiles.R")
 
-files <- readInputFiles( path      = folder_4ce_files, 
+
+files <- readInputFiles( path      = "../Input/09212021_2/", 
                          separator = ",",
                          skip      = 0, 
                          verbose   = FALSE )
   
 ## Create the output folder if it doesn't exist
-if (! "output" %in% list.dirs()) dir.create("output")
+#if (! "output" %in% list.dirs()) dir.create("output")
 
 ### Extract the patient summary and observation information. 
 demo_raw <- files[["patientSummary"]]
@@ -109,7 +110,7 @@ clinical_raw <- files[["patientClinicalCourse"]]
 
 ### Read the file containing race information for those sites recording this variable
 if( raceAvailable == TRUE ){
-  race_raw <- read.delim(paste0( folder_4ce_files, "/LocalPatientRace.csv"), sep = ",", skip = 0)
+  race_raw <- read.delim(paste0("../", folder_4ce_files, "/LocalPatientRace.csv"), sep = ",", skip = 0)
 }
 ```
 
@@ -188,6 +189,29 @@ hospitalisations_seq_df <- clinical_raw %>%
 clinical_raw <- left_join(clinical_raw,
                           hospitalisations_seq_df,
                           by = c("patient_num", "cohort", "days_since_admission"))
+
+new_hospitalizations_per_day <- clinical_raw %>%
+group_by(patient_num, n_hospitalisation) %>% slice(which.min(as.Date(calendar_date, dateFormat))) 
+
+newhosp <- new_hospitalizations_per_day %>%
+    filter( in_hospital == 1, 
+          as.Date( calendar_date, dateFormat ) < '2021-05-01' &
+           as.Date( calendar_date, dateFormat ) > '2019-03-01' ) %>%
+    group_by( calendar_date) %>%
+  summarise(count = n_distinct(patient_num))
+
+ggplot(newhosp, aes(x = as.Date(calendar_date, dateFormat),
+                       y = count))  +
+  geom_point() +
+  scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
+  theme(axis.text.x=element_text(angle=60, hjust=1))+
+  labs(x = "Calendar date",
+       y = "Patients count", 
+       title = "New daily admissions (2.2 data)")
+
+
+xx <- clinical_raw[ , .SD[which.min(as.Date(calendar_date, dateFormat))], by = c(n_hospitalization, patient_num)]
+
 ```
 
 ## Creating the inputTable
