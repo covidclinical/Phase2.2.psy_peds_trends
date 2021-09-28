@@ -284,9 +284,9 @@ all_codes <- obs_raw %>%
                                "others")) %>% 
   dplyr::filter( concept_type == "DIAG-ICD10", 
                  in_hospital == 1,
-                 age < 18 & age > 10,
+                 age_time_visit < 18 & age_time_visit > 10,
                  date >= history_start_date & date <= history_end_date) %>%
-  dplyr::select( patient_num, cohort, sex, age, concept_type, concept_code, calendar_date,
+  dplyr::select( patient_num, cohort, sex, age, age_time_visit, concept_type, concept_code, calendar_date,
                  in_hospital, n_hospitalisation, len_hospitalisation, date, weeks, month, year,
                  period, disorder_group, description, icd_code_category )
 
@@ -531,20 +531,20 @@ ts_linear_percent <- lm(percentage ~ period * time, patient_count_monthly_psy)
 time_serie_analysis_plotting(ts_linear_percent, patient_count_monthly_psy) + 
     labs(title = "Interrupted Time-Serie Analysis: Percentage of encounters with psychiatric ICD codes", 
          subtitle = "Without seasonality effect",
-         x = "Percentage", 
-         y = "Month")
+         x = "Month", 
+         y = "Percentage")
 ggsave("output/time_series_percent_linear.png", width = 18, height = 9, units="cm")
 
 ```
 
 ```{r}
 # Time series analysis of percentage of psy codes per encounter, with seasonality
-ts_seasonal_percent <- lm(percentage ~ period*time + harmonic(month_year, 2, 12), patient_count_monthly_psy)
+ts_seasonal_percent <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), patient_count_monthly_psy)
 time_serie_analysis_plotting(ts_seasonal_percent, patient_count_monthly_psy) +
   labs(title = "Interrupted Time-Serie Analysis: Percentage of encounters with psychiatric ICD codes", 
        subtitle = "With seasonality effect",
-       x = "Percentage", 
-       y = "Month")
+       x = "Month", 
+       y = "Percentage")
 ggsave("output/time_series_percent_seasonal.png", width = 18, height = 9, units="cm")
 
 ```
@@ -573,8 +573,8 @@ ggplot(pred_ts_seasonal_count, aes(x = month, y = patients_per_category)) +
   annotate("text", x = as.Date("2019-10-01"), y = max(pred_ts_seasonal_count$patients_per_category) + 5, label = annotation) +
   labs(title = "Interrupted Time-Serie Analysis: Count of encounters with psychiatric ICD codes", 
        subtitle = "With seasonality effect",
-       x = "Percentage", 
-       y = "Month") + 
+       x = "Month", 
+       y = "Count") + 
   theme(legend.position = "bottom")
 ggsave("output/time_series_count_seasonal.png", width = 18, height = 9, units="cm")
 ```
@@ -676,11 +676,12 @@ ggsave("output/overall_weekly_count_all.png", width = 18, height = 9, units="cm"
 ### Patients count per week aggregated by age group 
 This graphic will only make sense if we include a wide range of age. 
 
+
 ```{r}
 #estimate the number of patients per week by age group
-input_data[, c("patient_num", "cohort", "age","weeks")] %>%
+input_data[, c("patient_num", "cohort", "age_time_visit","weeks")] %>%
   unique() %>%
-  mutate( age_group = ifelse( age < 15, "early adolescence (11-14 years)", "middle adolescence (15-17 years)")) %>%
+  mutate( age_group = ifelse( age_time_visit < 15, "early adolescence (11-14 years)", "middle adolescence (15-17 years)")) %>%
   group_by(weeks, age_group) %>%
   tally() %>%
   mutate(n = ifelse( n > obfuscation, n, obfuscation * 0.5))  %>%
@@ -773,16 +774,23 @@ t.test2 <- function(m1, m2, s1, s2, n1, n2) {
 ## Age
 ```{r}
 age_stats <- input_data %>%
-  dplyr::distinct(patient_num, cohort, period, age) %>%
-  filter(age != 0) %>% 
+  dplyr::group_by(patient_num, cohort, period) %>% 
+  dplyr::filter(age_time_visit == max(age_time_visit)) %>%
+  dplyr::ungroup() %>% 
+  dplyr::distinct(patient_num, cohort, period, age_time_visit) %>% 
+  dplyr::filter(age_time_visit != 0) %>% 
   dplyr::group_by( period ) %>% 
-  dplyr::summarise( mean = mean( age ), 
-                    sd = sd( age ), 
+  dplyr::summarise( mean = mean( age_time_visit ), 
+                    sd = sd( age_time_visit ), 
                     count = n()) %>% 
   dplyr::mutate(count = ifelse( count > obfuscation, count, obfuscation * 0.5)) %>%
   dplyr::ungroup() %>% 
   dplyr::bind_rows(
-    dplyr::summarise(input_data, period="Total", mean=mean(age), sd=sd(age), count = n())
+    dplyr::summarise(input_data,
+                     period="Total",
+                     mean = mean(age_time_visit),
+                     sd = sd(age_time_visit),
+                     count = n())
   )
 
 age_test <- t.test2(m1 = age_stats[[1, "mean"]], 
