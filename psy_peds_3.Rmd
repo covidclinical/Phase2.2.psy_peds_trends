@@ -351,22 +351,19 @@ observation_table_ado <- filter(observation_table, age_time_diagnosis >= 11 & ag
 
 clinical_test <- clinical_table[, c("patient_num", "n_hospitalisation", "days_since_admission")] %>% 
   inner_join(distinct(observation_table_ado, patient_num, days_since_admission, age_time_diagnosis), 
-            by = c("patient_num", "days_since_admission"))
+            by = c("patient_num", "days_since_admission")) %>% 
+  select(patient_num, n_hospitalisation, age_time_diagnosis)
 
 clinical_table_ado <- clinical_table %>% 
   inner_join(clinical_test[, c("patient_num", "n_hospitalisation", "age_time_diagnosis")],
              by = c("patient_num", "n_hospitalisation"))
   
-observation_table_ado <- clinical_table %>% 
-  inner_join(observation_table[, c("patient_num", "days_since_admission")], 
-             by = c("patient_num", "days_since_admission"))
-
 # Filtering observation tables which patient_num are still in clinical table after filtering on age
 demographic_table_ado <- demographic_table %>% 
   inner_join(distinct(clinical_table_ado, patient_num), by = "patient_num")
 
 all_codes_ado <- all_codes %>% 
-   filter(age_time_visit >= 11 & age_time_visit <= 17)
+   filter(age_time_diagnosis >= 11 & age_time_diagnosis <= 17)
 
 head(observation_table_ado)
 head(clinical_table_ado)
