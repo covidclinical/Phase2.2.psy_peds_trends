@@ -384,29 +384,6 @@ stopifnot(nrow(distinct(all_codes_ado, patient_num, days_since_admission)) == nr
 ```
 
 
-```{r}
-
-# Steps necessary to filter rows:
-  # - encounters without ICD
-  # - ICD diagnosed outside of encounters
-  # - patients from the patients table that don't have any encounters matching the criteria
-clinical_table <- clinical_filtered %>% 
-  inner_join( distinct(obs_filtered, patient_num, days_since_admission),  by = c("patient_num", "days_since_admission")) %>% 
-  distinct(patient_num, n_hospitalisation) %>% 
-  inner_join(clinical_filtered, by = c("patient_num", "n_hospitalisation"))
-# Adding new columns
-observation_table <- obs_filtered %>% 
-  inner_join(clinical_table[, c("patient_num", "days_since_admission")], by = c("patient_num", "days_since_admission"))
-demographic_table <- demo_raw %>% 
-  inner_join(distinct(clinical_table, patient_num), by = "patient_num")
-all_codes <- observation_table %>% 
-   inner_join(clinical_table, by = c("patient_num", "days_since_admission")) 
-#%>% 
-#   inner_join(dplyr::select(demographic_table, -days_since_admission), by = c("patient_num"))
-
-```
-
-
 ### Total hospitalize patients
 
 ```{r, fig.height=12, fig.width=12}
