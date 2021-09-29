@@ -61,7 +61,7 @@ Change the values of the following variables according to the specificities of y
 - "dateFormat": specify the format of the date at your site (e.g., for "03-AUG-20", the format would be "%d-%b-%y", [see documentation](https://www.stat.berkeley.edu/~s133/dates.html))
 
 ```{r message=FALSE, warning=FALSE}
-folder_4ce_files <- "Input/09212021_2/"
+folder_4ce_files <- "../Input/09212021_2/"
 obfuscation =  FALSE
 #obfuscation = 3
 raceAvailable = TRUE
@@ -95,7 +95,7 @@ For sites recording the race, we will also use an additional file:
 
 ```{r message=FALSE, warning=FALSE}
 ### Read the CSV input files
-source("R/readInputFiles.R")
+source("./R/readInputFiles.R")
 
 
 files <- readInputFiles( path      = folder_4ce_files, 
