@@ -31,4 +31,4 @@ Then open the file psy_peds_3.Rmd and go to the section “Variables that need t
 %Y 4-digit year (e.g., 2007)
 
 
-After all these changes are done, run the psy_peds.Rmd, as an output an html file named: psy_peds.Rmd.html and four png files will be generated in the output folder. 
+After all these changes are done, run the psy_peds_3.Rmd, as an output an html file named: psy_peds_3.Rmd.html and four png files will be generated in the output folder. 
