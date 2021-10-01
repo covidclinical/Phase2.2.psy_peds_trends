@@ -91,7 +91,7 @@ raceAvailable = TRUE
 dateFormat <- "%d-%b-%y"
 min_hosp_days <- 2
 data_update_date <- "2021-06-05"
-time_period <-"weeks" #possible values: days, weeks, months
+time_period <-"months" #possible values: days, weeks, months
 ```
 
 ```{r}
@@ -533,6 +533,7 @@ thpd_psyCount
 
 ```
 
+##### Percentage 
 ```{r}
 thpd_psyPer <- count_icd %>%
   ggplot(aes(x = time_p, y = percentage_psy, fill=period)) +
@@ -546,6 +547,57 @@ thpd_psyPer <- count_icd %>%
   geom_point()
 thpd_psyPer
 ```
+##### Ratio: patients with psychiatric condition / patients without psychiatric condition
+
+### Total patients hospitalized comparing psychiatric disorders vs other
+
+
+```{r}
+all_patients <- unique( all_codes_desc[, c("patient_num", "time_p")])
+patients_with_psy_conditions <- unique( all_codes_psy[, c("patient_num", "time_p")] )
+patients_without_psy_conditions <- setdiff(all_patients,patients_with_psy_conditions)
+
+patients_without_psy_conditions_counts <- patients_without_psy_conditions %>%
+  group_by( time_p ) %>%
+  summarise(count_no_psy_patients =  ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                               n_distinct(patient_num), 
+                               0.5)) %>%
+  mutate( period = ifelse( time_p < pandemic_start_date,
+                           "before_pandemic",
+                           "during_pandemic"))
+
+
+patients_with_psy_conditions_counts <-  patients_with_psy_conditions %>%
+  group_by( time_p ) %>%
+  summarise(count_psy_patients =  ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                               n_distinct(patient_num), 
+                               0.5)) %>%
+  mutate( period = ifelse( time_p < pandemic_start_date,
+                           "before_pandemic",
+                           "during_pandemic"))
+
+ratios_patients_with_without_psy <- patients_without_psy_conditions_counts %>%
+  full_join( patients_with_psy_conditions_counts, by=c("time_p", "period")) %>%
+  mutate( ratio = count_psy_patients/count_no_psy_patients)
+
+
+
+ratio_psy_non_psy <- ratios_patients_with_without_psy %>%
+  ggplot(aes(x = time_p, y = ratio, fill = period, color = period)) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Ratio (with psy conditions/without psy conditions)",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Ratio patient with vs without psychiatric conditions ( per ", time_period,")"))
+
+ratio_psy_non_psy
+
+```
+
+
 
 #### Psychiatric conditions aggregating by suptype
 
