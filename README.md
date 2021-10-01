@@ -12,7 +12,7 @@ Analysis developed with the aim of using the 2.2 4CE consortium data
 ## How to run this code?
 First, clone the repository: git clone https://github.com/covidclinical/Phase2.2.psy_peds_trends
 
-Then open the file psy_peds.Rmd and go to the section “Variables that need to be checked/modified by each site”:
+Then open the file psy_peds_3.Rmd and go to the section “Variables that need to be checked/modified by each site”:
 - change the folder_4ce_files to the directory where your phase 2.2 data is located
 - determine the obfuscation threshold: 
     - obfuscation = FALSE if no obfuscation
