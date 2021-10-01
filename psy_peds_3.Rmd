@@ -91,6 +91,7 @@ raceAvailable = TRUE
 dateFormat <- "%d-%b-%y"
 min_hosp_days <- 2
 data_update_date <- "2021-06-05"
+time_period <-"weeks" #possible values: days, weeks, months
 ```
 
 ```{r}
@@ -254,7 +255,17 @@ clinical_filtered <- clinical_raw %>%
                  year = format( date, "%Y"), 
                  period = ifelse( date < pandemic_start_date,
                                   "before_pandemic", "during_pandemic"))
+
+clinical_filtered$time_p <- NA
+if( time_period == "weeks"){
+  clinical_filtered$time_p <- clinical_filtered$weeks
+}else if(time_period == "days"){
+  clinical_filtered$time_p <- clinical_filtered$date
+}else if(time_period == "months"){
+  clinical_filtered$time_p <- clinical_filtered$month
+  }
 ```
+
 
 ```{r}
 # Steps necessary to filter rows:
@@ -313,26 +324,26 @@ admission_plot_count <- function(df,
 ### New hospitalizations
 
 ```{r}
-
-new_hospitalizations_per_week <- clinical_table %>%
+new_hospitalizations <- clinical_table %>%
   group_by(patient_num, n_hospitalisation) %>%
-  slice(which.min(weeks)) %>%
+  slice(which.min(time_p)) %>%
   filter( in_hospital == 1 ) %>%
-    group_by( weeks ) %>%
-  summarise(count = n_distinct(patient_num)) %>% 
+    group_by( time_p ) %>%
+  summarise(count = ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                               n_distinct(patient_num), 
+                               0.5)) %>% 
   ungroup()
-
 
 start_date_plots <- as.Date("2019-01-01")
 end_date_plots <- as.Date("2021-05-24")
 
-nh_week <- admission_plot_count(df = new_hospitalizations_per_week, 
-                     x = "weeks",
+nh <- admission_plot_count(df = new_hospitalizations, 
+                     x = "time_p",
                      y = "count", 
-                     title = "New admissions (per week)", 
+                     title = paste0("New admissions (per ", time_period,")"), 
                      y_title = "Patient Count")
 
-nh_week
+nh
 ```
 
 
@@ -378,23 +389,50 @@ stopifnot(nrow(distinct(all_codes_ado, patient_num, n_hospitalisation)) == nrow(
 stopifnot(nrow(distinct(all_codes_ado, patient_num, days_since_admission)) == nrow(distinct(observation_table_ado, patient_num, days_since_admission)))
 ```
 
+### New admissions age range 11-17
+
+```{r}
+new_hospitalizations_ado <- clinical_table_ado %>%
+  group_by(patient_num, n_hospitalisation) %>%
+  slice(which.min(time_p)) %>%
+  filter( in_hospital == 1 ) %>%
+    group_by( time_p ) %>%
+  summarise(count = ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                               n_distinct(patient_num), 
+                               0.5)) %>% 
+  ungroup()
+
+start_date_plots <- as.Date("2019-01-01")
+end_date_plots <- as.Date("2021-05-24")
+
+nh_ado <- admission_plot_count(df = new_hospitalizations_ado, 
+                     x = "time_p",
+                     y = "count", 
+                     title = paste0("New admissions (per ", time_period, ")"), 
+                     y_title = "Patient Count")+
+    labs( subtitle = "(age range 11-17)")
+
+nh_ado
+```
 
 ### Total hospitalize patients age range 11-17
 
 ```{r}
-unique_patients_hospitalized_per_week <- clinical_table_ado %>%
+unique_patients_hospitalized <- clinical_table_ado %>%
   filter(date < end_date_plots &
          date >= start_date_plots ) %>%
-    group_by( weeks ) %>%
-  summarise(count = n_distinct(patient_num))
+    group_by( time_p ) %>%
+  summarise(count = ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                               n_distinct(patient_num), 
+                               0.5))
 
-th_week <- admission_plot_count(df = unique_patients_hospitalized_per_week, 
-                     x = "weeks",
+th <- admission_plot_count(df = unique_patients_hospitalized, 
+                     x = "time_p",
                      y = "count", 
-                     title = "Total hospitalization (per week)", 
+                     title = paste0("Total hospitalization (per ", time_period, ")"), 
                      y_title = "Patient Count") +
   labs( subtitle = "(age range 11-17)")
-th_week
+th
 ```
 
 
@@ -424,7 +462,7 @@ all_codes_desc <- all_codes_ado %>%
                                "others")) %>%
   dplyr::select( patient_num, sex, age_time_diagnosis, concept_type, concept_code, calendar_date,
                  in_hospital, n_hospitalisation, len_hospitalisation, date, weeks, month, year,
-                 period, disorder_group, description, icd_code_category )
+                 period, time_p, disorder_group, description, icd_code_category )
 
 all_codes_desc <- all_codes_desc %>% 
   mutate( icd_code_letter = ifelse(substr(concept_code, 1, 1) %in% c("D", "H"), substr(concept_code, 1, 2), substr(concept_code, 1, 1) ))
@@ -445,38 +483,42 @@ if( raceAvailable == TRUE ){
 
 
 ```{r}
-count_icd_per_week_psy <- all_codes_psy %>%
+count_icd_psy <- all_codes_psy %>%
   filter(date < end_date_plots &
          date >= start_date_plots ) %>%
-    group_by( weeks ) %>%
-  summarise(count_psy = n_distinct(patient_num)) %>%
-  mutate( period = ifelse( weeks < pandemic_start_date,
+    group_by( time_p ) %>%
+  summarise(count_psy =  ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                               n_distinct(patient_num), 
+                               0.5)) %>%
+  mutate( period = ifelse( time_p < pandemic_start_date,
                            "before_pandemic",
                            "during_pandemic")
   )
 
-count_icd_per_week <- all_codes_desc %>%
+count_icd <- all_codes_desc %>%
   filter(date < end_date_plots &
          date >= start_date_plots ) %>%
-    group_by( weeks ) %>%
-  summarise(count_icd = n_distinct(patient_num)) %>%
-  mutate( period = ifelse( weeks < pandemic_start_date,
+    group_by( time_p ) %>%
+  summarise(count_icd =  ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                               n_distinct(patient_num), 
+                               0.5)) %>%
+  mutate( period = ifelse( time_p < pandemic_start_date,
                            "before_pandemic",
                            "during_pandemic")
   )
 
-count_icd_per_week <- count_icd_per_week %>%
-  left_join(count_icd_per_week_psy, 
-            by = c("weeks", "period")) %>% 
+count_icd <- count_icd %>%
+  left_join(count_icd_psy, 
+            by = c("time_p", "period")) %>% 
   replace_na(list(count_psy = 0))
 
-count_icd_per_week$percentage_psy <- 100*count_icd_per_week$count_psy / count_icd_per_week$count_icd
+count_icd$percentage_psy <- 100*count_icd$count_psy / count_icd$count_icd
 
 
-thpd_psyCount <- count_icd_per_week %>%
+thpd_psyCount <- count_icd %>%
   pivot_longer(names_to = "counts", cols=c(count_psy, count_icd)) %>%
   mutate( counts = ifelse( counts == "count_psy", "Psy", "Total")) %>%
-  ggplot(aes(x = weeks, y = value, fill = counts, color = counts)) +
+  ggplot(aes(x = time_p, y = value, fill = counts, color = counts)) +
   geom_point() +
   # geom_line() +
   geom_vline(xintercept = as.Date(pandemic_start_date),
@@ -484,22 +526,22 @@ thpd_psyCount <- count_icd_per_week %>%
   scale_fill_manual(values = cbPalette) +
   scale_color_manual(values = cbPalette) +
   labs(y = "Counts",
-       x = "Date (by week)",
-       title = "Weekly patient counts with mental health related ICD codes") + 
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Per ", time_period , " patient counts with mental health related ICD codes")) + 
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
 thpd_psyCount
 
 ```
 
 ```{r}
-thpd_psyPer <- count_icd_per_week %>%
-  ggplot(aes(x = weeks, y = percentage_psy, fill=period)) +
+thpd_psyPer <- count_icd %>%
+  ggplot(aes(x = time_p, y = percentage_psy, fill=period)) +
   scale_fill_manual(values = cbPalette[c(3,4)]) +
   geom_vline(xintercept = as.Date(pandemic_start_date),
              linetype = "dashed") +
   labs(y = "Percentage",
-       x = "Date (by week)",
-       title = "Percentage of patients with mental health related ICD codes (weekly)") + 
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Percentage of patients with mental health related ICD codes (per ", time_period,")")) + 
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)+
   geom_point()
 thpd_psyPer
@@ -507,28 +549,30 @@ thpd_psyPer
 
 #### Psychiatric conditions aggregating by suptype
 
-##### Total hospitalizations Per week
+##### Total hospitalizations
 
 ```{r}
-count_disorder_group_per_week <- all_codes_psy %>%
+count_disorder_group <- all_codes_psy %>%
   filter(date < end_date_plots &
          date >= start_date_plots ) %>%
-    group_by( weeks, disorder_group ) %>%
-  summarise(count_dg = n_distinct(patient_num)) %>%
-  mutate( period = ifelse( weeks < pandemic_start_date,
+    group_by( time_p, disorder_group ) %>%
+  summarise(count_dg =  ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                               n_distinct(patient_num), 
+                               0.5)) %>%
+  mutate( period = ifelse( time_p < pandemic_start_date,
                            "before_pandemic",
                            "during_pandemic")
   )
 
-dg_per_week <- count_disorder_group_per_week %>%  
-  ggplot(aes(x = weeks, y= count_dg, fill = period, group = disorder_group )) +
+dg <- count_disorder_group %>%  
+  ggplot(aes(x = time_p, y= count_dg, fill = period, group = disorder_group )) +
   geom_bar(stat = "identity")+
   geom_vline(xintercept = as.Date(pandemic_start_date),
              linetype = "dashed") +
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se= TRUE, aes(colour=period), colour= "black", size = 0.5) + 
-  labs(x = "Weeks",
+  labs(x = time_period,
        y = "Patient Count",
-       title = "Weekly patient counts with mental health related ICD codes", 
+       title = paste0("Per ", time_period, " patient counts with mental health related ICD codes"), 
        subtitle = "Grouped by mental health ICD subcategories") + 
   ylim(0, NA) + 
   facet_wrap(. ~ disorder_group, scales = "free_y") +
@@ -542,40 +586,42 @@ dg_per_week <- count_disorder_group_per_week %>%
         legend.position = "none") +
   scale_fill_manual(values = cbPalette[-1])
 
-dg_per_week
+dg
 ```
 
 Percentage using as denominator total number of patients
 
 ```{r}
-# estimate the weekly counts
-count_icd_per_week <- all_codes_desc %>%
+# estimate the counts
+count_icd <- all_codes_desc %>%
   filter(date < end_date_plots &
          date >= start_date_plots ) %>%
-    group_by( weeks ) %>%
-  summarise(count_icd = n_distinct(patient_num)) %>%
-  mutate( period = ifelse( weeks < pandemic_start_date,
+    group_by( time_p ) %>%
+  summarise(count_icd =  ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                               n_distinct(patient_num), 
+                               0.5)) %>%
+  mutate( period = ifelse( time_p < pandemic_start_date,
                            "before_pandemic",
                            "during_pandemic")
   )
 
 # join the total with the disorder group count to estimate the percentage
-perc_disorder_group_per_week <- count_icd_per_week %>%
-  left_join(count_disorder_group_per_week, 
-            by = c("weeks", "period")) %>% 
+perc_disorder_group <- count_icd %>%
+  left_join(count_disorder_group, 
+            by = c("time_p", "period")) %>% 
   replace_na(list(count_dg = 0))
 
-perc_disorder_group_per_week$percentage_dg <- 100*perc_disorder_group_per_week$count_dg / perc_disorder_group_per_week$count_icd
+perc_disorder_group$percentage_dg <- 100*perc_disorder_group$count_dg / perc_disorder_group$count_icd
 
-dgPerc_per_week <- perc_disorder_group_per_week %>%  
-  ggplot(aes(x = weeks, y= percentage_dg, fill = period, group = disorder_group )) +
+dgPerc <- perc_disorder_group %>%  
+  ggplot(aes(x = time_p, y= percentage_dg, fill = period, group = disorder_group )) +
   geom_bar(stat = "identity")+
   geom_vline(xintercept = as.Date(pandemic_start_date),
              linetype = "dashed") +
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se= TRUE, aes(colour=period), colour= "black", size = 0.5) + 
-  labs(x = "Weeks",
+  labs(x = time_period,
        y = "Patient (%)",
-       title = "Percentage of weekly patients with mental health related ICD codes", 
+       title = paste0("Percentage of patients per ", time_period,"with mental health related ICD codes"), 
        subtitle = "Grouped by mental health ICD subcategories") + 
   ylim(0, NA) + 
   facet_wrap(. ~ disorder_group, scales = "free_y") +
@@ -589,52 +635,56 @@ dgPerc_per_week <- perc_disorder_group_per_week %>%
         legend.position = "none") +
   scale_fill_manual(values = cbPalette[-1])
 
-dgPerc_per_week
+dgPerc
 ```
 
 
 ### Aggregated by sex
 
 ```{r}
-# counts per week and sex
-patients_hospitalized_per_week_agg_sex <- all_codes_psy %>%
+# counts per time period and sex
+patients_hospitalized_agg_sex <- all_codes_psy %>%
   filter(date < end_date_plots &
          date >= start_date_plots & 
            sex %in% c("female", "male")) %>%
-    group_by( weeks, sex ) %>%
-  summarise(count_sex = n_distinct(patient_num))
+    group_by( time_p, sex ) %>%
+  summarise(count_sex =  ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                               n_distinct(patient_num), 
+                               0.5))
 
-patients_hospitalized_per_week_agg_sex %>%
-  ggplot(aes(x = weeks, y = count_sex, fill = sex)) +
+patients_hospitalized_agg_sex %>%
+  ggplot(aes(x = time_p, y = count_sex, fill = sex)) +
   geom_bar(stat="identity", position = "dodge")+
   scale_fill_manual(values = cbPalette) +
   labs(y = "Counts",
-       x = "Week",
-       title = "Weekly patient counts aggregated by sex",
+       x = time_period,
+       title = paste0("Patient counts per ", time_period, " aggregated by sex"),
        subtitle = "Per Sex") + 
   theme(legend.position = "bottom") + 
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=sex), colour= "black", size = 0.5)
 
 ##percentage
-total_patients_psy_per_week <- all_codes_psy %>%
+total_patients_psy <- all_codes_psy %>%
   filter(date < end_date_plots &
          date >= start_date_plots ) %>%
-    group_by( weeks ) %>%
-  summarise(count = n_distinct(patient_num))
+    group_by( time_p ) %>%
+  summarise(count =  ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                               n_distinct(patient_num), 
+                               0.5))
 
-patients_hospitalized_per_week_agg_sex_perc <- total_patients_psy_per_week %>%
-  left_join( patients_hospitalized_per_week_agg_sex, by = c("weeks")) %>% 
+patients_hospitalized_agg_sex_perc <- total_patients_psy %>%
+  left_join( patients_hospitalized_agg_sex, by = c("time_p")) %>% 
   replace_na(list(count_sex = 0))
 
-patients_hospitalized_per_week_agg_sex_perc$percentage <- 100*patients_hospitalized_per_week_agg_sex_perc$count_sex/patients_hospitalized_per_week_agg_sex_perc$count
+patients_hospitalized_agg_sex_perc$percentage <- 100*patients_hospitalized_agg_sex_perc$count_sex/patients_hospitalized_agg_sex_perc$count
 
-patients_hospitalized_per_week_agg_sex_perc %>%
-  ggplot(aes(x = weeks, y = percentage, fill = sex)) +
+patients_hospitalized_agg_sex_perc %>%
+  ggplot(aes(x = time_p, y = percentage, fill = sex)) +
   geom_bar(stat="identity", position = "dodge")+
   scale_fill_manual(values = cbPalette) +
   labs(y = "Percentage ",
-       x = "Week",
-       title = "Weekly patient (%) aggregated by sex",
+       x = time_period,
+       title = paste0("Patient (%) per ", time_period," aggregated by sex"),
        subtitle = "Per Sex") + 
   theme(legend.position = "bottom") + 
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=sex), colour= "black", size = 0.5)
