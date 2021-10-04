@@ -83,7 +83,7 @@ specificities of your site:
     documentation](https://www.stat.berkeley.edu/~s133/dates.html))
 
 ```{r message=FALSE, warning=FALSE}
-folder_4ce_files <- "../Input/09212021_2/"
+folder_4ce_files <- "Input/09212021_2/"
 obfuscation =  FALSE
 #obfuscation = 3
 raceAvailable = TRUE
@@ -256,14 +256,14 @@ clinical_filtered <- clinical_raw %>%
                  period = ifelse( date < pandemic_start_date,
                                   "before_pandemic", "during_pandemic"))
 
-clinical_filtered$time_p <- NA
 if( time_period == "weeks"){
   clinical_filtered$time_p <- clinical_filtered$weeks
 }else if(time_period == "days"){
   clinical_filtered$time_p <- clinical_filtered$date
 }else if(time_period == "months"){
   clinical_filtered$time_p <- clinical_filtered$month
-  }
+}
+
 ```
 
 
@@ -599,6 +599,131 @@ ratio_psy_non_psy
 
 
 
+
+## Interrupted Time-Series Analysis
+
+
+
+
+```{r}
+# Model without seasonality
+time_series_analysis_plotting <- function(model, df_count_psy, count_col, clearance_period = FALSE) {
+  output_model <- broom::tidy(model)
+  coeff_slope <- round(output_model[output_model$term == "periodduring_pandemic:time", "estimate"][[1]], 3)
+  pvalue_slope <- round(output_model[output_model$term == "periodduring_pandemic:time", "p.value"][[1]], 3)
+  annotation <- paste0("Lockdown slope: ", coeff_slope, " (pvalue: ", pvalue_slope, ")")
+  pred_model <- predict(model, patient_count_monthly_psy, type = "response", interval = "confidence") %>% as.data.frame()
+  pred_model_b <- predict(model, mutate(patient_count_monthly_psy, period = "before_pandemic"), type = "response", interval = "confidence") %>%
+    as.data.frame()
+  names(pred_model_b) <- paste0(names(pred_model_b), "_wo_intervention")
+  pred_model <- bind_cols(df_count_psy, pred_model, pred_model_b)
+  if (clearance_period) {
+    pred_model$clearance_period <- ifelse(pred_model$time_p < as.Date(cut(start_clear_period, breaks = time_period)) ,
+                                          "before_pandemic",
+                                          ifelse(pred_model$time_p > as.Date(cut(end_clear_period, breaks = time_period)),
+                                                 "during_pandemic",
+                                                 "during_clearance")
+    )
+    pred_model$lwr <- ifelse(pred_model$clearance_period == "during_clearance", NA, pred_model$lwr)
+    pred_model$upr <- ifelse(pred_model$clearance_period == "during_clearance", NA, pred_model$upr)
+    pred_model$fit_wo_intervention <- ifelse(pred_model$time_p >= max(pred_model$time_p[pred_model$clearance_period == "before pandemic"]),
+                                             pred_model$fit_wo_intervention,
+                                             NA)
+  } else {
+    pred_model$clearance_period <- pred_model$period
+  }
+  print(pred_model$clearance_period)
+  plot <- ggplot(pred_model, aes_string(x = "time_p", y = count_col)) +
+    geom_point(aes(colour = clearance_period)) +
+    geom_line(aes(x = time_p, y = fit, colour = clearance_period)) +
+    geom_line(aes(x = time_p, y = fit_wo_intervention, colour = "Expected mean w/o pandemic"), linetype = "dashed") +
+    geom_ribbon(aes(ymin = lwr, ymax = upr, colour = clearance_period), alpha = 0.3, colour = NA) +
+    scale_color_manual(name = "Time Series projection", values = c("before_pandemic" = "black",
+                                                                   "Expected mean w/o pandemic" = "red",
+                                                                   "during_pandemic" = "black",
+                                                                   "during_clearance" = "white")) +
+    annotate("text", x = as.Date("2019-10-01"), y = max(pred_model[[count_col]]) + 5, label = annotation) +
+    theme(legend.position = "bottom")
+
+  if (clearance_period) {
+    plot +
+      geom_vline(xintercept = as.Date(max(pred_model$time_p[pred_model$clearance_period == "before_pandemic"])), linetype = "dashed") +
+      geom_vline(xintercept = as.Date(min(pred_model$time_p[pred_model$clearance_period == "during_pandemic"])), linetype = "dashed")
+  } else {
+    plot + geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")
+  }
+}
+```
+
+```{r}
+# Time series analysis of percentage of psy codes per encounter, linear (without seasonality)
+patient_count_monthly_psy <- count_icd_psy %>%
+  filter(time_p > as.Date(cut( start_date_plots, breaks = time_period)) &
+           time_p < as.Date(cut( end_date_plots, breaks = time_period))) %>%
+  mutate(time = seq_along(time_p),
+         month_year = format(time_p, "%m")
+  )
+start_clear_period <- as.Date("2020-03-15")
+end_clear_period <- as.Date("2020-05-15")
+patient_count_monthly_psy_clear <- patient_count_monthly_psy %>%
+  mutate( count_psy = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
+                               time_p > as.Date(cut( end_clear_period, breaks = time_period)),
+                             count_psy,
+                             NA)
+  )
+```
+
+```{r}
+ts_linear_count <- lm(count_psy ~ period * time, patient_count_monthly_psy)
+ts_linear_count_clear <- lm(count_psy ~ period * time, patient_count_monthly_psy_clear)
+ts_seasonal_count <- lm(count_psy ~ period*time + harmonic(month_year, 1, 12), patient_count_monthly_psy)
+ts_seasonal_count_clear <- lm(count_psy ~ period*time + harmonic(month_year, 1, 12), patient_count_monthly_psy_clear)
+```
+
+```{r}
+time_series_analysis_plotting(ts_linear_count,
+                              patient_count_monthly_psy, "count_psy",
+                              clearance_period = FALSE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "Without seasonality effect",
+       x = time_period,
+       y = "Count")
+```
+
+```{r}
+time_series_analysis_plotting(ts_linear_count_clear,
+                              patient_count_monthly_psy, "count_psy",
+                              clearance_period = TRUE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "Without seasonality effect",
+       x = time_period,
+       y = "Count")
+```
+
+
+```{r}
+time_series_analysis_plotting(ts_seasonal_count,
+                              patient_count_monthly_psy, "count_psy",
+                              clearance_period = FALSE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "With seasonality effect",
+       x = time_period,
+       y = "Count")
+```
+
+```{r}
+time_series_analysis_plotting(ts_seasonal_count_clear,
+                              patient_count_monthly_psy, "count_psy",
+                              clearance_period = TRUE) +
+  labs(title = "Interrupted Time-Series Analysis: Count of encounters with psychiatric ICD codes",
+       subtitle = "With seasonality effect",
+       x = time_period,
+       y = "Count")
+```
+
+
+
+
 #### Psychiatric conditions aggregating by suptype
 
 ##### Total hospitalizations
@@ -656,6 +781,7 @@ count_icd <- all_codes_desc %>%
                            "before_pandemic",
                            "during_pandemic")
   )
+
 
 # join the total with the disorder group count to estimate the percentage
 perc_disorder_group <- count_icd %>%
