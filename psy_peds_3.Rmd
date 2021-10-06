@@ -542,22 +542,7 @@ thpd_psyCount
 
 ```
 
-### Percentage 
-```{r}
-thpd_psyPer <- count_icd %>%
-  ggplot(aes(x = time_p, y = percentage_psy, fill=period)) +
-  scale_fill_manual(values = cbPalette[c(3,4)]) +
-  geom_vline(xintercept = as.Date(pandemic_start_date),
-             linetype = "dashed") +
-  labs(y = "Percentage",
-       x = paste0("Date (by ", time_period,")"),
-       title = paste0("Percentage of patients with mental health related ICD codes (per ", time_period,")")) + 
-  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)+
-  geom_point()
-thpd_psyPer
-```
 ### Ratio: patients with psychiatric condition / patients without psychiatric condition
-
 
 ```{r}
 all_patients <- unique( all_codes_desc[, c("patient_num", "time_p")])
@@ -585,10 +570,31 @@ patients_with_psy_conditions_counts <-  patients_with_psy_conditions %>%
 
 ratios_patients_with_without_psy <- patients_without_psy_conditions_counts %>%
   full_join( patients_with_psy_conditions_counts, by=c("time_p", "period")) %>%
-  mutate( ratio = count_psy_patients/count_no_psy_patients)
+  mutate( ratio = count_psy_patients/count_no_psy_patients, 
+          percentage = 100 * count_psy_patients/(count_no_psy_patients + count_psy_patients))
+
+```
 
 
+```{r}
+ratios_patients_with_without_psy %>%
+  pivot_longer(cols = c("count_no_psy_patients", "count_psy_patients"), 
+               values_to = "count", 
+               names_to = "count_type") %>% 
+  ggplot(aes(x = time_p, y = count, color = count_type)) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Count",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Count comparison: patients with vs without psychiatric conditions (per ", time_period,")")) +
+  guides(color = guide_legend(title="Patient diagnoses types"))
+```
 
+
+```{r}
 ratio_psy_non_psy <- ratios_patients_with_without_psy %>%
   ggplot(aes(x = time_p, y = ratio, fill = period, color = period)) +
   geom_point() +
@@ -604,6 +610,23 @@ ratio_psy_non_psy
 
 ```
 
+```{r}
+ratios_patients_with_without_psy %>%
+  ggplot(aes(x = time_p, y = percentage, color = period)) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Percentage",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Percentage patient with vs total population ( per ", time_period,")")) +
+  guides(color = guide_legend(title="Patient diagnoses types"))
+```
+
+
+
+
 
 ## Interrupted Time-Series Analyses
 
@@ -614,8 +637,8 @@ time_series_analysis_plotting <- function(model, df_count_psy, count_col, cleara
   coeff_slope <- round(output_model[output_model$term == "periodduring_pandemic:time", "estimate"][[1]], 3)
   pvalue_slope <- round(output_model[output_model$term == "periodduring_pandemic:time", "p.value"][[1]], 3)
   annotation <- paste0("Lockdown slope: ", coeff_slope, " (pvalue: ", pvalue_slope, ")")
-  pred_model <- predict(model, patient_count_monthly_psy, type = "response", interval = "confidence") %>% as.data.frame()
-  pred_model_b <- predict(model, mutate(patient_count_monthly_psy, period = "before_pandemic"), type = "response", interval = "confidence") %>%
+  pred_model <- predict(model, df_count_psy, type = "response", interval = "confidence") %>% as.data.frame()
+  pred_model_b <- predict(model, mutate(df_count_psy, period = "before_pandemic"), type = "response", interval = "confidence") %>%
     as.data.frame()
   names(pred_model_b) <- paste0(names(pred_model_b), "_wo_intervention")
   pred_model <- bind_cols(df_count_psy, pred_model, pred_model_b)
@@ -658,7 +681,7 @@ time_series_analysis_plotting <- function(model, df_count_psy, count_col, cleara
 
 ```{r}
 # Time series analysis of percentage of psy codes per encounter, linear (without seasonality)
-patient_count_monthly_psy <- count_icd_psy %>%
+patient_count_psy_period_psy <- ratios_patients_with_without_psy %>%
   filter(time_p > as.Date(cut( start_date_plots, breaks = time_period)) &
            time_p < as.Date(cut( end_date_plots, breaks = time_period))) %>%
   mutate(time = seq_along(time_p),
@@ -667,26 +690,46 @@ patient_count_monthly_psy <- count_icd_psy %>%
 
 start_clear_period <- as.Date("2020-03-15")
 end_clear_period <- as.Date("2020-05-15")
-patient_count_monthly_psy_clear <- patient_count_monthly_psy %>%
-  mutate( count_psy = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
+patient_count_psy_period_psy_clear <- patient_count_psy_period_psy %>%
+  mutate( count_no_psy_patients = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
                                time_p > as.Date(cut( end_clear_period, breaks = time_period)),
-                             count_psy,
-                             NA)
+                             count_no_psy_patients,
+                             NA), 
+          count_no_psy_patients = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
+                               time_p > as.Date(cut( end_clear_period, breaks = time_period)),
+                             count_no_psy_patients,
+                             NA), 
+          ratio = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
+                           time_p > as.Date(cut( end_clear_period, breaks = time_period)),
+                         ratio,
+                         NA),
+          percentage = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
+                           time_p > as.Date(cut( end_clear_period, breaks = time_period)),
+                         percentage,
+                         NA)
   )
 ```
 
-```{r}
-ts_linear_count <- lm(count_psy ~ period * time, patient_count_monthly_psy)
-ts_linear_count_clear <- lm(count_psy ~ period * time, patient_count_monthly_psy_clear)
-ts_seasonal_count <- lm(count_psy ~ period*time + harmonic(month_year, 1, 12), patient_count_monthly_psy)
-ts_seasonal_count_clear <- lm(count_psy ~ period*time + harmonic(month_year, 1, 12), patient_count_monthly_psy_clear)
+```{r, its count based}
+ts_linear_count <- lm(count_psy_patients ~ period * time, patient_count_psy_period_psy)
+ts_linear_count_clear <- lm(count_psy_patients ~ period * time, patient_count_psy_period_psy_clear)
+ts_seasonal_count <- lm(count_psy_patients ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
+ts_seasonal_count_clear <- lm(count_psy_patients ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
 ```
 
-### ITS: no clearance period, no seasonality effect
+```{r, its percentage based}
+ts_linear_percent <- lm(percentage ~ period * time, patient_count_psy_period_psy)
+ts_linear_percent_clear <- lm(percentage ~ period * time, patient_count_psy_period_psy_clear)
+ts_seasonal_percent <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
+ts_seasonal_percent_clear <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
+```
+
+### ITS: patient counts, no clearance period, no seasonality effect
 
 ```{r}
 time_series_analysis_plotting(ts_linear_count,
-                              patient_count_monthly_psy, "count_psy",
+                              patient_count_psy_period_psy,
+                              "count_psy_patients",
                               clearance_period = FALSE) +
   labs(title = "Interrupted Time-Series Analysis: Count of encounters with psychiatric ICD codes",
        subtitle = "Without seasonality effect",
@@ -694,11 +737,12 @@ time_series_analysis_plotting(ts_linear_count,
        y = "Count")
 ```
 
-### ITS: clearance period, no seasonality effect
+### ITS: patient counts, clearance period, no seasonality effect
 
 ```{r}
 time_series_analysis_plotting(ts_linear_count_clear,
-                              patient_count_monthly_psy, "count_psy",
+                              patient_count_psy_period_psy,
+                              "count_psy_patients",
                               clearance_period = TRUE) +
   labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
        subtitle = "Without seasonality effect",
@@ -706,11 +750,11 @@ time_series_analysis_plotting(ts_linear_count_clear,
        y = "Count")
 ```
 
-### ITS: no clearance period, with seasonality effect
+### ITS: patient counts, no clearance period, with seasonality effect
 
 ```{r}
 time_series_analysis_plotting(ts_seasonal_count,
-                              patient_count_monthly_psy, "count_psy",
+                              patient_count_psy_period_psy, "count_psy",
                               clearance_period = FALSE) +
   labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
        subtitle = "With seasonality effect",
@@ -718,16 +762,69 @@ time_series_analysis_plotting(ts_seasonal_count,
        y = "Count")
 ```
 
-### ITS: with clearance period, with seasonality effect
+### ITS: patient counts, with clearance period, with seasonality effect
 
 ```{r}
 time_series_analysis_plotting(ts_seasonal_count_clear,
-                              patient_count_monthly_psy, "count_psy",
+                              patient_count_psy_period_psy, "count_psy",
                               clearance_period = TRUE) +
   labs(title = "Interrupted Time-Series Analysis: Count of encounters with psychiatric ICD codes",
        subtitle = "With seasonality effect",
        x = time_period,
        y = "Count")
+```
+
+
+### ITS: psy percentage, no clearance period, no seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_linear_percent,
+                              patient_count_psy_period_psy,
+                              "percentage",
+                              clearance_period = FALSE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "Without seasonality effect",
+       x = time_period,
+       y = "Percentage")
+```
+
+### ITS: psy percentage, clearance period, no seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_linear_percent_clear,
+                              patient_count_psy_period_psy,
+                              "percentage",
+                              clearance_period = TRUE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "Without seasonality effect",
+       x = time_period,
+       y = "Percentage")
+```
+
+### ITS: psy percentage, no clearance period, with seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_seasonal_percent,
+                              patient_count_psy_period_psy,
+                              "percentage",
+                              clearance_period = FALSE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "Without seasonality effect",
+       x = time_period,
+       y = "Percentage")
+```
+
+### ITS: psy percentage, with clearance period, with seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_seasonal_percent_clear,
+                              patient_count_psy_period_psy,
+                              "percentage",
+                              clearance_period = TRUE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "With seasonality effect",
+       x = time_period,
+       y = "Percentage")
 ```
 
 
