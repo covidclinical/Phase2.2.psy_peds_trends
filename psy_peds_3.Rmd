@@ -754,7 +754,8 @@ time_series_analysis_plotting(ts_linear_count_clear,
 
 ```{r}
 time_series_analysis_plotting(ts_seasonal_count,
-                              patient_count_psy_period_psy, "count_psy",
+                              patient_count_psy_period_psy,
+                              "count_psy_patients",
                               clearance_period = FALSE) +
   labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
        subtitle = "With seasonality effect",
@@ -766,7 +767,8 @@ time_series_analysis_plotting(ts_seasonal_count,
 
 ```{r}
 time_series_analysis_plotting(ts_seasonal_count_clear,
-                              patient_count_psy_period_psy, "count_psy",
+                              patient_count_psy_period_psy,
+                              "count_psy_patients",
                               clearance_period = TRUE) +
   labs(title = "Interrupted Time-Series Analysis: Count of encounters with psychiatric ICD codes",
        subtitle = "With seasonality effect",
