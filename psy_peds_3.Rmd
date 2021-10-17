@@ -97,7 +97,7 @@ in the 4CE demographic file is expected the age at data update.
 6. "time_period": Time unit for the different graphs of the plots: months (default), weeks, days
 
 ```{r message=FALSE, warning=FALSE}
-folder_4ce_files <- "Input/09212021_2/"
+folder_4ce_files <- "../Input/09212021_2/"
 obfuscation =  FALSE
 #obfuscation = 3
 raceAvailable = TRUE
@@ -873,6 +873,34 @@ dg <- count_disorder_group %>%
 dg
 ```
 
+#### Subset: the most prevalent disorder group
+```{r}
+dg_subset <- count_disorder_group %>%
+  filter( disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" )) %>%
+  ggplot(aes(x = time_p, y= count_dg, fill = period, group = disorder_group )) +
+  geom_bar(stat = "identity")+
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se= TRUE, aes(colour=period), colour= "black", size = 0.5) + 
+  labs(x = time_period,
+       y = "Patient Count",
+       title = paste0("Per ", time_period, " patient counts with mental health related ICD codes"), 
+       subtitle = "Grouped by mental health ICD subcategories") + 
+  ylim(0, NA) + 
+  facet_wrap(. ~ disorder_group, scales = "free_y") +
+  theme(strip.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 12, angle = 90), 
+        axis.text.y = element_text(size = 11), 
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 11),
+        title = element_text(size = 12),
+        plot.subtitle = element_text(size = 11),
+        legend.position = "none") +
+  scale_fill_manual(values = cbPalette[-1])
+
+dg_subset
+```
+
 ### New admissions: percentage
 
 ```{r}
@@ -921,6 +949,32 @@ dgPerc <- perc_disorder_group %>%
   scale_fill_manual(values = cbPalette[-1])
 
 dgPerc
+```
+```{r}
+dgPerc_subset <- perc_disorder_group %>%  
+  filter( disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" )) %>%
+  ggplot(aes(x = time_p, y= percentage_dg, fill = period, group = disorder_group )) +
+  geom_bar(stat = "identity")+
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se= TRUE, aes(colour=period), colour= "black", size = 0.5) + 
+  labs(x = time_period,
+       y = "Patient (%)",
+       title = paste0("Percentage of patients per ", time_period,"with mental health related ICD codes"), 
+       subtitle = "Grouped by mental health ICD subcategories") + 
+  ylim(0, NA) + 
+  facet_wrap(. ~ disorder_group, scales = "free_y") +
+  theme(strip.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 12, angle = 90), 
+        axis.text.y = element_text(size = 12), 
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12),
+        title = element_text(size = 12),
+        plot.subtitle = element_text(size = 11),
+        legend.position = "none") +
+  scale_fill_manual(values = cbPalette[-1])
+
+dgPerc_subset
 ```
 
 
