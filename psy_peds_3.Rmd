@@ -831,6 +831,86 @@ time_series_analysis_plotting(ts_seasonal_percent_clear,
 
 ### ITS bootstrap
 
+#### Parametric bootstrap
+
+```{r}
+bootstrap_size <- 1000
+binom_proportion <- function(n, prob, size) {
+  (rbinom(n, size, prob) / size) * 100
+}
+bootstrapped_timepoints <- mapply(binom_proportion,
+                                  n = bootstrap_size,
+                                  size = patient_count_psy_period_psy$count_no_psy_patients +
+                                    patient_count_psy_period_psy$count_psy_patients,
+                                  prob = patient_count_psy_period_psy$percentage/100)
+
+bootstrapped_sample_list <- vector(mode = "list", length = bootstrap_size)
+bootstrapped_coefficients_list <- vector(mode = "list", length = bootstrap_size)
+for (iteration in 1:bootstrap_size) {
+  df_iteration <- data.frame(period = patient_count_psy_period_psy$period,
+                             time = patient_count_psy_period_psy$time,
+                             percentage = bootstrapped_timepoints[iteration, ])
+  ts_linear_percent <- lm(percentage ~ period * time, df_iteration)
+  linear_model <- broom::tidy(ts_linear_percent) %>%
+    filter(term %in% c("time", "periodduring_pandemic:time"))
+  coefficients <- linear_model$estimate
+  names(coefficients) <- linear_model$term
+  bootstrapped_coefficients_list[[iteration]] <- coefficients
+  df_iteration$predicted <- predict(ts_linear_percent)
+  df_iteration$time_p <- patient_count_psy_period_psy$time_p
+  bootstrapped_sample_list[[iteration]] <- df_iteration
+}
+
+quantile_bootstrapped_fitted <- bootstrapped_fitted_df %>%
+  group_by(time_p, period) %>%
+  summarise("2.5%" = quantile(predicted, 0.025),
+            "50%" = quantile(predicted, 0.5),
+            "97.5%" = quantile(predicted, 0.975)) %>%
+  pivot_longer(cols = c("2.5%", "50%", "97.5%"),
+               names_to = "quantiles")
+
+bootstrapped_fitted_df <- bind_rows(bootstrapped_sample_list, .id = "iteration")
+bootstrapped_coefficients_df <- bind_rows(bootstrapped_coefficients_list, .id = "iteration")
+mean(bootstrapped_coefficients_df$time)
+mean(bootstrapped_coefficients_df$time + bootstrapped_coefficients_df[["periodduring_pandemic:time"]])
+pvalue_coeff_interaction <- round(t.test(bootstrapped_coefficients_df[["periodduring_pandemic:time"]])$p.value, 4)
+pvalue_coeff_interaction <- ifelse(pvalue_coeff_interaction == 0,
+                                   "< 1e-4",
+                                   str(pvalue_coeff_interaction))
+plot_annotation <- paste0("Diff. in slope coeffs before and after pandemic: ",
+                     round(mean(bootstrapped_coefficients_df[["periodduring_pandemic:time"]]), 2),
+                     " (pvalue: ",
+                     pvalue_coeff_interaction,
+                     ")")
+
+ggplot(bootstrapped_fitted_df, aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
+  geom_line(aes(color = period),
+            alpha = 0.03) +
+  geom_line(data = quantile_bootstrapped_fitted,
+            aes(y = value, group = interaction(quantiles, period)),
+            linetype = "dashed") +
+  geom_line(data = quantile_bootstrapped_fitted[quantile_bootstrapped_fitted$quantiles == "50%", ],
+            aes(y = value, group = period)) +
+  geom_point(data = patient_count_psy_period_psy,
+             aes(y = percentage),
+             alpha = 0.5) +
+  scale_colour_manual(values = cbPalette) +
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+  annotate("text",
+           x = as.Date("2019-10-01"),
+           y = max(patient_count_psy_period_psy[["percentage"]]) + 5,
+           label = annotation) +
+  labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
+       subtitle = "Parametric bootstrap estimation: (1000 iterations)",
+       x = "Calendar dates",
+       y = "Percentage",
+       color = "Period")
+
+```
+
+
+
+#### Resampling bootstrap
 ```{r, eval=FALSE}
 ### list to save the bootstrap results 
 list_results <- list()
