@@ -829,6 +829,101 @@ time_series_analysis_plotting(ts_seasonal_percent_clear,
        y = "Percentage")
 ```
 
+### ITS bootstrap
+
+```{r, eval=FALSE}
+### list to save the bootstrap results 
+list_results <- list()
+list_predict_results <- list()
+number_of_iterations <- 1000
+
+set.seed( seed = 1 )
+
+for( i in 1:number_of_iterations){
+#  print(i)
+  sample_size = nrow(all_codes_desc)
+  sample_size
+  row_indices <- 1:nrow(all_codes_desc)
+  
+  sample_df <- all_codes_desc[sample(row_indices, size = sample_size, replace = TRUE),]
+  dim(sample_df)
+  
+  sample_df_psy <- sample_df %>% 
+    filter(concept_code %in% icdCodes$ICD10_Code)
+  
+  
+  all_patients_bootstrap <- unique( sample_df[, c("patient_num", "time_p")])
+  patients_with_psy_conditions_bootstrap <- unique( sample_df_psy[, c("patient_num", "time_p")] )
+  patients_without_psy_conditions_bootstrap <- setdiff(all_patients_bootstrap,patients_with_psy_conditions_bootstrap)
+  
+  patients_without_psy_conditions_counts_bootstrap <- patients_without_psy_conditions_bootstrap %>%
+    group_by( time_p ) %>%
+    summarise(count_no_psy_patients =  ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                                              n_distinct(patient_num), 
+                                              0.5)) %>%
+    mutate( period = ifelse( time_p < pandemic_start_date,
+                             "before_pandemic",
+                             "during_pandemic"))
+  
+  
+  patients_with_psy_conditions_counts_bootstrap <-  patients_with_psy_conditions_bootstrap %>%
+    group_by( time_p ) %>%
+    summarise(count_psy_patients =  ifelse(n_distinct(patient_num) > obfuscation | isFALSE(obfuscation),
+                                           n_distinct(patient_num), 
+                                           0.5)) %>%
+    mutate( period = ifelse( time_p < pandemic_start_date,
+                             "before_pandemic",
+                             "during_pandemic"))
+  
+  ratios_patients_with_without_psy_bootstrap <- patients_without_psy_conditions_counts_bootstrap %>%
+    full_join( patients_with_psy_conditions_counts_bootstrap, by=c("time_p", "period")) %>%
+    mutate( ratio = count_psy_patients/count_no_psy_patients, 
+            percentage = 100 * count_psy_patients/(count_no_psy_patients + count_psy_patients))
+  
+  patient_count_psy_period_psy_bootstrap <- ratios_patients_with_without_psy_bootstrap %>%
+    filter(time_p > as.Date(cut( start_date_plots, breaks = time_period)) &
+             time_p < as.Date(cut( end_date_plots, breaks = time_period))) %>%
+    mutate(time = seq_along(time_p),
+           month_year = format(time_p, "%m")
+    )
+  
+  ts_linear_percent_bootstrap <- lm(percentage ~ period * time, patient_count_psy_period_psy_bootstrap)
+  output_model_bootstrap <- broom::tidy( ts_linear_percent_bootstrap )
+  bootstrap_results <- output_model_bootstrap["estimate"]
+  list_results[[i]] <- bootstrap_results
+  
+  pred_model_bootstrap <- predict(ts_linear_percent_bootstrap, patient_count_psy_period_psy_bootstrap, type = "response") %>% as.data.frame()
+  pred_model_bootstrap <- bind_cols(patient_count_psy_period_psy_bootstrap, pred_model_bootstrap)
+  list_predict_results[[i]] <- pred_model_bootstrap
+  
+}
+```
+
+
+```{r }
+load("../ooutput_bootsrap1000iterations.RData")
+load("../output_bootstrap_predict_results1000iterations.RData")
+
+ggplot(data = output_bootstrap_predict_results, aes(x = time_p, 
+                                                    y = fittedValue)) + 
+  geom_line(aes(group = iteration,
+                color = period), 
+            data = output_bootstrap_predict_results[output_bootstrap_predict_results$period == "before_pandemic", ], 
+            alpha = 0.05) +
+  geom_line(aes(group = iteration,
+                color = period), 
+            data = output_bootstrap_predict_results[output_bootstrap_predict_results$period == "during_pandemic", ], 
+            alpha = 0.05) +
+  geom_smooth(formula = y ~ x, data = output_bootstrap_predict_results[output_bootstrap_predict_results$period == "during_pandemic", ], 
+              color = "black") +
+  geom_smooth(formula = y ~ x, data = output_bootstrap_predict_results[output_bootstrap_predict_results$period == "before_pandemic", ], 
+              color = "black")
+```
+
+
+```{r }
+
+```
 
 
 ## Psychiatric conditions aggregating by subcategories
