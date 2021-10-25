@@ -260,7 +260,7 @@ obs_filtered_age <- obs_raw_age %>%
          days_since_admission >= 0)
 
 clinical_filtered <- clinical_raw %>%
-  filter( len_hospitalisation > min_hosp_days, 
+  filter( len_hospitalisation >= min_hosp_days, 
           cohort  %in% c("AllAdm")) %>%
   dplyr::mutate( date = as.Date( calendar_date, format = dateFormat ),
                  weeks = as.Date(cut( date, breaks = "week")),
@@ -302,7 +302,7 @@ all_codes <- observation_table %>%
 ```{r}
 stopifnot(unique(all_codes$cohort) == "AllAdm")
 stopifnot(unique(all_codes$in_hospital) == 1)
-stopifnot(unique(all_codes$len_hospitalisation > min_hosp_days))
+stopifnot(unique(all_codes$len_hospitalisation >= min_hosp_days))
 stopifnot(nrow(all_codes) == nrow(observation_table))
 stopifnot(length(unique(all_codes$patient_num)) == length(unique(demographic_table$patient_num)))
 stopifnot(length(unique(all_codes$patient_num)) == length(unique(observation_table$patient_num)))
@@ -340,7 +340,7 @@ all_codes_ado <- all_codes %>%
 ```{r}
 stopifnot(unique(all_codes_ado$cohort) == "AllAdm")
 stopifnot(unique(all_codes_ado$in_hospital) == 1)
-stopifnot(unique(all_codes_ado$len_hospitalisation > min_hosp_days))
+stopifnot(unique(all_codes_ado$len_hospitalisation >= min_hosp_days))
 stopifnot(nrow(all_codes_ado) == nrow(observation_table_ado))
 stopifnot(length(unique(all_codes_ado$patient_num)) == length(unique(demographic_table_ado$patient_num)))
 stopifnot(length(unique(all_codes_ado$patient_num)) == length(unique(observation_table_ado$patient_num)))
@@ -885,28 +885,28 @@ plot_annotation <- paste0("Diff. in slope coeffs before and after pandemic: ",
                      pvalue_coeff_interaction,
                      ")")
 
-# ggplot(bootstrapped_fitted_df, aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
-#   geom_line(aes(color = period),
-#             alpha = 0.03) +
-#   geom_line(data = quantile_bootstrapped_fitted,
-#             aes(y = value, group = interaction(quantiles, period)),
-#             linetype = "dashed") +
-#   geom_line(data = quantile_bootstrapped_fitted[quantile_bootstrapped_fitted$quantiles == "50%", ],
-#             aes(y = value, group = period)) +
-#   geom_point(data = patient_count_psy_period_psy,
-#              aes(y = percentage),
-#              alpha = 0.5) +
-#   scale_colour_manual(values = cbPalette) +
-#   guides(color = guide_legend(override.aes = list(alpha = 1))) +
-#   annotate("text",
-#            x = as.Date("2019-10-01"),
-#            y = max(patient_count_psy_period_psy[["percentage"]]) + 5,
-#            label = annotation) +
-#   labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
-#        subtitle = "Parametric bootstrap estimation: (1000 iterations)",
-#        x = "Calendar dates",
-#        y = "Percentage",
-#        color = "Period")
+ggplot(bootstrapped_fitted_df, aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
+  geom_line(aes(color = period),
+            alpha = 0.03) +
+  geom_line(data = quantile_bootstrapped_fitted,
+            aes(y = value, group = interaction(quantiles, period)),
+            linetype = "dashed") +
+  geom_line(data = quantile_bootstrapped_fitted[quantile_bootstrapped_fitted$quantiles == "50%", ],
+            aes(y = value, group = period)) +
+  geom_point(data = patient_count_psy_period_psy,
+             aes(y = percentage),
+             alpha = 0.5) +
+  scale_colour_manual(values = cbPalette) +
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+  annotate("text",
+           x = as.Date("2019-10-01"),
+           y = max(patient_count_psy_period_psy[["percentage"]]) + 5,
+           label = plot_annotation) +
+  labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
+       subtitle = "Parametric bootstrap estimation: (1000 iterations)",
+       x = "Calendar dates",
+       y = "Percentage",
+       color = "Period")
 
 ```
 
@@ -1309,10 +1309,21 @@ table1 %>%
 
 # Save the output in a RData file. 
 ```{r}
-#length_hospitalisation_values <- input_data %>% 
-#  dplyr::distinct( patient_num, n_hospitalisation, len_hospitalisation ) %>%
-#  dplyr::mutate( siteid = site ) %>%
-#  dplyr::select( len_hospitalisation, siteid )
+length_hospitalisation_values <- all_codes_psy %>% 
+  dplyr::distinct( patient_num, n_hospitalisation, len_hospitalisation, period ) %>%
+  dplyr::mutate( siteid = site ) %>%
+  dplyr::select( len_hospitalisation, siteid, period )
+
+# add the site id as column for each of the output data frames
+count_icd$siteid = site 
+patient_count_psy_period_psy$siteid = site 
+patient_count_psy_period_psy_clear$siteid = site 
+bootstrapped_coefficients_df$siteid = site 
+bootstrapped_fitted_df$siteid = site 
+perc_disorder_group$siteid = site 
+patients_hospitalized_agg_sex_perc$siteid = site 
+table1$siteid = site 
+
 save( count_icd,
       patient_count_psy_period_psy,
       patient_count_psy_period_psy_clear,
@@ -1321,9 +1332,8 @@ save( count_icd,
       perc_disorder_group,
       patients_hospitalized_agg_sex_perc,
       table1,
-#      length_hospitalisation_values,
-#      obs_by_day,
-      file = paste0("output/peds_psy_aggResults_", unique(as.character(demo_raw$siteid)), ".RData"))
+      length_hospitalisation_values,
+      file = paste0("output/peds_psy_aggResults_", site, ".RData"))
 ```
 
 
