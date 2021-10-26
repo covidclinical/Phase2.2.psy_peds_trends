@@ -988,7 +988,7 @@ dg_subset
 
 ```{r}
 # estimate the counts
-count_icd <- all_codes_desc %>%
+count_icd_all <- all_codes_desc %>%
   filter(date < end_date_plots &
          date >= start_date_plots ) %>%
     group_by( time_p ) %>%
@@ -1002,7 +1002,7 @@ count_icd <- all_codes_desc %>%
 
 
 # join the total with the disorder group count to estimate the percentage
-perc_disorder_group <- count_icd %>%
+perc_disorder_group <- count_icd_all %>%
   left_join(count_disorder_group, 
             by = c("time_p", "period")) %>% 
   replace_na(list(count_dg = 0))
