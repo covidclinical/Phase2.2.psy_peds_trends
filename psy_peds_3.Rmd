@@ -1323,8 +1323,10 @@ bootstrapped_fitted_df$siteid = site
 perc_disorder_group$siteid = site 
 patients_hospitalized_agg_sex_perc$siteid = site 
 table1$siteid = site 
+ratios_patients_with_without_psy$siteid = site 
 
 save( count_icd,
+      ratios_patients_with_without_psy,
       patient_count_psy_period_psy,
       patient_count_psy_period_psy_clear,
       bootstrapped_coefficients_df,
