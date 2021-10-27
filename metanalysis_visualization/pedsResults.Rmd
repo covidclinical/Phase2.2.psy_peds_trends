@@ -1,0 +1,229 @@
+---
+title: "pediatricResults"
+author: "aGutierrezSacristan"
+date: "10/26/2021"
+output: html_document
+---
+```{r libraries, message=FALSE, warning=FALSE, results='hide'}
+# Install packages
+paket <- function(pak){
+  new_pak <- pak[!(pak %in% rownames(installed.packages()))]
+  if (length(new_pak)) 
+    install.packages(new_pak, dependencies = TRUE,repos="https://cloud.r-project.org/")
+  sapply(pak, library, character.only = TRUE)
+}
+listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta")
+paket(listOfPackages)
+```
+
+```{r}
+# options(repr.plot.width = 18, repr.plot.height = 9)
+theme_plots <- theme_bw() +
+  theme(strip.text = element_text(size = 5),
+        axis.text.x = element_text(size = 8), 
+        axis.text.y = element_text(size = 6), 
+        axis.title.x = element_text(size = 8),
+        axis.title.y = element_text(size = 8),
+        title = element_text(size = 10),
+        plot.subtitle = element_text(size = 9, face = "italic")) 
+theme_set(theme_plots)
+
+# Colorblind palette
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+
+```{r}
+# cut-off dates used in the analysis, these should not be changed
+time_period <-"months" #possible values: days, weeks, months
+history_start_date <- as.Date("2019-01-01")
+history_end_date <- as.Date("2021-05-31")
+pandemic_start_date <- as.Date("2020-03-15")
+start_date_plots <- as.Date("2019-01-15")
+end_date_plots <- as.Date("2021-05-01")
+```
+
+
+## Read the input file by site
+Each site shared the aggregated counts results. Putting all the results together. 
+
+```{r}
+outputDir <- "./output/"
+outputFiles <- list.files( path = outputDir, pattern = ".RData")
+```
+
+Put all the aggregate counts from the different sites together
+```{r}
+for( i in 1:length( outputFiles )){
+  load(paste0( outputDir, outputFiles[i]))
+  if( i == 1 ){
+    count_icd_all <- count_icd
+    patients_hospitalized_agg_sex_perc_all <- patients_hospitalized_agg_sex_perc
+    patient_count_psy_period_psy_all <- patient_count_psy_period_psy
+    perc_disorder_group_all <- perc_disorder_group
+    ratios_patients_with_without_psy_all <- ratios_patients_with_without_psy
+  }else{
+    count_icd_all <- rbind(count_icd_all, count_icd)
+    patients_hospitalized_agg_sex_perc_all <- rbind( patients_hospitalized_agg_sex_perc_all, patients_hospitalized_agg_sex_perc)
+    patient_count_psy_period_psy_all <- rbind( patient_count_psy_period_psy_all,patient_count_psy_period_psy)
+    perc_disorder_group_all <- rbind(perc_disorder_group_all, perc_disorder_group)
+    ratios_patients_with_without_psy_all <- rbind( ratios_patients_with_without_psy_all, ratios_patients_with_without_psy)
+  }
+  rm(count_icd,patients_hospitalized_agg_sex_perc,patient_count_psy_period_psy,
+     perc_disorder_group,ratios_patients_with_without_psy,
+     patient_count_psy_period_psy_clear, table1, bootstrapped_coefficients_df,
+     bootstrapped_fitted_df, length_hospitalisation_values)
+}
+```
+
+
+## Patient Count with Mental Health Related ICD codes
+
+```{r}
+thpd_psyCount <- count_icd_all %>%
+  pivot_longer(names_to = "counts", cols=c(count_psy, count_icd)) %>%
+  mutate( counts = ifelse( counts == "count_psy", "Psy", "Total")) %>%
+  ggplot(aes(x = time_p, y = value, fill = counts, color = counts)) +
+  facet_grid(siteid~.) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Counts",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Per ", time_period , " patient counts with mental health related ICD codes")) + 
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
+thpd_psyCount
+```
+
+#### Both results together
+
+```{r}
+count_icd_all_combined <-  count_icd_all %>%
+  group_by(time_p, period) %>% 
+  summarise(count_psy_all = sum(count_psy), 
+            count_icd_all = sum( count_icd ))
+
+thpd_psyCount_combined <- count_icd_all_combined %>%
+  pivot_longer(names_to = "counts", cols=c(count_psy_all, count_icd_all)) %>%
+  mutate( counts = ifelse( counts == "count_psy_all", "Psy", "Total")) %>%
+  ggplot(aes(x = time_p, y = value, fill = counts, color = counts)) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Counts",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Per ", time_period , " patient counts with mental health related ICD codes")) + 
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
+thpd_psyCount_combined
+```
+
+## Ratio patients with vs without psychiatric conditions
+```{r}
+ratio_psy_non_psy <- ratios_patients_with_without_psy_all %>%
+  ggplot(aes(x = time_p, y = ratio, fill = period, color = period)) +
+  geom_point() +
+  facet_grid(siteid~.) +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Ratio (with psy conditions/without psy conditions)",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Ratio patient with vs without psychiatric conditions ( per ", time_period,")"))
+
+ratio_psy_non_psy
+```
+
+
+## Percenge patients with vs without psychiatric conditions
+```{r}
+percentage_psy_non_psy <- ratios_patients_with_without_psy_all %>%
+  ggplot(aes(x = time_p, y = percentage, color = period)) +
+  facet_grid(siteid~.) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Percentage",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Percentage patient with vs total population ( per ", time_period,")")) +
+  guides(color = guide_legend(title="Patient diagnoses types"))
+
+percentage_psy_non_psy
+```
+
+### Test meta-analysis percentage
+
+```{r}
+#split this into before and after pandemic and run it twice (one for each subset)
+
+#estimate the summary effect size
+ratios_patients_with_without_psy_all$total <- ratios_patients_with_without_psy_all$count_no_psy_patients + ratios_patients_with_without_psy_all$count_psy_patients
+
+ratios_bp <- ratios_patients_with_without_psy_all %>%
+  filter( period == "before_pandemic")
+
+ratios_dp <- ratios_patients_with_without_psy_all %>%
+  filter( period == "during_pandemic")
+
+metainputdata <- ratios_dp
+#RR no transformation
+#PLO the logit transformation
+#PFT the double arcsine transformation
+ies=escalc(xi=count_psy_patients, ni=total, data=metainputdata, measure="PR")
+summary(ies$vi)
+
+# pool the individual effect size
+# DL random effects using the DerSimonian-Laird estimator
+#REML random effects using the restricted maximum-likelihood estimator
+pes = rma(yi, vi, data=ies, method="REML")
+print(pes)
+confint(pes)
+
+pes.summary=metaprop(count_psy_patients, total, as.character(time_p),
+                     data=metainputdata, 
+                     sm="PRAW")
+forest(pes.summary,layout = "JAMA")
+```
+
+### Boxplot showing ratio per month
+
+```{r}
+ratios_patients_with_without_psy_all %>%
+  ggplot( aes(x=as.factor(time_p), y=ratio)) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    geom_jitter(color="black", size=0.4, alpha=0.9,
+                aes(shape = siteid)) +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(size=11)
+    ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+    ggtitle("Ratio boxplot") +
+    xlab("")
+```
+
+#### Overlap lines: one per site
+```{r}
+ratios_patients_with_without_psy_all %>%
+  ggplot( aes(x=as.factor(time_p), y=ratio, 
+              group = siteid, color = siteid))+
+  geom_point() + 
+  geom_line() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(size=11)
+    ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+    ggtitle("Dot and line plot") +
+    xlab("period (months)")
+
+```
+
+
