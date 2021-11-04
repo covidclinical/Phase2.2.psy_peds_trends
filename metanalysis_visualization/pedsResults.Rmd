@@ -12,7 +12,7 @@ paket <- function(pak){
     install.packages(new_pak, dependencies = TRUE,repos="https://cloud.r-project.org/")
   sapply(pak, library, character.only = TRUE)
 }
-listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta")
+listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis")
 paket(listOfPackages)
 ```
 
@@ -47,11 +47,14 @@ end_date_plots <- as.Date("2021-05-01")
 Each site shared the aggregated counts results. Putting all the results together. 
 
 ```{r}
-outputDir <- "./output/"
-outputFiles <- list.files( path = outputDir, pattern = ".RData")
+outputDir <- "../output/"
+outputFiles <- list.files( path = outputDir, pattern = "\\.RData")
+getwd()
 ```
 
-Put all the aggregate counts from the different sites together
+
+
+Put all the aggregated counts from the different sites together
 ```{r}
 for( i in 1:length( outputFiles )){
   load(paste0( outputDir, outputFiles[i]))
@@ -229,78 +232,43 @@ ratios_patients_with_without_psy_all %>%
 
 #### Meta-analysis of temporal trends
 
+
+
+
 ```{r}
-# Fixed effect
-
-load("output/peds_psy_aggResults_BCH.RData")
-df_meta <- bootstrapped_fitted_df %>%
-  filter(iteration %in% 1:4) %>%
-  mutate(siteid = as.factor(iteration))
-
-cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-theme_plots <- theme_bw() +
-  theme(strip.text = element_text(size = 5),
-        axis.text.x = element_text(size = 8),
-        axis.text.y = element_text(size = 6),
-        axis.title.x = element_text(size = 8),
-        axis.title.y = element_text(size = 8),
-        title = element_text(size = 10),
-        plot.subtitle = element_text(size = 9, face = "italic"))
-theme_set(theme_plots)
-
-# Colorblind palette
-cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
-## Fixed Effect model
-
-fixed_model <- lm(
-  percentage ~ time*period + time*siteid,
-  data = df_meta)
-
-result_fixed_model <- broom::tidy(fixed_model)
-
-df_meta$fitted_fixed <- fitted(fixed_model)
-
-pvalue <- result_fixed_model[result_fixed_model$term == "time:periodduring_pandemic",
-                             "p.value"][[1]] %>%
-  round(4)
-
-annotation_plot <- paste0(
-  "Difference of trend before/during pandemic: p",
-  ifelse(pvalue == 0,
-         "< 1e^-4",
-         paste0("=", as.character(pvalue)))
-)
-
-ggplot(data = df_meta, aes(x = time_p,
-                           y = percentage,
-                           color = siteid)) +
-  geom_point() +
-  geom_line(aes(y=fitted_fixed), data = df_meta[df_meta$period == "before_pandemic", ]) +
-  geom_line(aes(y=fitted_fixed), data = df_meta[df_meta$period == "during_pandemic", ]) +
-  geom_line(aes(y=predicted, color=NULL), data = df_meta[df_meta$period == "before_pandemic", ]) +
-  geom_line(aes(y=predicted, color=NULL), data = df_meta[df_meta$period == "during_pandemic", ]) +
-  scale_fill_manual(values = cbPalette) +
-  scale_color_manual(values = cbPalette) +
-  labs(title = "Meta-analysis: percentage of visits with Mental Health ICD code across sites",
-       subtitle = "Sites effect treated as fixed effect",
-       color = "Sites",
-       x = "Calendar date",
-       y = "Percentage"
-       ) +
-  annotate("text",
-           x = as.Date("2019-10-01"),
-           y = max(df_meta[["percentage"]]),
-           label = annotation_plot,
-           )
-
-
-# Same but with random effect for the sites effect on trends
-library(lme4)
-mixed_model <- lmer(percentage ~ time*period + (time|siteid),
-                    data = df_meta)
-
-
+## Estimate sampling variances
+meta_df <- ratios_patients_with_without_psy_all
+meta_df$time <- as.numeric(as.factor(meta_df$time_p))
+##### Sampling model 
+trend_model <- "percentage ~ period * time"
+trends <- meta_df %>% 
+  group_by(siteid) %>% 
+  group_modify( ~ broom::tidy(lm(as.formula(trend_model), data = .x))) %>%
+  filter(term == c("periodduring_pandemic:time")) %>% 
+  mutate(variance = std.error * std.error) %>% 
+  select(siteid, estimate, variance)
+  
 ```
 
 
+```{r}
+meta_df$sampling_variances
+## Fixed Effect model
+
+model_meta <- metafor::rma(yi = estimate, 
+             vi = variance,
+             measure = "GEN",
+  data = trends) 
+
+model_meta %>% 
+  broom::tidy()
+
+predict(model_meta)
+fitted(model_meta)
+
+metafor::forest(model_meta,
+                atransf=exp,
+                slab = trends$siteid,
+                header="Sites",
+                mlab="Overall temporal trend")
+```
