@@ -1,0 +1,281 @@
+---
+title: "Results visualization across sites"
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_float: yes
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+## Setting up the R environment
+
+### Installing packages and loading the library
+
+```{r libraries, message=FALSE, warning=FALSE, results='hide'}
+# Install packages
+paket <- function(pak){
+  new_pak <- pak[!(pak %in% rownames(installed.packages()))]
+  if (length(new_pak)) 
+    install.packages(new_pak, dependencies = TRUE,repos="https://cloud.r-project.org/")
+  sapply(pak, library, character.only = TRUE)
+}
+listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis")
+paket(listOfPackages)
+```
+
+### R session information
+
+```{r, results='hide'}
+sessionInfo()
+```
+
+```{r}
+# options(repr.plot.width = 18, repr.plot.height = 9)
+theme_plots <- theme_bw() +
+  theme(strip.text = element_text(size = 5),
+        axis.text.x = element_text(size = 8), 
+        axis.text.y = element_text(size = 6), 
+        axis.title.x = element_text(size = 8),
+        axis.title.y = element_text(size = 8),
+        title = element_text(size = 10),
+        plot.subtitle = element_text(size = 9, face = "italic")) 
+theme_set(theme_plots)
+
+# Colorblind palette
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+
+```{r}
+# cut-off dates used in the analysis, these should not be changed
+time_period <-"months" #possible values: days, weeks, months
+history_start_date <- as.Date("2019-01-01")
+history_end_date <- as.Date("2021-05-31")
+pandemic_start_date <- as.Date("2020-03-15")
+start_date_plots <- as.Date("2019-01-15")
+end_date_plots <- as.Date("2021-05-01")
+```
+
+## Read the input file by site
+Each site shared the aggregated counts results. Putting all the results together. 
+
+```{r}
+outputDir <- "../../output/"
+outputFiles <- list.files( path = outputDir, pattern = "\\.RData")
+country_map <- read.delim( file = paste0( outputDir, "country_mapping.txt"))
+getwd()
+```
+
+Put all the aggregated counts from the different sites together
+```{r}
+for( i in 1:length( outputFiles )){
+  load(paste0( outputDir, outputFiles[i]))
+  if( i == 1 ){
+    count_icd_all <- count_icd
+    patients_hospitalized_agg_sex_perc_all <- patients_hospitalized_agg_sex_perc
+    patient_count_psy_period_psy_all <- patient_count_psy_period_psy
+    perc_disorder_group_all <- perc_disorder_group
+    ratios_patients_with_without_psy_all <- ratios_patients_with_without_psy
+  }else{
+    count_icd_all <- rbind(count_icd_all, count_icd)
+    patients_hospitalized_agg_sex_perc_all <- rbind( patients_hospitalized_agg_sex_perc_all, patients_hospitalized_agg_sex_perc)
+    patient_count_psy_period_psy_all <- rbind( patient_count_psy_period_psy_all,patient_count_psy_period_psy)
+    perc_disorder_group_all <- rbind(perc_disorder_group_all, perc_disorder_group)
+    ratios_patients_with_without_psy_all <- rbind( ratios_patients_with_without_psy_all, ratios_patients_with_without_psy)
+  }
+  rm(count_icd,patients_hospitalized_agg_sex_perc,patient_count_psy_period_psy,
+     perc_disorder_group,ratios_patients_with_without_psy,
+     patient_count_psy_period_psy_clear, table1, bootstrapped_coefficients_df,
+     bootstrapped_fitted_df, length_hospitalisation_values)
+}
+```
+
+## Percentage: patients with psychiatric conditions / total number of patients 
+
+### By site 
+
+```{r}
+ratios_patients_with_without_psy_all %>%
+  filter(time_p <= history_end_date &
+         time_p >= history_start_date ) %>%
+  ggplot( aes(x=time_p, y=percentage, 
+              group = siteid, color = siteid))+
+  geom_point( aes(shape=siteid, color=siteid) )+
+    geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(size=11)
+    ) +
+  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+    ggtitle("Percentage: patients with psychiatric conditions / total number of patients") +
+    xlab("period (months)")
+```
+
+### By Country
+
+```{r}
+ratios_patients_with_without_psy_all_country <- left_join( ratios_patients_with_without_psy_all, country_map )
+ratios_patients_with_without_psy_all_country %>%
+    filter(time_p <= history_end_date &
+         time_p >= history_start_date )  %>%
+  ggplot(aes(x = time_p, y = percentage, fill = siteid, color = siteid)) +
+  geom_point( aes(shape=siteid, color=siteid)  ) +
+  geom_line() +
+  facet_grid(country~.) +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month", limits = c( history_start_date, history_end_date  )) +
+  labs(y = "Ratio (with psy conditions/without psy conditions)",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Percentage: patients with psychiatric conditions / total number of patients ( per ", time_period,")"))
+```
+
+## Ratio: patients with vs. patients without psychiatric conditions
+
+### By site
+```{r}
+ratios_patients_with_without_psy_all %>%
+  filter(time_p <= history_end_date &
+         time_p >= history_start_date ) %>%
+  ggplot( aes(x=time_p, y=ratio, 
+              group = siteid, color = siteid))+
+  geom_point( aes(shape=siteid, color=siteid) ) + 
+  geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(size=11)
+    ) +
+  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+    ggtitle("Ratio: patients with vs. patients without psychiatric conditions") +
+    xlab("period (months)")
+
+```
+
+### By Country
+
+```{r}
+ratios_patients_with_without_psy_all_country %>%
+    filter(time_p <= history_end_date &
+         time_p >= history_start_date ) %>%
+  ggplot(aes(x = time_p, y = ratio, fill = siteid, color = siteid)) +
+  geom_point( aes(shape=siteid, color=siteid)  ) +
+  geom_line() +
+  facet_grid(country~.) +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month", limits = c( history_start_date, history_end_date  )) +
+  labs(y = "Ratio (with psy conditions/without psy conditions)",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Ratio patient with vs without psychiatric conditions ( per ", time_period,")"))
+```
+
+
+## Meta-analysis percentage
+
+```{r, results='hide', fig.show='hide'}
+#split this into before and after pandemic and run it twice (one for each subset)
+
+#estimate the summary effect size
+ratios_patients_with_without_psy_all$total <- ratios_patients_with_without_psy_all$count_no_psy_patients + ratios_patients_with_without_psy_all$count_psy_patients
+
+ratios_bp <- ratios_patients_with_without_psy_all %>%
+  filter( period == "before_pandemic")
+
+ratios_dp <- ratios_patients_with_without_psy_all %>%
+  filter( period == "during_pandemic")
+
+metainputdata <- ratios_dp
+#RR no transformation
+#PLO the logit transformation
+#PFT the double arcsine transformation
+ies=escalc(xi=count_psy_patients, ni=total, data=metainputdata, measure="PR")
+summary(ies$vi)
+
+# pool the individual effect size
+# DL random effects using the DerSimonian-Laird estimator
+#REML random effects using the restricted maximum-likelihood estimator
+pes = rma(yi, vi, data=ies, method="REML")
+print(pes)
+confint(pes)
+
+pes.summary=metaprop(count_psy_patients, total, as.character(time_p),
+                     data=metainputdata, 
+                     sm="PRAW")
+forest(pes.summary,layout = "JAMA")
+```
+
+### Boxplot showing ratio per month
+
+```{r}
+ratios_patients_with_without_psy_all %>%
+  ggplot( aes(x=as.factor(time_p), y=ratio)) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    geom_jitter(color="black", size=0.4, alpha=0.9,
+                aes(shape = siteid)) +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(size=11)
+    ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+    ggtitle("Ratio boxplot") +
+    xlab("")
+```
+
+
+## Meta-analysis of temporal trends
+
+```{r}
+## Estimate sampling variances
+meta_df <- ratios_patients_with_without_psy_all
+meta_df$time <- as.numeric(as.factor(meta_df$time_p))
+##### Sampling model 
+trend_model <- "percentage ~ period * time"
+trends <- meta_df %>% 
+  group_by(siteid) %>% 
+  group_modify( ~ broom::tidy(lm(as.formula(trend_model), data = .x))) %>%
+  filter(term == c("periodduring_pandemic:time")) %>% 
+  mutate(variance = std.error * std.error) %>% 
+  select(siteid, estimate, variance)
+  
+```
+
+
+```{r}
+meta_df$sampling_variances
+## Fixed Effect model
+
+model_meta <- metafor::rma(yi = estimate, 
+             vi = variance,
+             measure = "GEN",
+  data = trends) 
+
+model_meta %>% 
+  broom::tidy()
+
+predict(model_meta)
+fitted(model_meta)
+
+metafor::forest(model_meta,
+                atransf=exp,
+                slab = trends$siteid,
+                header="Sites",
+                mlab="Overall temporal trend")
+```
+
