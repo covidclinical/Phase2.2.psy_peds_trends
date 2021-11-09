@@ -23,7 +23,7 @@ paket <- function(pak){
   sapply(pak, library, character.only = TRUE)
 }
 
-listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr")
+listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "lubridate")
 paket(listOfPackages)
 ```
 
@@ -347,6 +347,33 @@ stopifnot(length(unique(all_codes_ado$patient_num)) == length(unique(observation
 stopifnot(length(unique(all_codes_ado$patient_num)) == length(unique(clinical_table_ado$patient_num)))
 stopifnot(nrow(distinct(all_codes_ado, patient_num, n_hospitalisation)) == nrow(distinct(clinical_table_ado, patient_num, n_hospitalisation)))
 stopifnot(nrow(distinct(all_codes_ado, patient_num, days_since_admission)) == nrow(distinct(observation_table_ado, patient_num, days_since_admission)))
+```
+
+#### QC step: do a summary of the mental health ICD codes present in each site
+As output we will generate a table with: the number of observations per code, number of patients diagnosed with each code and the date range in which the code was used. 
+
+```{r}
+#filter the whole dataset to only mental codes
+mental_codes_qc <- all_codes_ado %>% 
+  filter( concept_code %in% mentalHealthCodes$concept_code )
+
+mental_codes_qc_output <- mental_codes_qc %>%
+  group_by( concept_code ) %>%
+  dplyr::summarise( distinct_patients = ifelse(length(unique(patient_num)) > obfuscation | isFALSE(obfuscation),
+                               length(unique(patient_num)), 
+                               0.5),
+                    distinct_observations = ifelse(length(patient_num) > obfuscation | isFALSE(obfuscation),
+                               length(patient_num), 
+                               0.5),                           
+                    min_date = min( dmy( calendar_date ) ), 
+                    max_date = max( dmy( calendar_date ) ))%>% 
+  arrange(desc(distinct_observations))
+
+mental_codes_qc_output <- left_join( mental_codes_qc_output, icdCodes, by=c("concept_code"= "ICD10_Code")) 
+mental_codes_qc_output  <- mental_codes_qc_output[, c("disorder_group", "description", "concept_code", "distinct_patients", 
+                                                    "distinct_observations", "min_date", "max_date")]
+
+mental_codes_qc_output[1:10, ]
 ```
 
 
@@ -1315,6 +1342,7 @@ length_hospitalisation_values <- all_codes_psy %>%
   dplyr::select( len_hospitalisation, siteid, period )
 
 # add the site id as column for each of the output data frames
+mental_codes_qc_output$siteid = site 
 count_icd$siteid = site 
 patient_count_psy_period_psy$siteid = site 
 patient_count_psy_period_psy_clear$siteid = site 
@@ -1326,6 +1354,7 @@ table1$siteid = site
 ratios_patients_with_without_psy$siteid = site 
 
 save( count_icd,
+      mental_codes_qc_output,
       ratios_patients_with_without_psy,
       patient_count_psy_period_psy,
       patient_count_psy_period_psy_clear,
