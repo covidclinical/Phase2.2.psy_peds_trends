@@ -237,9 +237,8 @@ print( paste0("There are ", length(mentalHealthCodes$concept_code), " ICD10 ment
 ```{r}
 # Calculating patient age at the time of visit, assuming the age used is the patients' age at the time of extraction (last discharge date available in the data)
 obs_raw_age <- left_join(obs_raw, demo_raw[c("patient_num", "age")], by = c("patient_num")) %>% 
-  left_join(clinical_raw[, c("patient_num", "days_since_admission", "calendar_date")], 
+  inner_join(clinical_raw[, c("patient_num", "days_since_admission", "calendar_date")], 
             by = c("patient_num", "days_since_admission"))
-stopifnot(nrow(obs_raw_age) == nrow(obs_raw))
 obs_raw_age$age_time_diagnosis <- obs_raw_age$age - floor(as.numeric(as.Date(data_update_date) - as.Date(obs_raw_age$calendar_date, dateFormat)) / 365.25)
 ```
 
@@ -903,9 +902,6 @@ bootstrapped_coefficients_df <- bind_rows(bootstrapped_coefficients_list, .id = 
 mean(bootstrapped_coefficients_df$time)
 mean(bootstrapped_coefficients_df$time + bootstrapped_coefficients_df[["periodduring_pandemic:time"]])
 pvalue_coeff_interaction <- round(t.test(bootstrapped_coefficients_df[["periodduring_pandemic:time"]])$p.value, 4)
-pvalue_coeff_interaction <- ifelse(pvalue_coeff_interaction == 0,
-                                   "< 1e-4",
-                                   str(pvalue_coeff_interaction))
 plot_annotation <- paste0("Diff. in slope coeffs before and after pandemic: ",
                      round(mean(bootstrapped_coefficients_df[["periodduring_pandemic:time"]]), 2),
                      " (pvalue: ",

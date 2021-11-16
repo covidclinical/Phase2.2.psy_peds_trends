@@ -243,39 +243,49 @@ ratios_patients_with_without_psy_all %>%
 
 ```{r}
 ## Estimate sampling variances
-meta_df <- ratios_patients_with_without_psy_all
+meta_df <- ratios_patients_with_without_psy_all_country
 meta_df$time <- as.numeric(as.factor(meta_df$time_p))
-##### Sampling model 
+```
+
+```{r}
 trend_model <- "percentage ~ period * time"
-trends <- meta_df %>% 
+```
+
+```{r}
+trends_siteid <- meta_df %>% 
   group_by(siteid) %>% 
   group_modify( ~ broom::tidy(lm(as.formula(trend_model), data = .x))) %>%
   filter(term == c("periodduring_pandemic:time")) %>% 
   mutate(variance = std.error * std.error) %>% 
   select(siteid, estimate, variance)
-  
-```
 
-
-```{r}
-meta_df$sampling_variances
-## Fixed Effect model
-
-model_meta <- metafor::rma(yi = estimate, 
+model_meta_siteid <- metafor::rma(yi = estimate, 
              vi = variance,
              measure = "GEN",
-  data = trends) 
-
-model_meta %>% 
-  broom::tidy()
-
-predict(model_meta)
-fitted(model_meta)
-
-metafor::forest(model_meta,
-                atransf=exp,
-                slab = trends$siteid,
+             method = "DL",
+  data = trends_siteid) 
+metafor::forest(model_meta_siteid,
+                slab = trends_siteid$siteid,
                 header="Sites",
                 mlab="Overall temporal trend")
 ```
 
+
+```{r}
+trends_country <- meta_df %>% 
+  group_by(country) %>% 
+  group_modify( ~ broom::tidy(lm(as.formula(trend_model), data = .x))) %>%
+  filter(term == c("periodduring_pandemic:time")) %>% 
+  mutate(variance = std.error * std.error) %>% 
+  select(country, estimate, variance)
+
+model_meta_country <- metafor::rma(yi = estimate, 
+             vi = variance,
+             measure = "GEN",
+             method = "DL",
+  data = trends_country) 
+metafor::forest(model_meta_country,
+                slab = trends_country$country,
+                header="Sites",
+                mlab="Overall temporal trend")
+```
