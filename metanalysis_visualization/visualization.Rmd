@@ -422,3 +422,26 @@ sex_ratio_by_site %>%
        title = paste0("Sex ratio of patients with mental disorders \n ( per ", time_period,")"))
 ```
 
+### Total number of patients per month an site
+
+```{r}
+patients_hospitalized_agg_sex_perc_all %>%
+  select( time_p, count, siteid) %>%
+  unique() %>%
+    filter(time_p <= history_end_date &
+         time_p >= history_start_date) %>%
+  ggplot(aes(x = time_p, y = count, fill = siteid, color = siteid)) +
+  geom_point( aes(shape=siteid, color=siteid)  ) +
+  geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month", limits = c( history_start_date, history_end_date  )) +
+  labs(y = "number of patients",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Total number of patients with mental disorders per site \n ( per ", time_period,")"))
+```
+```
+
