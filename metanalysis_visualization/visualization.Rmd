@@ -119,6 +119,7 @@ ratios_patients_with_without_psy_all %>%
 
 ### By Country
 
+#### Showing each independent site 
 ```{r}
 ratios_patients_with_without_psy_all_country <- left_join( ratios_patients_with_without_psy_all, country_map )
 ratios_patients_with_without_psy_all_country %>%
@@ -137,6 +138,41 @@ ratios_patients_with_without_psy_all_country %>%
   labs(y = "Ratio (with psy conditions/without psy conditions)",
        x = paste0("Date (by ", time_period,")"),
        title = paste0("Percentage: patients with psychiatric conditions / total number of patients ( per ", time_period,")"))
+```
+
+#### Aggregating the sites in each country
+
+```{r}
+ratios_patients_with_without_psy_all_country <- left_join( ratios_patients_with_without_psy_all, country_map )
+
+ratios_patients_with_without_psy_aggregated <- ratios_patients_with_without_psy_all_country %>%
+  group_by( time_p, country ) %>%
+  mutate( no_psy = sum( count_no_psy_patients ), 
+          psy = sum( count_psy_patients ), 
+          total = sum(count_no_psy_patients) + sum(count_psy_patients), 
+          ratio_by_country = psy / no_psy, 
+          perc_by_country = 100*(psy / total) ) %>%
+  select( time_p, no_psy, psy, total, ratio_by_country, perc_by_country, country)
+
+ratios_patients_with_without_psy_aggregated %>%
+  filter(time_p <= history_end_date &
+         time_p >= history_start_date ) %>%
+  ggplot( aes(x=time_p, y=perc_by_country, 
+              group = country, color = country))+
+  geom_point( aes(shape=country, color=country) )+
+    geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_colour_viridis_d() +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(size=11)
+    ) +
+  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+    ggtitle(paste0("Percentage: patients with psychiatric conditions / total number of patients ( per ", time_period,") \n (aggregated by country)")) +
+    xlab("period (months)") +
+    ylab("percentage (%)")
 ```
 
 ## Ratio: patients with vs. patients without psychiatric conditions
@@ -166,6 +202,7 @@ ratios_patients_with_without_psy_all %>%
 
 ### By Country
 
+#### Showing each site per country 
 ```{r}
 ratios_patients_with_without_psy_all_country %>%
     filter(time_p <= history_end_date &
@@ -185,6 +222,29 @@ ratios_patients_with_without_psy_all_country %>%
        title = paste0("Ratio patient with vs without psychiatric conditions ( per ", time_period,")"))
 ```
 
+#### Aggregating the values of the sites per country 
+
+```{r}
+ratios_patients_with_without_psy_aggregated %>%
+  filter(time_p <= history_end_date &
+         time_p >= history_start_date ) %>%
+  ggplot( aes(x=time_p, y=ratio_by_country, 
+              group = country, color = country))+
+  geom_point( aes(shape=country, color=country) )+
+    geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_colour_viridis_d() +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(size=11)
+    ) +
+  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+    ggtitle("Ratios: patients with psychiatric conditions / without psychiatric conditions \n (aggregated by country)") +
+    xlab("period (months)") +
+    ylab("ratio")
+```
 
 ## Meta-analysis percentage
 
