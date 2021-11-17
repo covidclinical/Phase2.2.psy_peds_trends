@@ -349,3 +349,76 @@ metafor::forest(model_meta_country,
                 header="Sites",
                 mlab="Overall temporal trend")
 ```
+
+
+## Percentage of patients by disorder group
+
+```{r}
+perc_disorder_group_all %>%
+    filter(time_p <= history_end_date &
+         time_p >= history_start_date &
+           disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" )) %>%
+  ggplot(aes(x = time_p, y = percentage_dg, fill = siteid, color = siteid)) +
+  geom_point( aes(shape=siteid, color=siteid)  ) +
+  geom_line() +
+  facet_grid(. ~ disorder_group) +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month", limits = c( history_start_date, history_end_date  )) +
+  labs(y = "Percentage of patients (%)",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Percentage of patients by disorder group \n ( per ", time_period,")"))
+
+perc_disorder_group_all %>%
+    filter(time_p <= history_end_date &
+         time_p >= history_start_date &
+          #disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" )) %>%
+          disorder_group %in% c("Suicide or Self-Injury" )) %>%
+  ggplot(aes(x = time_p, y = percentage_dg, fill = siteid, color = siteid)) +
+  geom_point( aes(shape=siteid, color=siteid)  ) +
+  geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month", limits = c( history_start_date, history_end_date  )) +
+  labs(y = "Percentage of patients (%)",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Percentage of patients with Suicide or Self-Injury \n ( per ", time_period,")"))
+```
+
+
+## Sex ratio per site
+
+```{r}
+sex_ratio_by_site <- patients_hospitalized_agg_sex_perc_all %>%
+  filter( sex == "female") %>%
+  group_by( time_p, siteid ) %>%
+  mutate( female_count = count_sex, 
+          male_count = count - count_sex, 
+          sex_ratio_by_site = female_count / male_count ) %>%
+  select( time_p, female_count, male_count, sex_ratio_by_site, siteid)
+
+sex_ratio_by_site %>%
+    filter(time_p <= history_end_date &
+         time_p >= history_start_date) %>%
+  ggplot(aes(x = time_p, y = sex_ratio_by_site, fill = siteid, color = siteid)) +
+  geom_point( aes(shape=siteid, color=siteid)  ) +
+  geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+   geom_hline(yintercept = 1,
+             linetype = "dashed", color = "red") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month", limits = c( history_start_date, history_end_date  )) +
+  labs(y = "sex ratio (female/male)",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Sex ratio of patients with mental disorders \n ( per ", time_period,")"))
+```
+
