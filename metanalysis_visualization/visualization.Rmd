@@ -62,7 +62,7 @@ end_date_plots <- as.Date("2021-05-01")
 Each site shared the aggregated counts results. Putting all the results together. 
 
 ```{r}
-outputDir <- "../../output/"
+outputDir <- "../../output/latest_output/"
 outputFiles <- list.files( path = outputDir, pattern = "\\.RData")
 country_map <- read.delim( file = paste0( outputDir, "country_mapping.txt"))
 getwd()
@@ -71,6 +71,7 @@ getwd()
 Put all the aggregated counts from the different sites together
 ```{r}
 for( i in 1:length( outputFiles )){
+  print(i)
   load(paste0( outputDir, outputFiles[i]))
   if( i == 1 ){
     count_icd_all <- count_icd
@@ -78,17 +79,22 @@ for( i in 1:length( outputFiles )){
     patient_count_psy_period_psy_all <- patient_count_psy_period_psy
     perc_disorder_group_all <- perc_disorder_group
     ratios_patients_with_without_psy_all <- ratios_patients_with_without_psy
+    mental_codes_qc_output_all <- mental_codes_qc_output %>%
+      select( disorder_group, description, concept_code, distinct_patients, distinct_observations, siteid )
   }else{
     count_icd_all <- rbind(count_icd_all, count_icd)
     patients_hospitalized_agg_sex_perc_all <- rbind( patients_hospitalized_agg_sex_perc_all, patients_hospitalized_agg_sex_perc)
     patient_count_psy_period_psy_all <- rbind( patient_count_psy_period_psy_all,patient_count_psy_period_psy)
     perc_disorder_group_all <- rbind(perc_disorder_group_all, perc_disorder_group)
     ratios_patients_with_without_psy_all <- rbind( ratios_patients_with_without_psy_all, ratios_patients_with_without_psy)
+   mental_codes_qc_output <- mental_codes_qc_output %>%
+      select( disorder_group, description, concept_code, distinct_patients, distinct_observations, siteid )
+    mental_codes_qc_output_all <- rbind( mental_codes_qc_output_all, mental_codes_qc_output)
   }
   rm(count_icd,patients_hospitalized_agg_sex_perc,patient_count_psy_period_psy,
      perc_disorder_group,ratios_patients_with_without_psy,
      patient_count_psy_period_psy_clear, table1, bootstrapped_coefficients_df,
-     bootstrapped_fitted_df, length_hospitalisation_values)
+     bootstrapped_fitted_df, mental_codes_qc_output)
 }
 ```
 
@@ -422,26 +428,44 @@ sex_ratio_by_site %>%
        title = paste0("Sex ratio of patients with mental disorders \n ( per ", time_period,")"))
 ```
 
-### Total number of patients per month an site
-
+### Summary of the codes used per site 
 ```{r}
-patients_hospitalized_agg_sex_perc_all %>%
-  select( time_p, count, siteid) %>%
-  unique() %>%
-    filter(time_p <= history_end_date &
-         time_p >= history_start_date) %>%
-  ggplot(aes(x = time_p, y = count, fill = siteid, color = siteid)) +
-  geom_point( aes(shape=siteid, color=siteid)  ) +
-  geom_line() +
-  geom_vline(xintercept = as.Date(pandemic_start_date),
-             linetype = "dashed") +
-  scale_fill_manual(values = cbPalette) +
-  scale_color_manual(values = cbPalette) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
-  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month", limits = c( history_start_date, history_end_date  )) +
-  labs(y = "number of patients",
-       x = paste0("Date (by ", time_period,")"),
-       title = paste0("Total number of patients with mental disorders per site \n ( per ", time_period,")"))
+library(tidyr)
+summary_codes <- mental_codes_qc_output_all %>%
+  select( disorder_group, description, concept_code, distinct_patients, siteid ) %>%
+  spread( siteid, distinct_patients)
+
+# extract all codes that are available across all sites
+codes_in_all_sites <- summary_codes[ complete.cases( summary_codes ), ]
+codes_in_all_sites <- codes_in_all_sites[
+  with(codes_in_all_sites, order(BCH, FRBDX, Lurie, UMICH, decreasing = TRUE)),
+]
+print( paste0("There are in total ", nrow( codes_in_all_sites), " codes in common across all sites"))
+
+#### upSetR 
+library(devtools)
+install_github("jokergoo/ComplexHeatmap")
+library( ComplexHeatmap)
+BCH_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "BCH", "concept_code"]
+FRBDX_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "FRBDX", "concept_code"]
+Lurie_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "Lurie", "concept_code"]
+UMICH_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "UMICH", "concept_code"]
+
+concepts = list( 
+          BCH = BCH_concepts$concept_code,
+          FRBDX = FRBDX_concepts$concept_code, 
+          Lurie = Lurie_concepts$concept_code, 
+          UMICH = UMICH_concepts$concept_code
+          )
+
+upset(fromList(concepts), order.by = "freq")
+
+all_other_sites <- unique( c( FRBDX_concepts$concept_code, Lurie$concept_code, UMICH$concept_code ))
+concepts_in_bch_not_in_other_sites <- BCH_concepts[! BCH_concepts$concept_code %in% all_other_sites, ]
+codesToReview <- mental_codes_qc_output_all[ mental_codes_qc_output_all$concept_code %in% concepts_in_bch_not_in_other_sites$concept_code, ]
+
+write.table( codesToReview, file="icdCodesOnlyInBCH.txt", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE )
+write.table( codes_in_all_sites, file="icdCodesPresentInAllSites.txt", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE )
 ```
-```
+
 
