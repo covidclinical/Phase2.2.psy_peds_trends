@@ -97,7 +97,7 @@ in the 4CE demographic file is expected the age at data update.
 6. "time_period": Time unit for the different graphs of the plots: months (default), weeks, days
 
 ```{r message=FALSE, warning=FALSE}
-folder_4ce_files <- "../Input/09212021_2/"
+folder_4ce_files <- "Input/09212021_2/"
 obfuscation =  FALSE
 #obfuscation = 3
 raceAvailable = TRUE
@@ -137,7 +137,7 @@ For sites recording the race, we will also use an additional file:
 ### Read the CSV input files
 source("R/readInputFiles.R")
 
-
+getwd()
 files <- readInputFiles( path      = folder_4ce_files, 
                          separator = ",",
                          skip      = 0, 
@@ -904,9 +904,9 @@ mean(bootstrapped_coefficients_df$time + bootstrapped_coefficients_df[["perioddu
 
 pvalue_coeff_interaction <- round(
   (1- max(
-    sum(bootstrapped_coefficients_df[["periodduring_pandemic:time"]] > 0,
-        bootstrapped_coefficients_df[["periodduring_pandemic:time"]] < 0)
-  )/nrow(df)) * 2
+    sum(bootstrapped_coefficients_df[["periodduring_pandemic:time"]] > 0),
+        sum(bootstrapped_coefficients_df[["periodduring_pandemic:time"]] < 0)
+  )/nrow(bootstrapped_coefficients_df)) * 2
   , 3) 
 
 plot_annotation <- paste0("Coeffs differences: ",
