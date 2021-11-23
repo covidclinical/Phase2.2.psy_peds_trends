@@ -901,12 +901,19 @@ quantile_bootstrapped_fitted <- bootstrapped_fitted_df %>%
 bootstrapped_coefficients_df <- bind_rows(bootstrapped_coefficients_list, .id = "iteration")
 mean(bootstrapped_coefficients_df$time)
 mean(bootstrapped_coefficients_df$time + bootstrapped_coefficients_df[["periodduring_pandemic:time"]])
-pvalue_coeff_interaction <- round(t.test(bootstrapped_coefficients_df[["periodduring_pandemic:time"]])$p.value, 4)
-plot_annotation <- paste0("Diff. in slope coeffs before and after pandemic: ",
-                     round(mean(bootstrapped_coefficients_df[["periodduring_pandemic:time"]]), 2),
-                     " (pvalue: ",
-                     pvalue_coeff_interaction,
-                     ")")
+
+pvalue_coeff_interaction <- round(
+  (1- max(
+    sum(bootstrapped_coefficients_df[["periodduring_pandemic:time"]] > 0,
+        bootstrapped_coefficients_df[["periodduring_pandemic:time"]] < 0)
+  )/nrow(df)) * 2
+  , 3) 
+
+plot_annotation <- paste0("Coeffs differences: ",
+       round(mean(bootstrapped_coefficients_df[["periodduring_pandemic:time"]]), 2),
+       " (pvalue: ",
+       pvalue_coeff_interaction,
+       ")")
 
 ggplot(bootstrapped_fitted_df, aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
   geom_line(aes(color = period),
@@ -932,9 +939,6 @@ ggplot(bootstrapped_fitted_df, aes(x = time_p, y = predicted, group = interactio
        color = "Period")
 
 ```
-
-
-
 
 
 ## Psychiatric conditions aggregating by subcategories
