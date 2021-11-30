@@ -451,9 +451,6 @@ new_hospitalizations <- clinical_table %>%
                                0.5)) %>% 
   ungroup()
 
-start_date_plots <- as.Date("2019-01-01")
-end_date_plots <- as.Date("2021-05-24")
-
 nh <- admission_plot_count(df = new_hospitalizations, 
                      x = "time_p",
                      y = "count", 
@@ -477,8 +474,6 @@ new_hospitalizations_ado <- clinical_table_ado %>%
                                0.5)) %>% 
   ungroup()
 
-start_date_plots <- as.Date("2019-01-01")
-end_date_plots <- as.Date("2021-05-24")
 
 nh_ado <- admission_plot_count(df = new_hospitalizations_ado, 
                      x = "time_p",

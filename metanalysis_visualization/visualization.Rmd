@@ -395,6 +395,8 @@ trend_model <- "percentage ~ period * time"
 
 ```{r}
 trends_siteid <- meta_df %>% 
+  filter((time_p >= as.Date("2019-02-01")) & (time_p <= as.Date("2021-05-01"))) %>% 
+  filter(siteid != "APHP") %>%
   group_by(siteid) %>% 
   group_modify( ~ broom::tidy(lm(as.formula(trend_model), data = .x))) %>%
   filter(term == c("periodduring_pandemic:time")) %>% 
@@ -416,6 +418,7 @@ metafor::forest(model_meta_siteid,
 ```{r}
 trends_country <- meta_df %>% 
   group_by(country) %>% 
+  filter((time_p >= as.Date("2019-02-01")) & (time_p <= as.Date("2021-05-01"))) %>% 
   group_modify( ~ broom::tidy(lm(as.formula(trend_model), data = .x))) %>%
   filter(term == c("periodduring_pandemic:time")) %>% 
   mutate(variance = std.error * std.error) %>% 
