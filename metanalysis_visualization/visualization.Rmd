@@ -519,37 +519,57 @@ summary_codes <- mental_codes_qc_output_all %>%
   select( disorder_group, description, concept_code, distinct_patients, siteid ) %>%
   spread( siteid, distinct_patients)
 
-
-# extract all codes that are available across all sites
-codes_in_all_sites <- summary_codes[ complete.cases( summary_codes ), ]
-codes_in_all_sites <- codes_in_all_sites[
-  with(codes_in_all_sites, order(BCH, FRBDX, Lurie, UMICH, APHP, decreasing = TRUE)),
+## add a column with the sites combination 
+getSitesWithEachCode <- function(row) {
+  sites <- c( row['BCH'],  row['Lurie'], row['UMICH'], row['FRBDX'], row['APHP'])
+  sites <- sites[!is.na( sites ) ]
+  siteVal <- paste0( names( sites ), collapse = " - ")
+  return( siteVal)
+}
+summary_codes <- summary_codes[, c("disorder_group", "description", "concept_code", 
+                                   "BCH", "Lurie", "UMICH",  "FRBDX", "APHP") ]                        
+summary_codes$sitesCombination <- apply(summary_codes, 1, FUN = getSitesWithEachCode)
+summary_codes <- summary_codes[
+  with(summary_codes, order(BCH, FRBDX, Lurie, UMICH, APHP, decreasing = TRUE)),
 ]
-print( paste0("There are in total ", nrow( codes_in_all_sites), " codes in common across all sites"))
+print( paste0("There are in total ", nrow( summary_codes[ summary_codes$sitesCombination == "BCH - Lurie - UMICH - FRBDX - APHP", ]), " codes in common across all sites"))
+
+write.table( summary_codes, file="summary_codes.txt", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE )
+
 
 #### upSetR 
+upsetForDisorderGroup <- function( df, disorderGroup = "ALL"){
+  if( disorderGroup != "ALL"){
+     df <- df %>%
+       filter( disorder_group == disorderGroup ) 
+  }
 
-BCH_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "BCH", "concept_code"]
-FRBDX_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "FRBDX", "concept_code"]
-Lurie_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "Lurie", "concept_code"]
-UMICH_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "UMICH", "concept_code"]
-APHP_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "APHP", "concept_code"]
-
-concepts = list( 
+  BCH_concepts = df[ df$siteid == "BCH", "concept_code"]
+  FRBDX_concepts = df[ df$siteid == "FRBDX", "concept_code"]
+  Lurie_concepts = df[ df$siteid == "Lurie", "concept_code"]
+  UMICH_concepts = df[ df$siteid == "UMICH", "concept_code"]
+  APHP_concepts = df[ df$siteid == "APHP", "concept_code"]
+  
+  concepts = list( 
           BCH = BCH_concepts$concept_code,
           FRBDX = FRBDX_concepts$concept_code, 
           Lurie = Lurie_concepts$concept_code, 
           UMICH = UMICH_concepts$concept_code, 
           APHP  = APHP_concepts$concept_code
           )
+  output <- upset(fromList(concepts), order.by = "freq")
+  return( output )
+}
 
-upset(fromList(concepts), order.by = "freq")
-
-all_other_sites <- unique( c( FRBDX_concepts$concept_code, APHP_concepts$concept_code,
-                              Lurie_concepts$concept_code, UMICH_concepts$concept_code ))
-concepts_in_bch_not_in_other_sites <- BCH_concepts[! BCH_concepts$concept_code %in% all_other_sites, ]
-codesToReview <- mental_codes_qc_output_all[ mental_codes_qc_output_all$concept_code %in% concepts_in_bch_not_in_other_sites$concept_code, ]
-
-write.table( codesToReview, file="icdCodesOnlyInBCH.txt", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE )
-write.table( codes_in_all_sites, file="icdCodesPresentInAllSites.txt", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE )
+upsetForDisorderGroup( df = mental_codes_qc_output_all, disorderGroup = "ALL")
 ```
+
+### UpSet R for each disorder group
+```{r}
+disorders <- unique( mental_codes_qc_output_all$disorder_group)
+for( i in 1:length(disorders) ){
+  print( disorders[i] )
+  upsetForDisorderGroup( df = mental_codes_qc_output_all, disorderGroup = disorders[i])
+}
+```
+
