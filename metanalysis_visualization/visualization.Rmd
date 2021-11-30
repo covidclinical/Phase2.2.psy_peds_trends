@@ -78,14 +78,18 @@ for( i in 1:length( outputFiles )){
     patient_count_psy_period_psy_all <- patient_count_psy_period_psy
     perc_disorder_group_all <- perc_disorder_group
     ratios_patients_with_without_psy_all <- ratios_patients_with_without_psy
+    bootstrapped_fitted_all <- bootstrapped_fitted_df
+    bootstrapped_coefficients_all <- bootstrapped_coefficients_df
     mental_codes_qc_output_all <- mental_codes_qc_output %>%
       select( disorder_group, description, concept_code, distinct_patients, distinct_observations, siteid )
-  }else{
+  } else {
     count_icd_all <- rbind(count_icd_all, count_icd)
     patients_hospitalized_agg_sex_perc_all <- rbind( patients_hospitalized_agg_sex_perc_all, patients_hospitalized_agg_sex_perc)
     patient_count_psy_period_psy_all <- rbind( patient_count_psy_period_psy_all,patient_count_psy_period_psy)
     perc_disorder_group_all <- rbind(perc_disorder_group_all, perc_disorder_group)
     ratios_patients_with_without_psy_all <- rbind( ratios_patients_with_without_psy_all, ratios_patients_with_without_psy)
+    bootstrapped_fitted_all <- rbind(bootstrapped_fitted_all, bootstrapped_fitted_df)
+    bootstrapped_coefficients_all <- rbind(bootstrapped_coefficients_all, bootstrapped_coefficients_df)
    mental_codes_qc_output <- mental_codes_qc_output %>%
       select( disorder_group, description, concept_code, distinct_patients, distinct_observations, siteid )
     mental_codes_qc_output_all <- rbind( mental_codes_qc_output_all, mental_codes_qc_output)
@@ -503,9 +507,11 @@ sex_ratio_by_site %>%
 ### Summary of the codes used per site 
 ```{r}
 library(tidyr)
+
 summary_codes <- mental_codes_qc_output_all %>%
   select( disorder_group, description, concept_code, distinct_patients, siteid ) %>%
   spread( siteid, distinct_patients)
+
 
 # extract all codes that are available across all sites
 codes_in_all_sites <- summary_codes[ complete.cases( summary_codes ), ]
