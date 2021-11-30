@@ -22,8 +22,11 @@ paket <- function(pak){
     install.packages(new_pak, dependencies = TRUE,repos="https://cloud.r-project.org/")
   sapply(pak, library, character.only = TRUE)
 }
-listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis")
+listOfPackages <- c("tidyverse", "tidyr","devtools","RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis", "UpSetR")
 paket(listOfPackages)
+
+install_github("jokergoo/ComplexHeatmap")
+library( ComplexHeatmap)
 ```
 
 ### R session information
@@ -62,7 +65,7 @@ end_date_plots <- as.Date("2021-05-01")
 Each site shared the aggregated counts results. Putting all the results together. 
 
 ```{r}
-outputDir <- "../output/latest_output/"
+outputDir <- "../../output/latest_output/"
 outputFiles <- list.files( path = outputDir, pattern = "\\.RData")
 country_map <- read.delim( file = paste0( outputDir, "country_mapping.txt"))
 ```
@@ -396,7 +399,7 @@ trend_model <- "percentage ~ period * time"
 ```{r}
 trends_siteid <- meta_df %>% 
   filter((time_p >= as.Date("2019-02-01")) & (time_p <= as.Date("2021-05-01"))) %>% 
-  filter(siteid != "APHP") %>%
+  filter(siteid != "APHP") %>% 
   group_by(siteid) %>% 
   group_modify( ~ broom::tidy(lm(as.formula(trend_model), data = .x))) %>%
   filter(term == c("periodduring_pandemic:time")) %>% 
@@ -417,8 +420,8 @@ metafor::forest(model_meta_siteid,
 
 ```{r}
 trends_country <- meta_df %>% 
-  group_by(country) %>% 
   filter((time_p >= as.Date("2019-02-01")) & (time_p <= as.Date("2021-05-01"))) %>% 
+  group_by(country) %>% 
   group_modify( ~ broom::tidy(lm(as.formula(trend_model), data = .x))) %>%
   filter(term == c("periodduring_pandemic:time")) %>% 
   mutate(variance = std.error * std.error) %>% 
@@ -509,7 +512,8 @@ sex_ratio_by_site %>%
 
 ### Summary of the codes used per site 
 ```{r}
-library(tidyr)
+mental_codes_qc_output_all <- mental_codes_qc_output_all %>%
+    mutate( concept_code = gsub("[.]", "", concept_code ) )
 
 summary_codes <- mental_codes_qc_output_all %>%
   select( disorder_group, description, concept_code, distinct_patients, siteid ) %>%
@@ -519,29 +523,30 @@ summary_codes <- mental_codes_qc_output_all %>%
 # extract all codes that are available across all sites
 codes_in_all_sites <- summary_codes[ complete.cases( summary_codes ), ]
 codes_in_all_sites <- codes_in_all_sites[
-  with(codes_in_all_sites, order(BCH, FRBDX, Lurie, UMICH, decreasing = TRUE)),
+  with(codes_in_all_sites, order(BCH, FRBDX, Lurie, UMICH, APHP, decreasing = TRUE)),
 ]
 print( paste0("There are in total ", nrow( codes_in_all_sites), " codes in common across all sites"))
 
 #### upSetR 
-library(devtools)
-install_github("jokergoo/ComplexHeatmap")
-library( ComplexHeatmap)
+
 BCH_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "BCH", "concept_code"]
 FRBDX_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "FRBDX", "concept_code"]
 Lurie_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "Lurie", "concept_code"]
 UMICH_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "UMICH", "concept_code"]
+APHP_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "APHP", "concept_code"]
 
 concepts = list( 
           BCH = BCH_concepts$concept_code,
           FRBDX = FRBDX_concepts$concept_code, 
           Lurie = Lurie_concepts$concept_code, 
-          UMICH = UMICH_concepts$concept_code
+          UMICH = UMICH_concepts$concept_code, 
+          APHP  = APHP_concepts$concept_code
           )
 
 upset(fromList(concepts), order.by = "freq")
 
-all_other_sites <- unique( c( FRBDX_concepts$concept_code, Lurie$concept_code, UMICH$concept_code ))
+all_other_sites <- unique( c( FRBDX_concepts$concept_code, APHP_concepts$concept_code,
+                              Lurie_concepts$concept_code, UMICH_concepts$concept_code ))
 concepts_in_bch_not_in_other_sites <- BCH_concepts[! BCH_concepts$concept_code %in% all_other_sites, ]
 codesToReview <- mental_codes_qc_output_all[ mental_codes_qc_output_all$concept_code %in% concepts_in_bch_not_in_other_sites$concept_code, ]
 
