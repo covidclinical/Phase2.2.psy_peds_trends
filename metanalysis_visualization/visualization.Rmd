@@ -65,7 +65,7 @@ end_date_plots <- as.Date("2021-05-01")
 Each site shared the aggregated counts results. Putting all the results together. 
 
 ```{r}
-outputDir <- "../output/latest_output/"
+outputDir <- "../../output/latest_output/"
 outputFiles <- list.files( path = outputDir, pattern = "\\.RData")
 country_map <- read.delim( file = paste0( outputDir, "country_mapping.txt"))
 ```
@@ -527,43 +527,79 @@ sex_ratio_by_site %>%
 ### Summary of the codes used per site 
 ```{r}
 mental_codes_qc_output_all <- mental_codes_qc_output_all %>%
-    mutate( concept_code = gsub("[.]", "", concept_code ) )
+    mutate( concept_code = gsub("[.]", "", concept_code ) ) %>%
+  unique()
 
 summary_codes <- mental_codes_qc_output_all %>%
   select( disorder_group, description, concept_code, distinct_patients, siteid ) %>%
   spread( siteid, distinct_patients)
 
-
-# extract all codes that are available across all sites
-codes_in_all_sites <- summary_codes[ complete.cases( summary_codes ), ]
-codes_in_all_sites <- codes_in_all_sites[
-  with(codes_in_all_sites, order(BCH, FRBDX, Lurie, UMICH, APHP, decreasing = TRUE)),
+## add a column with the sites combination 
+getSitesWithEachCode <- function(row) {
+  sites <- c( row['BCH'],  row['Lurie'], row['UMICH'], row['FRBDX'], row['APHP'])
+  sites <- sites[!is.na( sites ) ]
+  siteVal <- paste0( names( sites ), collapse = " - ")
+  return( siteVal)
+}
+summary_codes <- summary_codes[, c("disorder_group", "description", "concept_code", 
+                                   "BCH", "Lurie", "UMICH",  "FRBDX", "APHP") ]                        
+summary_codes$sitesCombination <- apply(summary_codes, 1, FUN = getSitesWithEachCode)
+summary_codes <- summary_codes[
+  with(summary_codes, order(BCH, FRBDX, Lurie, UMICH, APHP, decreasing = TRUE)),
 ]
-print( paste0("There are in total ", nrow( codes_in_all_sites), " codes in common across all sites"))
+print( paste0("There are in total ", nrow( summary_codes[ summary_codes$sitesCombination == "BCH - Lurie - UMICH - FRBDX - APHP", ]), " codes in common across all sites"))
+
+write.table( summary_codes, file="summary_codes.txt", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE )
+
 
 #### upSetR 
+upsetForDisorderGroup <- function( df, disorderGroup = "ALL"){
+  if( disorderGroup != "ALL"){
+     df <- df %>%
+       filter( disorder_group == disorderGroup ) 
+  }
 
-BCH_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "BCH", "concept_code"]
-FRBDX_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "FRBDX", "concept_code"]
-Lurie_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "Lurie", "concept_code"]
-UMICH_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "UMICH", "concept_code"]
-APHP_concepts = mental_codes_qc_output_all[ mental_codes_qc_output_all$siteid == "APHP", "concept_code"]
-
-concepts = list( 
+  BCH_concepts = df[ df$siteid == "BCH", "concept_code"]
+  FRBDX_concepts = df[ df$siteid == "FRBDX", "concept_code"]
+  Lurie_concepts = df[ df$siteid == "Lurie", "concept_code"]
+  UMICH_concepts = df[ df$siteid == "UMICH", "concept_code"]
+  APHP_concepts = df[ df$siteid == "APHP", "concept_code"]
+  
+  concepts = list( 
           BCH = BCH_concepts$concept_code,
           FRBDX = FRBDX_concepts$concept_code, 
           Lurie = Lurie_concepts$concept_code, 
           UMICH = UMICH_concepts$concept_code, 
           APHP  = APHP_concepts$concept_code
           )
+  output <- upset(fromList(concepts), order.by = "freq")
+  return( output )
+}
 
-upset(fromList(concepts), order.by = "freq")
+upsetForDisorderGroup( df = mental_codes_qc_output_all, disorderGroup = "ALL")
+```
 
-all_other_sites <- unique( c( FRBDX_concepts$concept_code, APHP_concepts$concept_code,
-                              Lurie_concepts$concept_code, UMICH_concepts$concept_code ))
-concepts_in_bch_not_in_other_sites <- BCH_concepts[! BCH_concepts$concept_code %in% all_other_sites, ]
-codesToReview <- mental_codes_qc_output_all[ mental_codes_qc_output_all$concept_code %in% concepts_in_bch_not_in_other_sites$concept_code, ]
+### Estimate number of ICD codes per site and disorder group
+Represent this in 16 pannels, if we put all together, due to the different scales we will not be able to really see the differences between results. 
+```{r}
+numberOfCodesPerDisorderGroup <- mental_codes_qc_output_all %>%
+  group_by( disorder_group, siteid ) %>%
+  mutate( icd_codes_count = n( )) %>%
+  select( disorder_group, siteid, icd_codes_count ) %>%
+  unique()
 
-write.table( codesToReview, file="icdCodesOnlyInBCH.txt", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE )
-write.table( codes_in_all_sites, file="icdCodesPresentInAllSites.txt", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE )
+swr = function(string, nwrap=30) {
+  paste(strwrap(string, width=nwrap), collapse="\n")
+}
+swr = Vectorize(swr)
+
+numberOfCodesPerDisorderGroup %>%
+  mutate( disorder_group = swr( disorder_group ) ) %>%
+  ggplot( aes( x= reorder( siteid, icd_codes_count), y = icd_codes_count)) +
+  geom_bar( stat = "identity") +
+  facet_wrap( ~ disorder_group, scales = "free" ) +
+  labs(x ="site identifier", y = "ICD dictionary (number of ICD codes)") +
+  theme(axis.text.x=element_text(angle=45,hjust=1, size = 6), 
+        strip.text = element_text(size = 7), 
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 ```
