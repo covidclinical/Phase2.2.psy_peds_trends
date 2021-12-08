@@ -893,16 +893,12 @@ quantile_bootstrapped_fitted <- bootstrapped_fitted_df %>%
                names_to = "quantiles")
 
 
-bootstrapped_coefficients_df <- bind_rows(bootstrapped_coefficients_list, .id = "iteration")
-mean(bootstrapped_coefficients_df$time)
-mean(bootstrapped_coefficients_df$time + bootstrapped_coefficients_df[["periodduring_pandemic:time"]])
+bootstrapped_coefficients_df <- bind_rows(bootstrapped_coefficients_list,
+                                          .id = "iteration")
 
-pvalue_coeff_interaction <- round(
-  (1- max(
-    sum(bootstrapped_coefficients_df[["periodduring_pandemic:time"]] > 0),
-        sum(bootstrapped_coefficients_df[["periodduring_pandemic:time"]] < 0)
-  )/nrow(bootstrapped_coefficients_df)) * 2
-  , 3) 
+z <-  mean(bootstrapped_coefficients_df[["periodduring_pandemic:time"]]) / sd(bootstrapped_coefficients_df[["periodduring_pandemic:time"]])
+
+pvalue_coeff_interaction <- round(pnorm(abs(z), lower.tail = FALSE) * 2, 3)
 
 plot_annotation <- paste0("Coeffs differences: ",
        round(mean(bootstrapped_coefficients_df[["periodduring_pandemic:time"]]), 2),

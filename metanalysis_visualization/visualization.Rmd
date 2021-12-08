@@ -65,7 +65,7 @@ end_date_plots <- as.Date("2021-05-01")
 Each site shared the aggregated counts results. Putting all the results together. 
 
 ```{r}
-outputDir <- "../../output/latest_output/"
+outputDir <- "../output/latest_output/"
 outputFiles <- list.files( path = outputDir, pattern = "\\.RData")
 country_map <- read.delim( file = paste0( outputDir, "country_mapping.txt"))
 ```
@@ -318,24 +318,28 @@ names_site_id <- unique(patient_count_psy_period_psy_all$siteid)
 quantile_bootstrapped_fitted_all <- bootstrapped_fitted_all %>%
   group_by(time_p, period, siteid) %>%
   summarise("2.5%" = quantile(predicted, 0.025),
-            "50%" = quantile(predicted, 0.5),
+            "50%" = median(predicted, 0.5),
             "97.5%" = quantile(predicted, 0.975)) %>%
   pivot_longer(cols = c("2.5%", "50%", "97.5%"),
                names_to = "quantiles")
 
 
 annotation_function <- function(df, ...) {
-  pvalue_coeff_interaction <- round(
-    (1- max(
-      sum(df[["periodduring_pandemic:time"]] > 0),
-      sum(df[["periodduring_pandemic:time"]] < 0)
-    )/nrow(df)) * 2
-    , 3) 
+  # pvalue_coeff_interaction <- round(
+  #   (1- max(
+  #     sum(df[["periodduring_pandemic:time"]] > 0),
+  #     sum(df[["periodduring_pandemic:time"]] < 0)
+  #   )/nrow(df)) * 2
+  #   , 3) 
+  
+  z <-  mean(df[["periodduring_pandemic:time"]]) / sd(df[["periodduring_pandemic:time"]])
+  
+  pvalue_coeff_interaction = round(pnorm(abs(z), lower.tail = FALSE) * 2, 3)
   paste0("Coeffs differences: ",
-                      round(mean(df[["periodduring_pandemic:time"]]), 2),
-                      " (pvalue: ",
-                      pvalue_coeff_interaction,
-                      ")")
+         round(mean(df[["periodduring_pandemic:time"]]), 2),
+         " (pvalue: ",
+         pvalue_coeff_interaction,
+         ")")
 }
 
 plot_annotations <- bootstrapped_coefficients_all %>% 
@@ -393,24 +397,34 @@ meta_df$time <- as.numeric(as.factor(meta_df$time_p))
 ```
 
 ```{r}
-trend_model <- "percentage ~ period * time"
+trends_siteid <- bootstrapped_coefficients_all %>% 
+  group_by(siteid) %>% 
+  summarise(mean_boot = mean(`periodduring_pandemic:time`),
+         var_boot = var(`periodduring_pandemic:time`), 
+         z = mean_boot / sqrt(var_boot), 
+         pvalue = pnorm(z, lower.tail = FALSE)*2 )
 ```
 
 ```{r}
-trends_siteid <- meta_df %>% 
-  filter((time_p >= as.Date("2019-02-01")) & (time_p <= as.Date("2021-05-01"))) %>% 
-  filter(siteid != "APHP") %>% 
-  group_by(siteid) %>% 
-  group_modify( ~ broom::tidy(lm(as.formula(trend_model), data = .x))) %>%
-  filter(term == c("periodduring_pandemic:time")) %>% 
-  mutate(variance = std.error * std.error) %>% 
-  select(siteid, estimate, variance)
-
-model_meta_siteid <- metafor::rma(yi = estimate, 
-             vi = variance,
-             measure = "GEN",
-             method = "DL",
+# Fixed effects
+model_meta_siteid <- metafor::rma(yi = mean_boot, 
+             vi = var_boot,
+             measure = "MN",
+             method = "FE",
   data = trends_siteid) 
+metafor::forest(model_meta_siteid,
+                slab = trends_siteid$siteid,
+                header="Sites",
+                mlab="Overall temporal trend")
+```
+
+```{r}
+# Random effects
+model_meta_siteid <- metafor::rma(yi = mean_boot, 
+                                  vi = var_boot,
+                                  measure = "MN",
+                                  method = "DL",
+                                  data = trends_siteid) 
 metafor::forest(model_meta_siteid,
                 slab = trends_siteid$siteid,
                 header="Sites",
@@ -419,18 +433,18 @@ metafor::forest(model_meta_siteid,
 
 
 ```{r}
-trends_country <- meta_df %>% 
-  filter((time_p >= as.Date("2019-02-01")) & (time_p <= as.Date("2021-05-01"))) %>% 
+trends_country <- bootstrapped_coefficients_all %>% 
+  left_join(country_map, by = "siteid") %>% 
   group_by(country) %>% 
-  group_modify( ~ broom::tidy(lm(as.formula(trend_model), data = .x))) %>%
-  filter(term == c("periodduring_pandemic:time")) %>% 
-  mutate(variance = std.error * std.error) %>% 
-  select(country, estimate, variance)
+  summarise(mean_boot = mean(`periodduring_pandemic:time`),
+         var_boot = var(`periodduring_pandemic:time`), 
+         z = mean_boot / sqrt(var_boot), 
+         pvalue = pnorm(z, lower.tail = FALSE)*2 )
 
-model_meta_country <- metafor::rma(yi = estimate, 
-             vi = variance,
-             measure = "GEN",
-             method = "DL",
+model_meta_country <- metafor::rma(yi = mean_boot, 
+             vi = var_boot,
+             measure = "MN",
+             method = "FE",
   data = trends_country) 
 metafor::forest(model_meta_country,
                 slab = trends_country$country,
