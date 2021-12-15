@@ -1,0 +1,551 @@
+---
+title: "Hospitalizations for psychiatric conditions among adolescents during the COVID-19 pandemic: adapted to CHOP input format"
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_float: yes
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# Setting up the R environment
+
+### Installing packages and loading the library
+
+```{r libraries, message=FALSE, warning=FALSE, results='hide'}
+# Install packages
+paket <- function(pak){
+  new_pak <- pak[!(pak %in% rownames(installed.packages()))]
+  if (length(new_pak)) 
+    install.packages(new_pak, dependencies = TRUE,repos="https://cloud.r-project.org/")
+  sapply(pak, library, character.only = TRUE)
+}
+
+listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "lubridate")
+paket(listOfPackages)
+```
+
+### R session information
+
+```{r}
+sessionInfo()
+```
+
+### Plots aesthetics information
+
+```{r}
+# options(repr.plot.width = 18, repr.plot.height = 9)
+theme_plots <- theme_bw() +
+  theme(strip.text = element_text(size = 5),
+        axis.text.x = element_text(size = 8), 
+        axis.text.y = element_text(size = 6), 
+        axis.title.x = element_text(size = 8),
+        axis.title.y = element_text(size = 8),
+        title = element_text(size = 10),
+        plot.subtitle = element_text(size = 9, face = "italic")) 
+theme_set(theme_plots)
+
+# Colorblind palette
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+
+# Data retrieval
+
+## Inclusion criteria
+The inclusion criteria for this study is:
+
+-   Patients inclusion criteria:
+
+    -   Age between 11-17 at the date of visit
+
+-   Visits inclusion criteria:
+
+    -   Inpatients (at least one hospitalization \> 1 day)
+
+    -   Start date: January 1st, 2019
+
+    -   End date: May 31st, 2021
+
+    -   Comprising at least one ICD-10 code during hospitalization
+
+
+## Variables that need to be checked/modified by each site
+
+Change the values of the following variables according to the
+specificities of your site:
+
+1.  "folder_4ce_files": folder path where your phase 2.2 data files are
+    located
+
+2.   "obfuscation": determine the obfuscation threshold (FALSE if no
+    obfuscation, or the numeric value of the obfuscation threshold if
+    any)
+
+3.   "raceAvailable": set as TRUE or FALSE depending on whether the
+    variable is being collected at your site
+
+4.   "dateFormat": specify the format of the date at your site (e.g., for
+    "03-AUG-20", the format would be "%d-%b-%y", [see
+    documentation](https://www.stat.berkeley.edu/~s133/dates.html))
+    
+5. "data_update_date": date at which the data has been updated in the local 
+datawarehouse. Used to estimate patient age at time of visit, since patients age
+in the 4CE demographic file is expected the age at data update. 
+
+6. "time_period": Time unit for the different graphs of the plots: months (default), weeks, days
+
+```{r message=FALSE, warning=FALSE}
+raceAvailable = TRUE
+#raceAvailable = FALSE
+#data_update_date <- "2021-06-05"
+time_period <-"months" #possible values: days, weeks, months
+```
+
+```{r}
+# cut-off dates used in the analysis, these should not be changed
+history_start_date <- as.Date("2019-01-01")
+history_end_date <- as.Date("2021-05-31")
+pandemic_start_date <- as.Date("2020-03-15")
+start_date_plots <- as.Date("2019-01-15")
+end_date_plots <- as.Date("2021-05-01")
+```
+
+## Data loading
+
+We will use as input the files from CHOP with their counts. 
+
+
+### Reading the files with total counts per month and patients with psychiatric conditions per month. 
+
+```{r message=FALSE, warning=FALSE}
+outputDir <- "../output/CHOP/"
+allCounts <- read.csv( file = paste0( outputDir, "All-Counts.csv"))
+psyCounts <- read.csv( file = paste0( outputDir, "Psyc-Counts.csv"))
+
+allCounts <- allCounts %>%
+  mutate( time_p = ymd(paste( allCounts$yr1, allCounts$mo1, "01", sep="-")), 
+          period = ifelse( time_p < pandemic_start_date,
+                           "before_pandemic",
+                           "during_pandemic"), 
+          siteid = "CHOP") %>%
+  select( time_p, count_all = ct1, period, siteid )
+
+psyCounts <- psyCounts %>%
+  mutate( time_p = ymd(paste( psyCounts$yr2, psyCounts$mo2, "01", sep="-")), 
+          period = ifelse( time_p < pandemic_start_date,
+                           "before_pandemic",
+                           "during_pandemic"), 
+          siteid = "CHOP" ) %>%
+  select( time_p, count_psy_patients = ct2, period, siteid )
+```
+
+# Results
+
+## Admission
+
+First calculation: total number of patients, matching the inclusion criteria, admitted on one day (without filtering by any disease subtype). Summed up over one week, or one month depending on the time unit chosen. Not filtered on qge. 
+
+```{r}
+admission_plot_count <- function(df,
+                               x,
+                               y, 
+                               title,
+                               y_title,
+                               size = NULL, 
+                               color = NULL){
+  plot <- ggplot(df, aes_string(x = x, y = y, color = color, size = size))  +
+    geom_point() +
+    scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y", limits = c(start_date_plots, end_date_plots), expand = expansion(mult = 0.01, add = 1)) +
+    theme(axis.text.x=element_text(angle=60, hjust=1))+
+    labs(x = "Calendar date",
+         y = y_title, 
+       title = title) 
+  return(plot)
+}
+
+```
+
+
+## Total hospitalize patients age range 11-17
+
+Calculating the total number of patients hospitalized on a given day (taking into account the hospitalization length).
+
+```{r}
+th <- admission_plot_count(df = allCounts, 
+                     x = "time_p",
+                     y = "count_all", 
+                     title = paste0("Total hospitalization (per ", time_period, ")"), 
+                     y_title = "Patient Count") +
+  labs( subtitle = "(age range 11-17)")
+th
+```
+
+
+## Patient count filtered on psychiatric disorders
+
+### New admissions
+
+```{r}
+thpd_psyCount <- psyCounts %>%
+  ggplot(aes(x = time_p, y = count_psy_patients )) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Counts",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Per ", time_period , " patient counts with mental health related ICD codes")) + 
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
+thpd_psyCount
+
+```
+
+### Ratio: patients with psychiatric condition / patients without psychiatric condition
+
+```{r}
+ratios_patients_with_without_psy <- inner_join( allCounts, psyCounts ) 
+
+ratios_patients_with_without_psy <- ratios_patients_with_without_psy %>%
+  group_by( time_p, period, siteid ) %>%
+  mutate( count_no_psy_patients = count_all - count_psy_patients, 
+          ratio = round( count_psy_patients / count_no_psy_patients, 3), 
+          percentage = round( 100*count_psy_patients / count_all, 1) ) %>%
+  select( time_p, count_no_psy_patients, period, count_psy_patients, ratio, percentage, siteid )
+
+```
+
+
+```{r}
+ratios_patients_with_without_psy %>%
+  pivot_longer(cols = c("count_no_psy_patients", "count_psy_patients"), 
+               values_to = "count", 
+               names_to = "count_type") %>% 
+  ggplot(aes(x = time_p, y = count, color = count_type)) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Count",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Count comparison: patients with vs without psychiatric conditions (per ", time_period,")")) +
+  guides(color = guide_legend(title="Patient diagnoses types"))
+```
+
+
+```{r}
+ratio_psy_non_psy <- ratios_patients_with_without_psy %>%
+  ggplot(aes(x = time_p, y = ratio, fill = period, color = period)) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Ratio (with psy conditions/without psy conditions)",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Ratio patient with vs without psychiatric conditions ( per ", time_period,")"))
+
+ratio_psy_non_psy
+
+```
+
+```{r}
+ratios_patients_with_without_psy %>%
+  ggplot(aes(x = time_p, y = percentage, color = period)) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Percentage",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Percentage patient with vs total population ( per ", time_period,")")) +
+  guides(color = guide_legend(title="Patient diagnoses types"))
+```
+
+
+## Interrupted Time-Series Analyses
+
+```{r}
+# Model without seasonality
+time_series_analysis_plotting <- function(model, df_count_psy, count_col, clearance_period = FALSE) {
+  output_model <- broom::tidy(model)
+  coeff_slope <- round(output_model[output_model$term == "periodduring_pandemic:time", "estimate"][[1]], 3)
+  pvalue_slope <- round(output_model[output_model$term == "periodduring_pandemic:time", "p.value"][[1]], 3)
+  annotation <- paste0("Lockdown slope: ", coeff_slope, " (pvalue: ", pvalue_slope, ")")
+  pred_model <- predict(model, df_count_psy, type = "response", interval = "confidence") %>% as.data.frame()
+  pred_model_b <- predict(model, mutate(df_count_psy, period = "before_pandemic"), type = "response", interval = "confidence") %>%
+    as.data.frame()
+  names(pred_model_b) <- paste0(names(pred_model_b), "_wo_intervention")
+  pred_model <- bind_cols(df_count_psy, pred_model, pred_model_b)
+  if (clearance_period) {
+    pred_model$clearance_period <- ifelse(pred_model$time_p < as.Date(cut(start_clear_period, breaks = time_period)) ,
+                                          "before_pandemic",
+                                          ifelse(pred_model$time_p > as.Date(cut(end_clear_period, breaks = time_period)),
+                                                 "during_pandemic",
+                                                 "during_clearance")
+    )
+    pred_model$lwr <- ifelse(pred_model$clearance_period == "during_clearance", NA, pred_model$lwr)
+    pred_model$upr <- ifelse(pred_model$clearance_period == "during_clearance", NA, pred_model$upr)
+    pred_model$fit_wo_intervention <- ifelse(pred_model$time_p >= max(pred_model$time_p[pred_model$clearance_period == "before pandemic"]),
+                                             pred_model$fit_wo_intervention,
+                                             NA)
+  } else {
+    pred_model$clearance_period <- pred_model$period
+  }
+  plot <- ggplot(pred_model, aes_string(x = "time_p", y = count_col)) +
+    geom_point(aes(colour = clearance_period)) +
+    geom_line(aes(x = time_p, y = fit_wo_intervention, colour = "Expected mean w/o pandemic"), linetype = "dashed") +
+    geom_line(aes(x = time_p, y = fit, colour = clearance_period)) +
+    geom_ribbon(aes(ymin = lwr, ymax = upr, colour = clearance_period), alpha = 0.3, colour = NA) +
+    scale_color_manual(name = "Time Series projection", values = c("before_pandemic" = "black",
+                                                                   "Expected mean w/o pandemic" = "red",
+                                                                   "during_pandemic" = "black",
+                                                                   "during_clearance" = "white")) +
+    annotate("text", x = as.Date("2019-10-01"), y = max(pred_model[[count_col]]) + 5, label = annotation) +
+    theme(legend.position = "bottom")
+
+  if (clearance_period) {
+    plot +
+      geom_vline(xintercept = as.Date(max(pred_model$time_p[pred_model$clearance_period == "before_pandemic"])), linetype = "dashed") +
+      geom_vline(xintercept = as.Date(min(pred_model$time_p[pred_model$clearance_period == "during_pandemic"])), linetype = "dashed")
+  } else {
+    plot + geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")
+  }
+}
+```
+
+```{r}
+# Time series analysis of percentage of psy codes per encounter, linear (without seasonality)
+patient_count_psy_period_psy <- ratios_patients_with_without_psy %>%
+  filter(time_p > as.Date(cut( start_date_plots, breaks = time_period)) &
+           time_p < as.Date(cut( end_date_plots, breaks = time_period))) %>%
+  mutate(time = seq_along(time_p),
+         month_year = format(time_p, "%m")
+  )
+
+start_clear_period <- as.Date("2020-03-15")
+end_clear_period <- as.Date("2020-05-15")
+patient_count_psy_period_psy_clear <- patient_count_psy_period_psy %>%
+  mutate( count_no_psy_patients = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
+                               time_p > as.Date(cut( end_clear_period, breaks = time_period)),
+                             count_no_psy_patients,
+                             NA), 
+          count_no_psy_patients = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
+                               time_p > as.Date(cut( end_clear_period, breaks = time_period)),
+                             count_no_psy_patients,
+                             NA), 
+          ratio = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
+                           time_p > as.Date(cut( end_clear_period, breaks = time_period)),
+                         ratio,
+                         NA),
+          percentage = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
+                           time_p > as.Date(cut( end_clear_period, breaks = time_period)),
+                         percentage,
+                         NA)
+  )
+```
+
+```{r, its count based}
+ts_linear_count <- lm(count_psy_patients ~ period * time, patient_count_psy_period_psy)
+ts_linear_count_clear <- lm(count_psy_patients ~ period * time, patient_count_psy_period_psy_clear)
+ts_seasonal_count <- lm(count_psy_patients ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
+ts_seasonal_count_clear <- lm(count_psy_patients ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
+```
+
+```{r, its percentage based}
+ts_linear_percent <- lm(percentage ~ period * time, patient_count_psy_period_psy)
+ts_linear_percent_clear <- lm(percentage ~ period * time, patient_count_psy_period_psy_clear)
+ts_seasonal_percent <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
+ts_seasonal_percent_clear <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
+```
+
+### ITS: patient counts, no clearance period, no seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_linear_count,
+                              patient_count_psy_period_psy,
+                              "count_psy_patients",
+                              clearance_period = FALSE) +
+  labs(title = "Interrupted Time-Series Analysis: Count of encounters with psychiatric ICD codes",
+       subtitle = "Without seasonality effect",
+       x = time_period,
+       y = "Count")
+```
+
+### ITS: patient counts, clearance period, no seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_linear_count_clear,
+                              patient_count_psy_period_psy,
+                              "count_psy_patients",
+                              clearance_period = TRUE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "Without seasonality effect",
+       x = time_period,
+       y = "Count")
+```
+
+### ITS: patient counts, no clearance period, with seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_seasonal_count,
+                              patient_count_psy_period_psy,
+                              "count_psy_patients",
+                              clearance_period = FALSE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "With seasonality effect",
+       x = time_period,
+       y = "Count")
+```
+
+### ITS: patient counts, with clearance period, with seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_seasonal_count_clear,
+                              patient_count_psy_period_psy,
+                              "count_psy_patients",
+                              clearance_period = TRUE) +
+  labs(title = "Interrupted Time-Series Analysis: Count of encounters with psychiatric ICD codes",
+       subtitle = "With seasonality effect",
+       x = time_period,
+       y = "Count")
+```
+
+
+### ITS: psy percentage, no clearance period, no seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_linear_percent,
+                              patient_count_psy_period_psy,
+                              "percentage",
+                              clearance_period = FALSE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "Without seasonality effect",
+       x = time_period,
+       y = "Percentage")
+```
+
+### ITS: psy percentage, clearance period, no seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_linear_percent_clear,
+                              patient_count_psy_period_psy,
+                              "percentage",
+                              clearance_period = TRUE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "Without seasonality effect",
+       x = time_period,
+       y = "Percentage")
+```
+
+### ITS: psy percentage, no clearance period, with seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_seasonal_percent,
+                              patient_count_psy_period_psy,
+                              "percentage",
+                              clearance_period = FALSE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "Without seasonality effect",
+       x = time_period,
+       y = "Percentage")
+```
+
+### ITS: psy percentage, with clearance period, with seasonality effect
+
+```{r}
+time_series_analysis_plotting(ts_seasonal_percent_clear,
+                              patient_count_psy_period_psy,
+                              "percentage",
+                              clearance_period = TRUE) +
+  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes",
+       subtitle = "With seasonality effect",
+       x = time_period,
+       y = "Percentage")
+```
+
+### ITS bootstrap
+
+#### Parametric bootstrap
+
+```{r}
+bootstrap_size <- 1000
+binom_proportion <- function(n, prob, size) {
+  (rbinom(n, size, prob) / size) * 100
+}
+bootstrapped_timepoints <- mapply(binom_proportion,
+                                  n = bootstrap_size,
+                                  size = patient_count_psy_period_psy$count_no_psy_patients +
+                                    patient_count_psy_period_psy$count_psy_patients,
+                                  prob = patient_count_psy_period_psy$percentage/100)
+
+bootstrapped_sample_list <- vector(mode = "list", length = bootstrap_size)
+bootstrapped_coefficients_list <- vector(mode = "list", length = bootstrap_size)
+for (iteration in 1:bootstrap_size) {
+  df_iteration <- data.frame(period = patient_count_psy_period_psy$period,
+                             time = patient_count_psy_period_psy$time,
+                             percentage = bootstrapped_timepoints[iteration, ])
+  ts_linear_percent <- lm(percentage ~ period * time, df_iteration)
+  linear_model <- broom::tidy(ts_linear_percent) %>%
+    filter(term %in% c("time", "periodduring_pandemic:time"))
+  coefficients <- linear_model$estimate
+  names(coefficients) <- linear_model$term
+  bootstrapped_coefficients_list[[iteration]] <- coefficients
+  df_iteration$predicted <- predict(ts_linear_percent)
+  df_iteration$time_p <- patient_count_psy_period_psy$time_p
+  bootstrapped_sample_list[[iteration]] <- df_iteration
+}
+
+bootstrapped_fitted_df <- bind_rows(bootstrapped_sample_list, .id = "iteration")
+
+quantile_bootstrapped_fitted <- bootstrapped_fitted_df %>%
+  group_by(time_p, period) %>%
+  summarise("2.5%" = quantile(predicted, 0.025),
+            "50%" = quantile(predicted, 0.5),
+            "97.5%" = quantile(predicted, 0.975)) %>%
+  pivot_longer(cols = c("2.5%", "50%", "97.5%"),
+               names_to = "quantiles")
+
+
+bootstrapped_coefficients_df <- bind_rows(bootstrapped_coefficients_list,
+                                          .id = "iteration")
+
+z <-  mean(bootstrapped_coefficients_df[["periodduring_pandemic:time"]]) / sd(bootstrapped_coefficients_df[["periodduring_pandemic:time"]])
+
+pvalue_coeff_interaction <- round(pnorm(abs(z), lower.tail = FALSE) * 2, 3)
+
+plot_annotation <- paste0("Coeffs differences: ",
+       round(mean(bootstrapped_coefficients_df[["periodduring_pandemic:time"]]), 2),
+       " (pvalue: ",
+       pvalue_coeff_interaction,
+       ")")
+
+ggplot(bootstrapped_fitted_df, aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
+  geom_line(aes(color = period),
+            alpha = 0.03) +
+  geom_line(data = quantile_bootstrapped_fitted,
+            aes(y = value, group = interaction(quantiles, period)),
+            linetype = "dashed") +
+  geom_line(data = quantile_bootstrapped_fitted[quantile_bootstrapped_fitted$quantiles == "50%", ],
+            aes(y = value, group = period)) +
+  geom_point(data = patient_count_psy_period_psy,
+             aes(y = percentage),
+             alpha = 0.5) +
+  scale_colour_manual(values = cbPalette) +
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+  annotate("text",
+           x = as.Date("2019-10-01"),
+           y = max(patient_count_psy_period_psy[["percentage"]]) + 5,
+           label = plot_annotation) +
+  labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
+       subtitle = "Parametric bootstrap estimation: (1000 iterations)",
+       x = "Calendar dates",
+       y = "Percentage",
+       color = "Period")
+
+```
+
