@@ -350,17 +350,17 @@ patient_count_psy_period_psy_clear <- patient_count_psy_period_psy %>%
 ```
 
 ```{r, its count based}
-ts_linear_count <- lm(count_psy_patients ~ period * time, patient_count_psy_period_psy)
-ts_linear_count_clear <- lm(count_psy_patients ~ period * time, patient_count_psy_period_psy_clear)
-ts_seasonal_count <- lm(count_psy_patients ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
-ts_seasonal_count_clear <- lm(count_psy_patients ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
+ts_linear_count <- lm(count_psy_patients ~ period * time_p, patient_count_psy_period_psy)
+ts_linear_count_clear <- lm(count_psy_patients ~ period * time_p, patient_count_psy_period_psy_clear)
+ts_seasonal_count <- lm(count_psy_patients ~ period*time_p + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
+ts_seasonal_count_clear <- lm(count_psy_patients ~ period*time_p + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
 ```
 
 ```{r, its percentage based}
-ts_linear_percent <- lm(percentage ~ period * time, patient_count_psy_period_psy)
-ts_linear_percent_clear <- lm(percentage ~ period * time, patient_count_psy_period_psy_clear)
-ts_seasonal_percent <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
-ts_seasonal_percent_clear <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
+ts_linear_percent <- lm(percentage ~ period * time_p, patient_count_psy_period_psy)
+ts_linear_percent_clear <- lm(percentage ~ period * time_p, patient_count_psy_period_psy_clear)
+ts_seasonal_percent <- lm(percentage ~ period*time_p + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
+ts_seasonal_percent_clear <- lm(percentage ~ period*time_p + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
 ```
 
 ### ITS: patient counts, no clearance period, no seasonality effect
@@ -487,7 +487,7 @@ bootstrapped_sample_list <- vector(mode = "list", length = bootstrap_size)
 bootstrapped_coefficients_list <- vector(mode = "list", length = bootstrap_size)
 for (iteration in 1:bootstrap_size) {
   df_iteration <- data.frame(period = patient_count_psy_period_psy$period,
-                             time = patient_count_psy_period_psy$time,
+                             time = patient_count_psy_period_psy$time_p,
                              percentage = bootstrapped_timepoints[iteration, ])
   ts_linear_percent <- lm(percentage ~ period * time, df_iteration)
   linear_model <- broom::tidy(ts_linear_percent) %>%
