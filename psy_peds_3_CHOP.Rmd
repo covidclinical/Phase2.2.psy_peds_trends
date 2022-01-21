@@ -23,7 +23,7 @@ paket <- function(pak){
   sapply(pak, library, character.only = TRUE)
 }
 
-listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "lubridate")
+listOfPackages <- c("tidyverse", "RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "lubridate", "magrittr")
 paket(listOfPackages)
 ```
 
@@ -120,9 +120,8 @@ We will use as input the files from CHOP with their counts.
 ### Reading the files with total counts per month and patients with psychiatric conditions per month. 
 
 ```{r message=FALSE, warning=FALSE}
-outputDir <- "../output/CHOP/"
-allCounts <- read.csv( file = paste0( outputDir, "All-Counts.csv"))
-psyCounts <- read.csv( file = paste0( outputDir, "Psyc-Counts.csv"))
+allCounts <- read.csv( "../output/CHOP/All-Counts.csv")
+psyCounts <- read.csv( "../output/CHOP/Psyc-Counts.csv")
 
 allCounts <- allCounts %>%
   mutate( time_p = ymd(paste( allCounts$yr1, allCounts$mo1, "01", sep="-")), 
@@ -320,47 +319,54 @@ time_series_analysis_plotting <- function(model, df_count_psy, count_col, cleara
 
 ```{r}
 # Time series analysis of percentage of psy codes per encounter, linear (without seasonality)
-patient_count_psy_period_psy <- ratios_patients_with_without_psy %>%
-  filter(time_p > as.Date(cut( start_date_plots, breaks = time_period)) &
-           time_p < as.Date(cut( end_date_plots, breaks = time_period))) %>%
-  mutate(time = seq_along(time_p),
-         month_year = format(time_p, "%m")
-  )
+patient_count_psy_period_psy <- left_join(allCounts,
+                                          psyCounts) %>%
+  mutate(count_no_psy_patients = count_all - count_psy_patients,
+         time = seq_along(time_p),
+         period = ifelse(time_p < as.Date("2020-04-01"),
+                         "before_pandemic",
+                         "during_pandemic"),
+         ratio = count_psy_patients / count_no_psy_patients,
+         percentage = count_psy_patients * 100 / (count_psy_patients + count_no_psy_patients),
+         month_year = format.Date(time_p, "%m"),
+         siteid = "CHOP") %>%
+  select(time_p, count_no_psy_patients, period, count_psy_patients,
+         ratio, percentage, time, month_year, siteid)
 
 start_clear_period <- as.Date("2020-03-15")
 end_clear_period <- as.Date("2020-05-15")
 patient_count_psy_period_psy_clear <- patient_count_psy_period_psy %>%
   mutate( count_no_psy_patients = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
-                               time_p > as.Date(cut( end_clear_period, breaks = time_period)),
-                             count_no_psy_patients,
-                             NA), 
+                                           time_p > as.Date(cut( end_clear_period, breaks = time_period)),
+                                         count_no_psy_patients,
+                                         NA),
           count_no_psy_patients = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
-                               time_p > as.Date(cut( end_clear_period, breaks = time_period)),
-                             count_no_psy_patients,
-                             NA), 
+                                           time_p > as.Date(cut( end_clear_period, breaks = time_period)),
+                                         count_no_psy_patients,
+                                         NA),
           ratio = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
                            time_p > as.Date(cut( end_clear_period, breaks = time_period)),
                          ratio,
                          NA),
           percentage = ifelse(time_p < as.Date(cut( start_clear_period, breaks = time_period)) |
-                           time_p > as.Date(cut( end_clear_period, breaks = time_period)),
-                         percentage,
-                         NA)
+                                time_p > as.Date(cut( end_clear_period, breaks = time_period)),
+                              percentage,
+                              NA)
   )
 ```
 
 ```{r, its count based}
-ts_linear_count <- lm(count_psy_patients ~ period * time_p, patient_count_psy_period_psy)
-ts_linear_count_clear <- lm(count_psy_patients ~ period * time_p, patient_count_psy_period_psy_clear)
-ts_seasonal_count <- lm(count_psy_patients ~ period*time_p + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
-ts_seasonal_count_clear <- lm(count_psy_patients ~ period*time_p + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
+ts_linear_count <- lm(count_psy_patients ~ period * time, patient_count_psy_period_psy)
+ts_linear_count_clear <- lm(count_psy_patients ~ period * time, patient_count_psy_period_psy_clear)
+ts_seasonal_count <- lm(count_psy_patients ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
+ts_seasonal_count_clear <- lm(count_psy_patients ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
 ```
 
 ```{r, its percentage based}
-ts_linear_percent <- lm(percentage ~ period * time_p, patient_count_psy_period_psy)
-ts_linear_percent_clear <- lm(percentage ~ period * time_p, patient_count_psy_period_psy_clear)
-ts_seasonal_percent <- lm(percentage ~ period*time_p + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
-ts_seasonal_percent_clear <- lm(percentage ~ period*time_p + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
+ts_linear_percent <- lm(percentage ~ period * time, patient_count_psy_period_psy)
+ts_linear_percent_clear <- lm(percentage ~ period * time, patient_count_psy_period_psy_clear)
+ts_seasonal_percent <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy)
+ts_seasonal_percent_clear <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), patient_count_psy_period_psy_clear)
 ```
 
 ### ITS: patient counts, no clearance period, no seasonality effect
@@ -487,7 +493,7 @@ bootstrapped_sample_list <- vector(mode = "list", length = bootstrap_size)
 bootstrapped_coefficients_list <- vector(mode = "list", length = bootstrap_size)
 for (iteration in 1:bootstrap_size) {
   df_iteration <- data.frame(period = patient_count_psy_period_psy$period,
-                             time = patient_count_psy_period_psy$time_p,
+                             time = patient_count_psy_period_psy$time,
                              percentage = bootstrapped_timepoints[iteration, ])
   ts_linear_percent <- lm(percentage ~ period * time, df_iteration)
   linear_model <- broom::tidy(ts_linear_percent) %>%
@@ -519,10 +525,10 @@ z <-  mean(bootstrapped_coefficients_df[["periodduring_pandemic:time"]]) / sd(bo
 pvalue_coeff_interaction <- round(pnorm(abs(z), lower.tail = FALSE) * 2, 3)
 
 plot_annotation <- paste0("Coeffs differences: ",
-       round(mean(bootstrapped_coefficients_df[["periodduring_pandemic:time"]]), 2),
-       " (pvalue: ",
-       pvalue_coeff_interaction,
-       ")")
+                          round(mean(bootstrapped_coefficients_df[["periodduring_pandemic:time"]]), 2),
+                          " (pvalue: ",
+                          pvalue_coeff_interaction,
+                          ")")
 
 ggplot(bootstrapped_fitted_df, aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
   geom_line(aes(color = period),
@@ -546,6 +552,157 @@ ggplot(bootstrapped_fitted_df, aes(x = time_p, y = predicted, group = interactio
        x = "Calendar dates",
        y = "Percentage",
        color = "Period")
+
+```
+
+## Psychiatric conditions aggregating by subcategories
+```{r}
+# Generate CHOP tables aggregated by sex and by mental disorder category
+psy_female_counts <- read_csv("../output/CHOP/Psy-Female-11-17.csv")
+psy_male_counts <- read_csv("../output/CHOP/Psy-Male-11-17.csv")
+
+psy_tot <- psy_female_counts %>% 
+  select(c(-Month, -Year)) %>%
+  add( psy_male_counts %>% select(c(-Month, -Year))) %>%
+  mutate(time_p = as.Date(paste(psy_female_counts$Year, psy_female_counts$Month, "01", sep = "-")))
+```
+
+```{r}
+count_disorder_group <- psy_tot %>%
+  pivot_longer(!time_p, names_to = "disorder_group", values_to = "count_dg") %>%
+  inner_join( patient_count_psy_period_psy %>%
+                mutate( total = count_no_psy_patients + count_psy_patients) %>%
+                select( time_p, count_no_psy_patients, count_psy_patients, total, period ))
+
+dg <- count_disorder_group %>%  
+  ggplot(aes(x = time_p, y= count_dg, fill = period, group = disorder_group )) +
+  geom_bar(stat = "identity")+
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se= TRUE, aes(colour=period), colour= "black", size = 0.5) + 
+  labs(x = time_period,
+       y = "Patient Count",
+       title = paste0("Per ", time_period, " patient counts with mental health related ICD codes"), 
+       subtitle = "Grouped by mental health ICD subcategories") + 
+  ylim(0, NA) + 
+  facet_wrap(. ~ disorder_group, scales = "free_y") +
+  theme(strip.text.x = element_text(size = 4),
+        axis.text.x = element_text(size = 5, angle = 90), 
+        axis.text.y = element_text(size = 6), 
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        title = element_text(size = 12),
+        plot.subtitle = element_text(size = 11),
+        legend.position = "none") +
+  scale_fill_manual(values = cbPalette[-1])
+dg
+```
+
+#### Subset: the most prevalent disorder group
+```{r}
+dg_subset <- count_disorder_group %>%
+  filter( disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" )) %>%
+  ggplot(aes(x = time_p, y= count_dg, fill = period, group = disorder_group )) +
+  geom_bar(stat = "identity")+
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se= TRUE, aes(colour=period), colour= "black", size = 0.5) + 
+  labs(x = time_period,
+       y = "Patient Count",
+       title = paste0("Per ", time_period, " patient counts with mental health related ICD codes"), 
+       subtitle = "Grouped by mental health ICD subcategories") + 
+  ylim(0, NA) + 
+  facet_wrap(. ~ disorder_group, scales = "free_y") +
+  theme(strip.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 12, angle = 90), 
+        axis.text.y = element_text(size = 11), 
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 11),
+        title = element_text(size = 12),
+        plot.subtitle = element_text(size = 11),
+        legend.position = "none") +
+  scale_fill_manual(values = cbPalette[-1])
+dg_subset
+```
+
+### New admissions: percentage
+
+```{r}
+# estimate the percentage using as denominator the total number of patients per month with any psychiatric condition
+perc_disorder_group <- count_disorder_group %>%
+  mutate( percentage_dg = 100*count_dg / count_psy_patients ) 
+
+dgPerc <- perc_disorder_group %>%  
+  ggplot(aes(x = time_p, y= percentage_dg, fill = period, group = disorder_group )) +
+  geom_bar(stat = "identity")+
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se= TRUE, aes(colour=period), colour= "black", size = 0.5) + 
+  labs(x = time_period,
+       y = "Patient (%)",
+       title = paste0("Percentage of patients per ", time_period,"with mental health related ICD codes"), 
+       subtitle = "Grouped by mental health ICD subcategories") + 
+  ylim(0, NA) + 
+  facet_wrap(. ~ disorder_group, scales = "free_y") +
+  theme(strip.text.x = element_text(size = 4),
+        axis.text.x = element_text(size = 5, angle = 90), 
+        axis.text.y = element_text(size = 6), 
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        title = element_text(size = 12),
+        plot.subtitle = element_text(size = 11),
+        legend.position = "none") +
+  scale_fill_manual(values = cbPalette[-1])
+dgPerc
+```
+
+```{r}
+dgPerc_subset <- perc_disorder_group %>%  
+  filter( disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" )) %>%
+  ggplot(aes(x = time_p, y= percentage_dg, fill = period, group = disorder_group )) +
+  geom_bar(stat = "identity")+
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se= TRUE, aes(colour=period), colour= "black", size = 0.5) + 
+  labs(x = time_period,
+       y = "Patient (%)",
+       title = paste0("Percentage of patients per ", time_period,"with mental health related ICD codes"), 
+       subtitle = "Grouped by mental health ICD subcategories") + 
+  ylim(0, NA) + 
+  facet_wrap(. ~ disorder_group, scales = "free_y") +
+  theme(strip.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 12, angle = 90), 
+        axis.text.y = element_text(size = 12), 
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12),
+        title = element_text(size = 12),
+        plot.subtitle = element_text(size = 11),
+        legend.position = "none") +
+  scale_fill_manual(values = cbPalette[-1])
+dgPerc_subset
+```
+
+
+# Save the output in a RData file. 
+```{r}
+site = "CHOP"
+patient_count_psy_period_psy$siteid = site 
+patient_count_psy_period_psy_clear$siteid = site 
+bootstrapped_coefficients_df$siteid = site 
+bootstrapped_fitted_df$siteid = site 
+ratios_patients_with_without_psy$siteid = site 
+quantile_bootstrapped_fitted$siteid = site
+perc_disorder_group$siteid = site 
+
+save( ratios_patients_with_without_psy,
+      patient_count_psy_period_psy,
+      patient_count_psy_period_psy_clear,
+      bootstrapped_coefficients_df,
+      bootstrapped_fitted_df,
+      quantile_bootstrapped_fitted,
+      perc_disorder_group,
+      file = paste0("../output/CHOP/peds_psy_aggResults_", site, ".RData"))
+
 
 ```
 
