@@ -683,6 +683,62 @@ dgPerc_subset
 ```
 
 
+## Psychiatric conditions, dichotomized on patients' sex
+
+### Count
+```{r}
+psy_female_counts <- read_csv("../output/CHOP/Psy-Counts-Female.csv")
+psy_male_counts <- read_csv("../output/CHOP/Psy-Counts-Male.csv")
+
+psy_female_counts <- psy_female_counts %>%
+  mutate(female = Counts, 
+         time_p = as.Date(paste(Year, Month, "01", sep = "-"))) %>%
+  select( time_p, female)
+
+psy_male_counts <- psy_male_counts %>%
+  mutate(male = Counts, 
+         time_p = as.Date(paste(Year, Month, "01", sep = "-"))) %>%
+  select( time_p, male)
+
+psy_total_counts <- psy_female_counts %>%
+  inner_join( psy_male_counts)
+
+patients_hospitalized_agg_sex <- psy_total_counts %>%
+  pivot_longer(!time_p, names_to = "sex", values_to = "count_sex")
+
+patients_hospitalized_agg_sex %>%
+  ggplot(aes(x = time_p, y = count_sex, fill = sex)) +
+  geom_bar(stat="identity", position = "dodge")+
+  scale_fill_manual(values = cbPalette) +
+  labs(y = "Counts",
+       x = time_period,
+       title = paste0("Patient counts per ", time_period, " aggregated by sex"),
+       subtitle = "Per Sex") + 
+  theme(legend.position = "bottom") + 
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=sex), colour= "black", size = 0.5)
+
+```
+
+### Percentage 
+
+```{r}
+##percentage
+patients_hospitalized_agg_sex_perc <- psyCounts %>%
+  left_join( patients_hospitalized_agg_sex, by = c("time_p")) %>% 
+  replace_na(list(count_sex = 0))
+patients_hospitalized_agg_sex_perc$percentage <- 100*patients_hospitalized_agg_sex_perc$count_sex/patients_hospitalized_agg_sex_perc$count_psy_patients
+patients_hospitalized_agg_sex_perc %>%
+  ggplot(aes(x = time_p, y = percentage, fill = sex)) +
+  geom_bar(stat="identity", position = "dodge")+
+  scale_fill_manual(values = cbPalette) +
+  labs(y = "Percentage ",
+       x = time_period,
+       title = paste0("Patient (%) per ", time_period," aggregated by sex"),
+       subtitle = "Per Sex") + 
+  theme(legend.position = "bottom") + 
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=sex), colour= "black", size = 0.5)
+```
+
 # Save the output in a RData file. 
 ```{r}
 site = "CHOP"
@@ -693,6 +749,7 @@ bootstrapped_fitted_df$siteid = site
 ratios_patients_with_without_psy$siteid = site 
 quantile_bootstrapped_fitted$siteid = site
 perc_disorder_group$siteid = site 
+patients_hospitalized_agg_sex_perc$siteid = site 
 
 save( ratios_patients_with_without_psy,
       patient_count_psy_period_psy,
@@ -701,6 +758,7 @@ save( ratios_patients_with_without_psy,
       bootstrapped_fitted_df,
       quantile_bootstrapped_fitted,
       perc_disorder_group,
+      patients_hospitalized_agg_sex_perc,
       file = paste0("../output/CHOP/peds_psy_aggResults_", site, ".RData"))
 
 
