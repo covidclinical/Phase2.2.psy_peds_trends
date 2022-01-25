@@ -630,7 +630,8 @@ dg_subset
 ```{r}
 # estimate the percentage using as denominator the total number of patients per month with any psychiatric condition
 perc_disorder_group <- count_disorder_group %>%
-  mutate( percentage_dg = 100*count_dg / count_psy_patients ) 
+  mutate( percentage_dg = 100*count_dg / count_psy_patients ) %>%
+  select( time_p, count_icd = count_psy_patients, period, disorder_group, count_dg, percentage_dg )
 
 dgPerc <- perc_disorder_group %>%  
   ggplot(aes(x = time_p, y= percentage_dg, fill = period, group = disorder_group )) +
@@ -727,6 +728,8 @@ patients_hospitalized_agg_sex_perc <- psyCounts %>%
   left_join( patients_hospitalized_agg_sex, by = c("time_p")) %>% 
   replace_na(list(count_sex = 0))
 patients_hospitalized_agg_sex_perc$percentage <- 100*patients_hospitalized_agg_sex_perc$count_sex/patients_hospitalized_agg_sex_perc$count_psy_patients
+patients_hospitalized_agg_sex_perc <- patients_hospitalized_agg_sex_perc %>% 
+  select( time_p, count= count_psy_patients, sex, count_sex, percentage )
 patients_hospitalized_agg_sex_perc %>%
   ggplot(aes(x = time_p, y = percentage, fill = sex)) +
   geom_bar(stat="identity", position = "dodge")+
@@ -750,6 +753,7 @@ ratios_patients_with_without_psy$siteid = site
 quantile_bootstrapped_fitted$siteid = site
 perc_disorder_group$siteid = site 
 patients_hospitalized_agg_sex_perc$siteid = site 
+
 
 save( ratios_patients_with_without_psy,
       patient_count_psy_period_psy,
