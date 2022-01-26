@@ -104,9 +104,89 @@ for( i in 1:length( outputFiles )){
 }
 ```
 
+
+## Patient Count with Mental Health Related ICD codes
+
+```{r}
+thpd_psyCount <- count_icd_all %>%
+  pivot_longer(names_to = "counts", cols=c(count_psy, count_icd)) %>%
+  mutate( counts = ifelse( counts == "count_psy", "Psy", "Total")) %>%
+  ggplot(aes(x = time_p, y = value, fill = counts, color = counts)) +
+  facet_grid(siteid~.) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Counts",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Per ", time_period , " patient counts with mental health related ICD codes")) + 
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
+thpd_psyCount
+```
+
+#### Both results together
+
+```{r}
+count_icd_all_combined <-  count_icd_all %>%
+  group_by(time_p, period) %>% 
+  summarise(count_psy_all = sum(count_psy), 
+            count_icd_all = sum( count_icd ))
+
+thpd_psyCount_combined <- count_icd_all_combined %>%
+  pivot_longer(names_to = "counts", cols=c(count_psy_all, count_icd_all)) %>%
+  mutate( counts = ifelse( counts == "count_psy_all", "Psy", "Total")) %>%
+  ggplot(aes(x = time_p, y = value, fill = counts, color = counts)) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Counts",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Per ", time_period , " patient counts with mental health related ICD codes")) + 
+  geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=period), colour= "black", size = 0.5)
+thpd_psyCount_combined
+```
+
+## Ratio patients with vs without psychiatric conditions
+```{r}
+ratio_psy_non_psy <- ratios_patients_with_without_psy_all %>%
+  ggplot(aes(x = time_p, y = ratio, fill = period, color = period)) +
+  geom_point() +
+  facet_grid(siteid~.) +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Ratio (with psy conditions/without psy conditions)",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Ratio patient with vs without psychiatric conditions ( per ", time_period,")"))
+
+ratio_psy_non_psy
+```
+
+
 ## Percentage: patients with psychiatric conditions / total number of patients 
 
 ### By site 
+
+```{r}
+percentage_psy_non_psy <- ratios_patients_with_without_psy_all %>%
+  ggplot(aes(x = time_p, y = percentage, color = period)) +
+  facet_grid(siteid~.) +
+  geom_point() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  labs(y = "Percentage",
+       x = paste0("Date (by ", time_period,")"),
+       title = paste0("Percentage patient with vs total population ( per ", time_period,")")) +
+  guides(color = guide_legend(title="Patient diagnoses types"))
+
+percentage_psy_non_psy
+```
 
 ```{r}
 ratios_patients_with_without_psy_all %>%
@@ -155,6 +235,8 @@ ratios_patients_with_without_psy_all %>%
         axis.title.x = element_text(size = 8),
         axis.title.y = element_text(size = 8))
 ```
+
+
 
 ### By Country
 
@@ -535,7 +617,7 @@ sex_ratio_by_site %>%
 ```
 
 ### Summary of the codes used per site 
-```{r, eval=FALSE}
+```{r}
 mental_codes_qc_output_all <- mental_codes_qc_output_all %>%
     mutate( concept_code = gsub("[.]", "", concept_code ) ) %>%
   unique()
@@ -546,18 +628,18 @@ summary_codes <- mental_codes_qc_output_all %>%
 
 ## add a column with the sites combination 
 getSitesWithEachCode <- function(row) {
-  sites <- c( row['BCH'],  row['Lurie'], row['UMICH'], row['FRBDX'], row['APHP'])
+  sites <- c( row['BCH'],  row['Lurie'], row['UMICH'], row['FRBDX'], row['CHOP'])
   sites <- sites[!is.na( sites ) ]
   siteVal <- paste0( names( sites ), collapse = " - ")
   return( siteVal)
 }
 summary_codes <- summary_codes[, c("disorder_group", "description", "concept_code", 
-                                   "BCH", "Lurie", "UMICH",  "FRBDX", "APHP") ]                        
+                                   "BCH", "CHOP","Lurie", "UMICH",  "FRBDX") ]                        
 summary_codes$sitesCombination <- apply(summary_codes, 1, FUN = getSitesWithEachCode)
 summary_codes <- summary_codes[
-  with(summary_codes, order(BCH, FRBDX, Lurie, UMICH, APHP, decreasing = TRUE)),
+  with(summary_codes, order(BCH, CHOP, FRBDX, Lurie, UMICH, decreasing = TRUE)),
 ]
-print( paste0("There are in total ", nrow( summary_codes[ summary_codes$sitesCombination == "BCH - Lurie - UMICH - FRBDX - APHP", ]), " codes in common across all sites"))
+print( paste0("There are in total ", nrow( summary_codes[ summary_codes$sitesCombination == "BCH - CHOP - Lurie - UMICH - FRBDX", ]), " codes in common across all sites"))
 
 write.table( summary_codes, file="summary_codes.txt", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE )
 
@@ -573,14 +655,14 @@ upsetForDisorderGroup <- function( df, disorderGroup = "ALL"){
   FRBDX_concepts = df[ df$siteid == "FRBDX", "concept_code"]
   Lurie_concepts = df[ df$siteid == "Lurie", "concept_code"]
   UMICH_concepts = df[ df$siteid == "UMICH", "concept_code"]
-  APHP_concepts = df[ df$siteid == "APHP", "concept_code"]
-  
+  CHOP_concepts = df[ df$siteid == "CHOP", "concept_code"]
+
   concepts = list( 
           BCH = BCH_concepts$concept_code,
           FRBDX = FRBDX_concepts$concept_code, 
           Lurie = Lurie_concepts$concept_code, 
           UMICH = UMICH_concepts$concept_code, 
-          APHP  = APHP_concepts$concept_code
+          CHOP  = CHOP_concepts$concept_code
           )
   output <- upset(fromList(concepts), order.by = "freq")
   return( output )
@@ -591,7 +673,11 @@ upsetForDisorderGroup( df = mental_codes_qc_output_all, disorderGroup = "ALL")
 
 ### Estimate number of ICD codes per site and disorder group
 Represent this in 16 pannels, if we put all together, due to the different scales we will not be able to really see the differences between results. 
-```{r, eval=FALSE}
+```{r}
+mental_codes_qc_output_all <- mental_codes_qc_output_all %>%
+    mutate( concept_code = gsub("[.]", "", concept_code ) ) %>%
+  unique()
+
 numberOfCodesPerDisorderGroup <- mental_codes_qc_output_all %>%
   group_by( disorder_group, siteid ) %>%
   mutate( icd_codes_count = n( )) %>%
@@ -603,12 +689,17 @@ swr = function(string, nwrap=30) {
 }
 swr = Vectorize(swr)
 
+positions <- c("BCH", "CHOP", "UMICH", "Lurie", "FRBDX")
+
 numberOfCodesPerDisorderGroup %>%
   mutate( disorder_group = swr( disorder_group ) ) %>%
-  ggplot( aes( x= reorder( siteid, icd_codes_count), y = icd_codes_count)) +
+  inner_join( country_map ) %>%
+  ggplot( aes( x= siteid, y = icd_codes_count, fill = country )) +
   geom_bar( stat = "identity") +
+  scale_fill_manual("Country of each site", values = c("USA" = "navy", "France" = "orange")) +
   facet_wrap( ~ disorder_group, scales = "free" ) +
   labs(x ="site identifier", y = "ICD dictionary (number of ICD codes)") +
+  scale_x_discrete(limits = positions) +
   theme(axis.text.x=element_text(angle=45,hjust=1, size = 6), 
         strip.text = element_text(size = 7), 
         panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
