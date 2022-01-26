@@ -140,6 +140,58 @@ psyCounts <- psyCounts %>%
   select( time_p, count_psy_patients = ct2, period, siteid )
 ```
 
+### Read the ICD10 codes file
+
+The file containing the ICD10 psychiatric related codes is located in
+the `public-data` folder of the GitHub repository.
+
+```{r}
+icdCodes <- read.csv("public-data/pediatric_psychiatric_ICD10_codesV2.csv", header = TRUE, colClasses = "character") %>%
+   filter( flag %in% c("originalCodes", "FrenchSpecificCodes")) %>%
+   dplyr::select( disorder_group, concept_code = ICD10_Code, description )
+```
+
+
+#### QC step: do a summary of the mental health ICD codes present in each site
+As output we will generate a table with: the number of observations per code, number of patients diagnosed with each code and the date range in which the code was used. 
+
+```{r}
+icdCounts_females <- read.csv( "../output/CHOP/Psy-Female-All Ages_ICDlevel.csv") %>%
+  pivot_longer(!c(Month, Year), names_to = "concept_code", values_to = "patients") %>%
+  mutate(  time_p = ymd(paste( Year, Month, "01", sep="-") ) ) %>%
+  select( time_p, concept_code, patients ) %>%
+    filter( patients > 0 ) %>%
+  group_by( concept_code ) %>%
+  summarise( total_females = sum( patients ), 
+             min_date = min( as.Date( time_p )) , 
+             max_date = max( as.Date( time_p ))) 
+
+icdCounts_males <- read.csv( "../output/CHOP/Psy-Male-All Ages_ICDlevel.csv") %>%
+  pivot_longer(!c(Month, Year), names_to = "concept_code", values_to = "patients") %>%
+  mutate(  time_p = ymd(paste( Year, Month, "01", sep="-") ) ) %>%
+  select( time_p, concept_code, patients ) %>%
+  filter( patients > 0 ) %>%
+  group_by( concept_code ) %>%
+  summarise( total_males = sum( patients ), 
+             min_date = min( as.Date( time_p )) , 
+             max_date = max( as.Date( time_p )))
+
+all_codes_ado <- full_join( icdCounts_females, icdCounts_males, by = "concept_code") %>%
+  rowwise() %>% 
+  mutate( distinct_patients = sum(total_females, total_males, na.rm = TRUE ), 
+          distinct_observations = sum(total_females, total_males, na.rm = TRUE ),
+          min_date = min( min_date.x, min_date.y, na.rm = TRUE), 
+          max_date = max( max_date.x, max_date.y, na.rm = TRUE)) %>%
+  select( concept_code, distinct_patients, distinct_observations, min_date, max_date ) %>%
+  inner_join( icdCodes )
+
+
+mental_codes_qc_output  <- all_codes_ado[, c("disorder_group", "description", "concept_code", "distinct_patients", 
+                                                    "distinct_observations", "min_date", "max_date")]
+mental_codes_qc_output[1:10, ]
+```
+
+
 # Results
 
 ## Admission
@@ -316,6 +368,18 @@ time_series_analysis_plotting <- function(model, df_count_psy, count_col, cleara
   }
 }
 ```
+
+```{r}
+count_icd <- left_join(allCounts, psyCounts) %>%
+  mutate(period = ifelse(time_p < as.Date("2020-04-01"),
+                         "before_pandemic",
+                         "during_pandemic"),
+         percentage_psy = count_psy_patients * 100 /count_all,
+         siteid = "CHOP") %>%
+  select(time_p, count_icd = count_all, period, count_psy = count_psy_patients,
+         percentage_psy, siteid)
+```
+
 
 ```{r}
 # Time series analysis of percentage of psy codes per encounter, linear (without seasonality)
@@ -753,9 +817,10 @@ ratios_patients_with_without_psy$siteid = site
 quantile_bootstrapped_fitted$siteid = site
 perc_disorder_group$siteid = site 
 patients_hospitalized_agg_sex_perc$siteid = site 
+mental_codes_qc_output$siteid = site
 
-
-save( ratios_patients_with_without_psy,
+save( count_icd, 
+      ratios_patients_with_without_psy,
       patient_count_psy_period_psy,
       patient_count_psy_period_psy_clear,
       bootstrapped_coefficients_df,
@@ -763,6 +828,7 @@ save( ratios_patients_with_without_psy,
       quantile_bootstrapped_fitted,
       perc_disorder_group,
       patients_hospitalized_agg_sex_perc,
+      mental_codes_qc_output,
       file = paste0("../output/CHOP/peds_psy_aggResults_", site, ".RData"))
 
 

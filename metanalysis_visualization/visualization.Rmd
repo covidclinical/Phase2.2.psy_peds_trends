@@ -99,7 +99,7 @@ for( i in 1:length( outputFiles )){
   }
   rm(count_icd,patients_hospitalized_agg_sex_perc,patient_count_psy_period_psy,
      perc_disorder_group,ratios_patients_with_without_psy,
-     patient_count_psy_period_psy_clear, table1, bootstrapped_coefficients_df,
+     patient_count_psy_period_psy_clear, bootstrapped_coefficients_df,
      bootstrapped_fitted_df, mental_codes_qc_output)
 }
 ```
@@ -109,11 +109,6 @@ for( i in 1:length( outputFiles )){
 ### By site 
 
 ```{r}
-### add CHOP 
-ratios_patients_with_without_psy_chop <- read.delim ( file = "/Users/alba/Desktop/ratios_patients_with_without_psy_chop.txt")
-
-ratios_patients_with_without_psy_all <- rbind( ratios_patients_with_without_psy_all, ratios_patients_with_without_psy_chop)
-
 ratios_patients_with_without_psy_all %>%
   filter(time_p <= history_end_date &
          time_p >= history_start_date ) %>%
@@ -132,6 +127,33 @@ ratios_patients_with_without_psy_all %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
     ggtitle("Percentage: patients with psychiatric conditions / total number of patients") +
     xlab("period (months)")
+
+ratios_patients_with_without_psy_all %>%
+  filter(time_p <= history_end_date &
+         time_p >= history_start_date ) %>%
+  ggplot( aes(x=time_p, y=ratio, 
+              group = siteid, color = siteid))+
+    facet_wrap("siteid") +
+  geom_point( aes(shape=siteid, color=siteid) ) + 
+  geom_line() +
+  geom_vline(xintercept = as.Date(pandemic_start_date),
+             linetype = "dashed") +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(size=11)
+    ) +
+  scale_x_date(date_labels = "%b-%d-%Y", breaks = "month") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+    ggtitle("Ratio: patients with vs. patients without psychiatric conditions") +
+    xlab("period (months)") +
+  theme(strip.text = element_text(size = 10),
+        axis.text.x = element_text(size = 8), 
+        axis.text.y = element_text(size = 8), 
+        axis.title.x = element_text(size = 8),
+        axis.title.y = element_text(size = 8))
 ```
 
 ### By Country
@@ -296,25 +318,6 @@ pes.summary=metaprop(count_psy_patients, total, as.character(time_p),
                      sm="PRAW")
 forest(pes.summary,layout = "JAMA")
 ```
-
-### Boxplot showing ratio per month
-
-```{r}
-ratios_patients_with_without_psy_all %>%
-  ggplot( aes(x=as.factor(time_p), y=ratio)) +
-    geom_boxplot() +
-    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
-    geom_jitter(color="black", size=0.4, alpha=0.9,
-                aes(shape = siteid)) +
-    theme(
-      legend.position="bottom",
-      plot.title = element_text(size=11)
-    ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
-    ggtitle("Ratio boxplot") +
-    xlab("")
-```
-
 
 
 
@@ -497,6 +500,8 @@ perc_disorder_group_all %>%
        x = paste0("Date (by ", time_period,")"),
        title = paste0("Percentage of patients with Suicide or Self-Injury \n ( per ", time_period,")"))
 ```
+
+
 
 
 ## Sex ratio per site
