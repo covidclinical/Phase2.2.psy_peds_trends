@@ -82,6 +82,7 @@ for( i in 1:length( outputFiles )){
     bootstrapped_coefficients_all <- bootstrapped_coefficients_df
     mental_codes_qc_output_all <- mental_codes_qc_output %>%
       select( disorder_group, description, concept_code, distinct_patients, distinct_observations, siteid )
+    table1_all <- table1
   } else {
     count_icd_all <- rbind(count_icd_all, count_icd)
     patients_hospitalized_agg_sex_perc_all <- rbind( patients_hospitalized_agg_sex_perc_all, patients_hospitalized_agg_sex_perc)
@@ -93,29 +94,46 @@ for( i in 1:length( outputFiles )){
    mental_codes_qc_output <- mental_codes_qc_output %>%
       select( disorder_group, description, concept_code, distinct_patients, distinct_observations, siteid )
     mental_codes_qc_output_all <- rbind( mental_codes_qc_output_all, mental_codes_qc_output)
-  }
+    table1_all <- rbind( table1_all, table1)
+    }
   rm(count_icd,patients_hospitalized_agg_sex_perc,patient_count_psy_period_psy,
      perc_disorder_group,ratios_patients_with_without_psy,
      patient_count_psy_period_psy_clear, bootstrapped_coefficients_df,
-     bootstrapped_fitted_df, mental_codes_qc_output)
+     bootstrapped_fitted_df, mental_codes_qc_output, table1)
 }
 ```
 
 ### Table 1
 
 ```{r}
-sitesWithTable1 <- outputFiles[c(1,3:5)]
+sex_table1_all <- table1_all %>%
+  filter( Category == "Sex" & name != "Total") %>%
+  mutate( before_counts = sapply(strsplit( before_pandemic, " "), '[', 1), 
+          during_counts = sapply(strsplit( during_pandemic, " "), '[', 1)) %>%
+  group_by( name ) %>%
+  summarise( before_pandemic_count = sum( as.numeric( before_counts )), 
+             during_pandemic_count = sum( as.numeric( during_counts ))) %>%
+  mutate( Category = "Sex") %>%
+  select( Category, name, before_pandemic_count, during_pandemic_count )
 
-for( i in 1:length( sitesWithTable1 )){
-  print(i)
-  load(paste0( outputDir, sitesWithTable1[i]))
-  if( i == 1 ){
-    table1_all <- table1
-  } else {
-    table1_all <- rbind( table1_all, table1)
-  }
-  rm( table1)
-}
+sex_table1_all <- rbind( sex_table1_all, c("Total", "",sum( sex_table1_all$before_pandemic_count), sum( sex_table1_all$during_pandemic_count)))
+
+dg_table1_all <- table1_all %>%
+  filter( Category == "Disorder groups" & name != "Total") %>%
+  mutate( before_counts = sapply(strsplit( before_pandemic, " "), '[', 1), 
+          during_counts = sapply(strsplit( during_pandemic, " "), '[', 1)) %>%
+  group_by( name ) %>%
+  summarise( before_pandemic_count = sum( as.numeric( before_counts ), na.rm = TRUE), 
+             during_pandemic_count = sum( as.numeric( during_counts ), na.rm = TRUE)) %>%
+  mutate( Category = "Disorder groups") %>%
+  select( Category, name, before_pandemic_count, during_pandemic_count )
+
+table1 <- rbind( sex_table1_all, dg_table1_all )
+
+table1 %>%
+  kable( booktabs = T) %>%
+  kableExtra::kable_styling(latex_options = "striped") %>%
+  kableExtra::group_rows(index = setNames(rle(table1$Category)[[1]], rle(table1$Category)[[2]]))
 ```
 
 ### Sex Summary
