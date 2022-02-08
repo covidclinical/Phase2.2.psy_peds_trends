@@ -805,6 +805,14 @@ patients_hospitalized_agg_sex_perc %>%
   theme(legend.position = "bottom") + 
   geom_smooth(method = "lm", formula = y ~ splines::ns(x, 2), se = TRUE, aes(colour=sex), colour= "black", size = 0.5)
 ```
+## Table 1
+
+```{r}
+table1 <- read.csv(file = "../output/CHOP/Table 1.csv")
+table1 %>% 
+   kable( booktabs = T) %>%
+  kableExtra::kable_styling(latex_options = "striped") 
+```
 
 # Save the output in a RData file. 
 ```{r}
@@ -818,6 +826,7 @@ quantile_bootstrapped_fitted$siteid = site
 perc_disorder_group$siteid = site 
 patients_hospitalized_agg_sex_perc$siteid = site 
 mental_codes_qc_output$siteid = site
+table1$siteid = site 
 
 save( count_icd, 
       ratios_patients_with_without_psy,
@@ -829,6 +838,7 @@ save( count_icd,
       perc_disorder_group,
       patients_hospitalized_agg_sex_perc,
       mental_codes_qc_output,
+      table1,
       file = paste0("../output/CHOP/peds_psy_aggResults_", site, ".RData"))
 
 
