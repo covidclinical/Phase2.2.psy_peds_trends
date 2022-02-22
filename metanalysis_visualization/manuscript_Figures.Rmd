@@ -451,7 +451,7 @@ swr = function(string, nwrap=30) {
 }
 swr = Vectorize(swr)
 
-positions <- c("BCH", "CHOP", "UMICH", "Lurie", "FRBDX")
+positions <- c("BCH", "CCHMC","CHOP", "UMICH", "Lurie", "FRBDX")
 
 numberOfCodesPerDisorderGroup %>%
   mutate( disorder_group = swr( disorder_group ) ) %>%
