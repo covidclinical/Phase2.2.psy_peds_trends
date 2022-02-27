@@ -266,8 +266,7 @@ annotation_function <- function(df, ...) {
 }
 
 df_coefficients_boot <- bootstrapped_coefficients_all %>% 
-  left_join(coefficients_df, by = "siteid") %>% 
-  filter(siteid != "APHP")
+  left_join(coefficients_df, by = "siteid")
 
 names_site_id <- unique(df_coefficients_boot$siteid)
 
@@ -451,7 +450,7 @@ swr = function(string, nwrap=30) {
 }
 swr = Vectorize(swr)
 
-positions <- c("BCH", "CCHMC","CHOP", "UMICH", "Lurie", "FRBDX")
+positions <- c("BCH", "CCHMC","CHOP", "UMICH", "Lurie", "FRBDX", "APHP")
 
 numberOfCodesPerDisorderGroup %>%
   mutate( disorder_group = swr( disorder_group ) ) %>%
