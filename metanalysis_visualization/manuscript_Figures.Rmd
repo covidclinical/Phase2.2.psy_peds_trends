@@ -650,6 +650,55 @@ numberOfCodesPerDisorderGroup %>%
         legend.position="bottom") 
 ```
 
+
+## ITS with seasonality 
+
+
+### By site
+```{r}
+head(patient_count_psy_period_psy_all)
+sites <- unique( patient_count_psy_period_psy_all$siteid )
+
+p <- list()
+
+for( i in 1:length(sites)){
+  print(i)
+  subset_site <- patient_count_psy_period_psy_all %>%
+    filter( siteid == sites[i])
+  ts_seasonal_percent_per_site <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), subset_site)
+  p[[i]] <- time_series_analysis_plotting(ts_seasonal_percent_per_site,
+                              subset_site,
+                              "percentage",
+                              clearance_period = FALSE) +
+  labs(title = sites[i],
+       subtitle = "ITS with seasonality effect",
+       x = "Calendar dates",
+       y = "Percentage") +
+     theme(strip.text = element_text(size = 10),
+        axis.text.x = element_text(size = 8), 
+        axis.text.y = element_text(size = 8), 
+        axis.title.x = element_text(size = 8),
+        axis.title.y = element_text(size = 8),
+        title = element_text(size = 14),
+        plot.subtitle = element_text(size = 12, face = "italic"))
+
+}
+
+
+g <- do.call(grid.arrange,p)
+ggsave("its_seasonality_site.png",g, height = 20, width = 32, units = "cm")
+
+```
+
+
+
+### By country
+```{r}
+
+```
+
+
+
 ### R session information
 
 ```{r, results='hide'}
