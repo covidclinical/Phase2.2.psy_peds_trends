@@ -54,8 +54,8 @@ time_period <-"months" #possible values: days, weeks, months
 history_start_date <- as.Date("2019-01-01")
 history_end_date <- as.Date("2021-05-31")
 pandemic_start_date <- as.Date("2020-03-15")
-start_date_plots <- as.Date("2019-01-15")
-end_date_plots <- as.Date("2021-05-01")
+start_date_plots <- as.Date("2019-01-01")
+end_date_plots <- as.Date("2021-05-31")
 ```
 
 ## Read the input file by site
@@ -199,31 +199,31 @@ patients_hospitalized_agg_sex_total %>%
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.border = element_rect(colour = "black", fill = NA))
   
-patients_hospitalized_agg_sex_country <- patients_hospitalized_agg_sex_perc_all %>%
-  select( - percentage ) %>%
-  inner_join( country_map ) %>%
-  group_by( time_p, sex, country ) %>%
-  mutate( total_cases = sum( count ), 
-          sex_cases = sum( count_sex ), 
-          percentage = 100* sex_cases / total_cases) %>%
-  rbind( patients_hospitalized_agg_sex_total)
+#patients_hospitalized_agg_sex_country <- patients_hospitalized_agg_sex_perc_all %>%
+#  select( - percentage ) %>%
+#  inner_join( country_map ) %>%
+#  group_by( time_p, sex, country ) %>%
+#  mutate( total_cases = sum( count ), 
+#          sex_cases = sum( count_sex ), 
+#          percentage = 100* sex_cases / total_cases) %>%
+#  rbind( patients_hospitalized_agg_sex_total)
 
-patients_hospitalized_agg_sex_country %>%
-  ggplot( aes( x= as.Date( time_p ), y = percentage, group = sex )) +
-  geom_line( aes(linetype = sex, color = sex )) +
-  geom_point( aes( shape= sex, color = sex )) +
-  scale_colour_manual(values=c("#FF6600","#339999")) +
-  scale_fill_manual(values=c("#FF6600","#339999"))+
-  #scale_y_continuous(breaks = seq(0, 30, by = 1)) +
-  facet_wrap2("country", axes = "all") + 
-  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
-  labs(x ="", y = "percentage of patients (%)")+
-  scale_x_date(breaks = "2 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
-  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6), 
-        strip.text = element_text(size = 10, face = "bold"),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
-        panel.border = element_rect(colour = "black", fill = NA), 
-        legend.position="bottom")
+# patients_hospitalized_agg_sex_country %>%
+#   ggplot( aes( x= as.Date( time_p ), y = percentage, group = sex )) +
+#   geom_line( aes(linetype = sex, color = sex )) +
+#   geom_point( aes( shape= sex, color = sex )) +
+#   scale_colour_manual(values=c("#FF6600","#339999")) +
+#   scale_fill_manual(values=c("#FF6600","#339999"))+
+#   #scale_y_continuous(breaks = seq(0, 30, by = 1)) +
+#   facet_wrap2("country", axes = "all") + 
+#   geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
+#   labs(x ="", y = "percentage of patients (%)")+
+#   scale_x_date(breaks = "2 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
+#   theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6), 
+#         strip.text = element_text(size = 10, face = "bold"),
+#         panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
+#         panel.border = element_rect(colour = "black", fill = NA), 
+#         legend.position="bottom")
 ```
 
 
@@ -316,188 +316,6 @@ ggplot(bootstrapped_fitted_all, aes(x = time_p, y = predicted, group = interacti
 ggsave("boostrapped_all.png", height = 20, width = 32, units = "cm")
 ```
 
-Aggregated by Country
-
-
-
-```{r}
-patient_count_psy_period_psy_country <- patient_count_psy_period_psy_all %>% 
-  left_join(country_map, by = "siteid") %>%
-  group_by(country, time_p) %>% 
-  mutate(total_patients = count_no_psy_patients +count_psy_patients) %>%
-  summarise(psy_cases = sum(count_psy_patients),
-            total_cases = sum(total_patients), 
-            percentages = round(100*psy_cases/total_cases,2), 
-            time = time, 
-            period = period ) 
-
-source( "time_series_analysis_plotting.R")
-patient_count_psy_period_psy_country_france <- patient_count_psy_period_psy_country %>%
-  filter( country == "France")
-ts_linear_percent_france <- lm(percentages ~ period * time, patient_count_psy_period_psy_country_france)
-
-time_series_analysis_plotting(ts_linear_percent_france,
-                              patient_count_psy_period_psy_country_france,
-                              "percentages",
-                              clearance_period = FALSE) +
-  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes (France)",
-       subtitle = "Without seasonality effect",
-       x = time_period,
-       y = "Percentage")
-
-patient_count_psy_period_psy_country_usa <- patient_count_psy_period_psy_country %>%
-  filter( country == "USA")
-ts_linear_percent_usa <- lm(percentages ~ period * time, patient_count_psy_period_psy_country_usa)
-
-time_series_analysis_plotting(ts_linear_percent_usa,
-                              patient_count_psy_period_psy_country_usa,
-                              "percentages",
-                              clearance_period = FALSE) +
-  labs(title = "Interrupted Time-Series Analysis: Percentage of encounters with psychiatric ICD codes (USA)",
-       subtitle = "Without seasonality effect",
-       x = time_period,
-       y = "Percentage")
-
-```
-```{r}
-bootstrap_size <- 1000
-
-binom_proportion <- function(n, prob, size) {
-  (rbinom(n, size, prob) / size) * 100
-}
-bootstrapped_timepoints_france <- mapply(binom_proportion,
-                                  n = bootstrap_size,
-                                  size = patient_count_psy_period_psy_country_france$total_cases,
-                                  prob = patient_count_psy_period_psy_country_france$percentages/100)
-bootstrapped_sample_list <- vector(mode = "list", length = bootstrap_size)
-bootstrapped_coefficients_list <- vector(mode = "list", length = bootstrap_size)
-for (iteration in 1:bootstrap_size) {
-  df_iteration <- data.frame(period = patient_count_psy_period_psy_country_france$period,
-                             time = patient_count_psy_period_psy_country_france$time,
-                             percentage = bootstrapped_timepoints_france[iteration, ])
-  ts_linear_percent <- lm(percentage ~ period * time, df_iteration)
-  linear_model <- broom::tidy(ts_linear_percent) %>%
-    filter(term %in% c("time", "periodduring_pandemic:time"))
-  coefficients <- linear_model$estimate
-  names(coefficients) <- linear_model$term
-  bootstrapped_coefficients_list[[iteration]] <- coefficients
-  df_iteration$predicted <- predict(ts_linear_percent)
-  df_iteration$time_p <- patient_count_psy_period_psy_country_france$time_p
-  bootstrapped_sample_list[[iteration]] <- df_iteration
-}
-bootstrapped_fitted_df_france <- bind_rows(bootstrapped_sample_list, .id = "iteration")
-bootstrapped_fitted_df_france$country <- "France"
-
-bootstrapped_timepoints_usa <- mapply(binom_proportion,
-                                  n = bootstrap_size,
-                                  size = patient_count_psy_period_psy_country_usa$total_cases,
-                                  prob = patient_count_psy_period_psy_country_usa$percentages/100)
-bootstrapped_sample_list_usa <- vector(mode = "list", length = bootstrap_size)
-bootstrapped_coefficients_list <- vector(mode = "list", length = bootstrap_size)
-for (iteration in 1:bootstrap_size) {
-  df_iteration <- data.frame(period = patient_count_psy_period_psy_country_usa$period,
-                             time = patient_count_psy_period_psy_country_usa$time,
-                             percentage = bootstrapped_timepoints_usa[iteration, ])
-  ts_linear_percent <- lm(percentage ~ period * time, df_iteration)
-  linear_model <- broom::tidy(ts_linear_percent) %>%
-    filter(term %in% c("time", "periodduring_pandemic:time"))
-  coefficients <- linear_model$estimate
-  names(coefficients) <- linear_model$term
-  bootstrapped_coefficients_list[[iteration]] <- coefficients
-  df_iteration$predicted <- predict(ts_linear_percent)
-  df_iteration$time_p <- patient_count_psy_period_psy_country_usa$time_p
-  bootstrapped_sample_list_usa[[iteration]] <- df_iteration
-}
-bootstrapped_fitted_df_usa <- bind_rows(bootstrapped_sample_list_usa, .id = "iteration")
-bootstrapped_fitted_df_usa$country <- "USA"
-
-bootstrapped_fitted_all_by_country <- rbind( bootstrapped_fitted_df_france, bootstrapped_fitted_df_usa)
-
-
-
-quantile_bootstrapped_fitted_country <- bootstrapped_fitted_all_by_country %>%
-  group_by(time_p, period, country) %>%
-  summarise("2.5%" = quantile(predicted, 0.025),
-            "50%" = median(predicted, 0.5),
-            "97.5%" = quantile(predicted, 0.975)) %>%
-  pivot_longer(cols = c("2.5%", "50%", "97.5%"),
-               names_to = "quantiles")
-
-
-annotation_function <- function(df, ...) {
-  z <- unique(df[["observed_diff"]]) / sd(df[["periodduring_pandemic:time"]])
-  pvalue_coeff_interaction = round(pnorm(abs(z), lower.tail = FALSE) * 2, 3)
-  paste0("Coeffs differences: ",
-         round(unique(df[["observed_diff"]]), 2),
-         " (pvalue: ",
-         pvalue_coeff_interaction,
-         ")")
-}
-
-coefficient_slope_calculation <- function(df, ...) {
-  ts_linear_percent <- lm(percentages ~ period * time, df)
-  linear_model <- broom::tidy(ts_linear_percent) %>%
-    filter(term %in% c("periodduring_pandemic:time"))
-} 
-  
-coefficients_df_by_country <- patient_count_psy_period_psy_country %>% 
-  group_by(country) %>% 
-  group_modify(coefficient_slope_calculation) %>% 
-  rename(observed_diff = estimate)
-
-
-df_coefficients_boot_by_country <- bootstrapped_fitted_all_by_country %>% 
-  left_join(coefficients_df_by_country, by = "country")
-
-names_countries <- unique(df_coefficients_boot_by_country$country)
-
-plot_annotations_country <- df_coefficients_boot_by_country %>% 
-  group_by(country) %>% 
-  group_map( annotation_function ) %>% 
-  set_names(names_countries) %>% 
-  unlist()
-plot_annotations_df_country <- data.frame(
-  country = names(plot_annotations_country), 
-  label_countr = plot_annotations_country
-)
-
-
-
-ggplot(bootstrapped_fitted_all_by_country, aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
-  facet_wrap("country", scales = "free_y") +
-  geom_line(aes(color = period),
-            alpha = 0.03) +
-  geom_line(data = quantile_bootstrapped_fitted_country,
-            aes(y = value, group = interaction(quantiles, period)),
-            linetype = "dashed") +
-  geom_line(data = quantile_bootstrapped_fitted_country[quantile_bootstrapped_fitted_country$quantiles == "50%", ],
-            aes(y = value, group = period)) +
-  geom_point(data = patient_count_psy_period_psy_country,
-             aes(y = percentages, group=NULL),
-             alpha = 0.5) +
-  scale_colour_manual(values = cbPalette) +
-  guides(color = guide_legend(override.aes = list(alpha = 1))) +
-  geom_label(data = plot_annotations_df_country, 
-             aes(label=label_countr), 
-            x = -Inf, y = +Inf, hjust=0, vjust=1,
-            size = 4,
-            inherit.aes = FALSE) +
-  labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
-       subtitle = "Parametric bootstrap estimation: (1000 iterations)",
-       x = "Calendar dates",
-       y = "Percentage",
-       color = "Period") +
-  theme(strip.text = element_text(size = 10),
-        axis.text.x = element_text(size = 8), 
-        axis.text.y = element_text(size = 8), 
-        axis.title.x = element_text(size = 8),
-        axis.title.y = element_text(size = 8),
-        title = element_text(size = 14),
-        plot.subtitle = element_text(size = 12, face = "italic")) 
-ggsave("boostrapped_country.png", height = 20, width = 32, units = "cm")
-
-```
-
 
 ## Meta-analysis of temporal trends
 
@@ -568,44 +386,27 @@ perc_disorder_group_total %>%
   theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.border = element_rect(colour = "black", fill = NA))
-  
-perc_disorder_group_country <- perc_disorder_group_all %>%
-  select( - percentage_dg ) %>%
-  inner_join( country_map ) %>%
-  group_by( time_p, disorder_group, country ) %>%
-  mutate( total_cases = sum( count_icd ), 
-          dg_cases = sum( count_dg ), 
-          percentage = 100* dg_cases / total_cases ) %>%
-  rbind( perc_disorder_group_total)
+#   
+# perc_disorder_group_country <- perc_disorder_group_all %>%
+#   select( - percentage_dg ) %>%
+#   inner_join( country_map ) %>%
+#   group_by( time_p, disorder_group, country ) %>%
+#   mutate( total_cases = sum( count_icd ), 
+#           dg_cases = sum( count_dg ), 
+#           percentage = 100* dg_cases / total_cases ) %>%
+#   rbind( perc_disorder_group_total)
 
-perc_disorder_group_country %>%
+perc_disorder_group_total %>%
   filter( disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury", 
-  "Mental Health Symptoms", "Obsessive-Compulsive and Related Disorders" )) %>%
-  ggplot( aes( x= as.Date( time_p ), y = percentage, group = disorder_group )) +
-  geom_line( aes(linetype = disorder_group, color = disorder_group )) +
-  geom_point( aes( shape= disorder_group, color = disorder_group )) +
-  scale_y_continuous(breaks = seq(0, 30, by = 1)) +
-  facet_wrap2("country", axes = "all") + 
-  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
-  labs(x ="", y = "percentage of patients (%)")+
-  scale_x_date(breaks = "2 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
-  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6), 
-        strip.text = element_text(size = 10, face = "bold"),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
-        panel.border = element_rect(colour = "black", fill = NA), 
-        legend.position="bottom")
-
-perc_disorder_group_country %>%
-  filter( disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury", 
-  "Mental Health Symptoms", "Obsessive-Compulsive and Related Disorders" )) %>%
+  "Mental Health Symptoms", "Feeding and Eating Disorders" )) %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
   geom_line( aes(linetype = country, color = country )) +
   geom_point( aes( shape= country, color = country )) +
-  scale_y_continuous(breaks = seq(0, 30, by = 5)) +
-  facet_wrap2("disorder_group", axes = "all") + 
+  #scale_y_continuous(breaks = seq(0, 30, by = 5)) +
+  facet_wrap2("disorder_group", axes = "all", scales ="free") + 
   geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
   labs(x ="", y = "percentage of patients (%)")+
-  scale_x_date(breaks = "2 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
   scale_color_manual( values = cbPalette ) + 
   theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6), 
         strip.text = element_text(size = 10, face = "bold"),
@@ -658,7 +459,7 @@ numberOfCodesPerDisorderGroup %>%
 ```{r}
 head(patient_count_psy_period_psy_all)
 sites <- unique( patient_count_psy_period_psy_all$siteid )
-
+source("../metanalysis_visualization/time_series_analysis_plotting.R")
 p <- list()
 
 for( i in 1:length(sites)){
@@ -671,7 +472,6 @@ for( i in 1:length(sites)){
                               "percentage",
                               clearance_period = FALSE) +
   labs(title = sites[i],
-       subtitle = "ITS with seasonality effect",
        x = "Calendar dates",
        y = "Percentage") +
      theme(strip.text = element_text(size = 10),
@@ -687,13 +487,6 @@ for( i in 1:length(sites)){
 
 g <- do.call(grid.arrange,p)
 ggsave("its_seasonality_site.png",g, height = 20, width = 32, units = "cm")
-
-```
-
-
-
-### By country
-```{r}
 
 ```
 
