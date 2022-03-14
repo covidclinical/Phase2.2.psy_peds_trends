@@ -673,6 +673,7 @@ upsetForDisorderGroup( df = mental_codes_qc_output_all, disorderGroup = "ALL")
 
 ### Estimate number of ICD codes per site and disorder group
 Represent this in 16 pannels, if we put all together, due to the different scales we will not be able to really see the differences between results. 
+
 ```{r}
 mental_codes_qc_output_all <- mental_codes_qc_output_all %>%
     mutate( concept_code = gsub("[.]", "", concept_code ) ) %>%
