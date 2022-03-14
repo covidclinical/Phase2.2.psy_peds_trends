@@ -83,37 +83,14 @@ for( i in 1:length( outputFiles )){
       select( disorder_group, description, concept_code, distinct_patients, distinct_observations, siteid )
     table1_all <- table1
   } else {
-    if (outputFiles[i] == "peds_psy_aggResults_CHOP.RData") {
-      count_icd_all <- tryCatch(
-        rbind(count_icd_all, count_icd),
-        error = function(e) count_icd_all
-      )
-      patients_hospitalized_agg_sex_perc_all <- tryCatch( 
-        rbind( patients_hospitalized_agg_sex_perc_all, patients_hospitalized_agg_sex_perc),
-        error = function(e) patients_hospitalized_agg_sex_perc_all
-      )
-      perc_disorder_group_all <- tryCatch(
-        rbind(perc_disorder_group_all, perc_disorder_group),
-        error = function(e) perc_disorder_group_all
-      )
-      mental_codes_qc_output_all <- tryCatch(
-        rbind( mental_codes_qc_output_all,
-               mental_codes_qc_output %>%
-                 select( disorder_group, description, concept_code, distinct_patients, distinct_observations, siteid )
-        ),
-        error = function(e) mental_codes_qc_output_all
-      )
-      table1_all <- table1_all
-    } else {
-      count_icd_all <- rbind(count_icd_all, count_icd)
-      perc_disorder_group_all <- rbind(perc_disorder_group_all, perc_disorder_group)
-      patients_hospitalized_agg_sex_perc_all <- rbind( patients_hospitalized_agg_sex_perc_all, patients_hospitalized_agg_sex_perc)
-      mental_codes_qc_output_all <- rbind( mental_codes_qc_output_all,
-                                           mental_codes_qc_output %>%
-                                             select( disorder_group, description, concept_code, distinct_patients, distinct_observations, siteid )
-      )
-      table1_all <- rbind( table1_all, table1)
-    }
+    count_icd_all <- rbind(count_icd_all, count_icd)
+    perc_disorder_group_all <- rbind(perc_disorder_group_all, perc_disorder_group)
+    patients_hospitalized_agg_sex_perc_all <- rbind( patients_hospitalized_agg_sex_perc_all, patients_hospitalized_agg_sex_perc)
+    mental_codes_qc_output_all <- rbind( mental_codes_qc_output_all,
+                                         mental_codes_qc_output %>%
+                                           select( disorder_group, description, concept_code, distinct_patients, distinct_observations, siteid )
+    )
+    table1_all <- rbind( table1_all, table1)
     patient_count_psy_period_psy_all <- rbind( patient_count_psy_period_psy_all,patient_count_psy_period_psy)
     ratios_patients_with_without_psy_all <- rbind( ratios_patients_with_without_psy_all, ratios_patients_with_without_psy)
     bootstrapped_fitted_all <- rbind(bootstrapped_fitted_all, bootstrapped_fitted_df)
