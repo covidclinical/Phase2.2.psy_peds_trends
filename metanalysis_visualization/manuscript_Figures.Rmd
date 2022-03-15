@@ -646,6 +646,62 @@ ggsave("its_seasonality_site.png",g, height = 20, width = 32, units = "cm")
 ```
 
 
+### Total counts with psychiatric conditions and total counts per month
+
+#### At site level
+```{r}
+library(reshape2)
+
+counts <- patient_count_psy_period_psy_all %>%
+  mutate( total_cases = count_no_psy_patients + count_psy_patients) %>%
+  select( siteid, time_p, time, month_year, count_psy_patients, total_cases)
+
+counts2 <- reshape2::melt(counts ,  id.vars = c('siteid', 'time_p', 'time','month_year'), variable.name = 'group')
+counts2$group <- gsub("count_psy_patients", "patients with psychiatric conditions", counts2$group )
+counts2$group <- gsub("total_cases", "total number of patients", counts2$group )
+
+
+counts2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
+  geom_point( aes( shape= group, color = group )) +
+  facet_wrap2("siteid", axes = "all", scales ="free") + 
+  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
+  labs(x ="", y = "number of patients")+
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
+  scale_color_manual( values = cbPalette ) + 
+  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6), 
+        strip.text = element_text(size = 10, face = "bold"),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA), 
+        legend.position="bottom")
+```
+
+#### All together
+```{r}
+counts_agg <- patient_count_psy_period_psy_all %>%
+  group_by( time_p ) %>%
+  mutate( psy_cases = sum( count_psy_patients), 
+    total_cases = sum(count_no_psy_patients) + sum(count_psy_patients)) %>%
+  select( time_p, time, month_year, psy_cases, total_cases)
+
+counts_agg2 <- reshape2::melt(counts_agg ,  id.vars = c('time_p', 'time','month_year'), variable.name = 'group')
+counts_agg2$group <- gsub("count_psy_patients", "patients with psychiatric conditions", counts_agg2$group )
+counts_agg2$group <- gsub("total_cases", "total number of patients", counts_agg2$group )
+
+
+counts_agg2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
+  geom_point( aes( shape= group, color = group )) +
+  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
+  labs(x ="", y = "number of patients")+
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
+  scale_color_manual( values = cbPalette ) + 
+  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6), 
+        strip.text = element_text(size = 10, face = "bold"),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA), 
+        legend.position="bottom")
+```
+
+
 
 ### R session information
 
