@@ -106,6 +106,36 @@ for( i in 1:length( outputFiles )){
 
 ### Table 1
 
+```{r Extracting age information}
+
+age_table1_all <- table1_all %>% 
+  filter(name == "Age" | (name == "Total" & Category == "Sex")) %>% 
+  select(name, siteid, before_pandemic, during_pandemic) %>% 
+  pivot_longer(cols = c(before_pandemic, during_pandemic), 
+               names_to = "period",
+               values_to = "values") %>% 
+  pivot_wider(names_from = name, 
+              values_from = values, 
+              id_cols = c(siteid, period)) %>% 
+  mutate(mean_age = as.numeric(sub("\\s\\(.*", "", x = Age, perl = TRUE)),
+         sd_age = as.numeric(str_extract(pattern = "(?<=\\(sd:\\s)[0-9]{1,2}\\.[0-9]{1,2}(?=\\))", 
+                                         string = Age)),
+         Total = as.numeric(sub("\\s\\(.*", "", x = Total, perl = TRUE))
+  ) %>% 
+  group_by(period) %>% 
+  summarise(mean_age = round(sum(Total * mean_age) / sum(Total), 2), 
+            sd_age = round(sum(Total * sd_age) / sum(Total), 2)) %>% 
+  mutate(Age = paste0(as.character(mean_age), " (sd: ", as.character(sd_age), ")")) %>% 
+  select(period, Age) %>% 
+  pivot_wider(names_from = period, values_from = Age) %>% 
+  mutate(Category = "Age", 
+         name = "mean (sd)") %>% 
+  select(Category, name, before_pandemic, during_pandemic) %>% 
+  rename(before_pandemic_count = before_pandemic, 
+         during_pandemic_count = during_pandemic)
+```
+
+
 ```{r}
 sex_table1_all <- table1_all %>%
   filter( Category == "Sex" & name != "Total") %>%
@@ -129,7 +159,7 @@ dg_table1_all <- table1_all %>%
   mutate( Category = "Disorder groups") %>%
   select( Category, name, before_pandemic_count, during_pandemic_count )
 
-table1 <- rbind( sex_table1_all, dg_table1_all )
+table1 <- rbind( sex_table1_all, age_table1_all, dg_table1_all )
 
 table1 %>%
   kable( booktabs = T) %>%
@@ -230,7 +260,7 @@ patients_hospitalized_agg_sex_total %>%
 
 ## Interrupted Time Series Analysis 
 
-## Boostrap vizualisation
+
 ```{r}
 # Recovering
 coefficient_slope_calculation <- function(df, ...) {
@@ -244,6 +274,8 @@ coefficients_df <- patient_count_psy_period_psy_all %>%
   group_modify(coefficient_slope_calculation) %>% 
   rename(observed_diff = estimate)
 ```
+
+### Primary analysis 
 
 ```{r}
 
@@ -299,7 +331,10 @@ ggplot(bootstrapped_fitted_all, aes(x = time_p, y = predicted, group = interacti
   guides(color = guide_legend(override.aes = list(alpha = 1))) +
   geom_label(data = plot_annotations_df, 
              aes(label=label), 
-            x = -Inf, y = +Inf, hjust=0, vjust=1,
+            x = -Inf,
+            y = +Inf,
+            hjust = 0,
+            vjust = 1,
             size = 4,
             inherit.aes = FALSE) +
   labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
