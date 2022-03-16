@@ -342,10 +342,10 @@ count_icd_all_boot <- count_icd_all %>%
          month_year = format(time_p, "%m"),
          time = seq_along(time_p))
   
-bootstrapped <- count_icd_all %>% 
+bootstrapped <- count_icd_all_boot %>% 
   group_by(siteid) %>% 
   group_map( ~bootstrapping_slopes(.x, bootstrap_size = bootstrap_size))
-names(test) <- unique(count_icd_all$siteid)
+names(bootstrapped) <- unique(count_icd_all$siteid)
 
 bootstrapped_coefficients_all <- lapply(bootstrapped, `[[`, 1) %>% bind_rows(.id = "siteid")
 bootstrapped_fitted_all <- lapply(bootstrapped, `[[`, 2) %>% bind_rows(.id = "siteid")
@@ -701,9 +701,3 @@ counts_agg2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
         legend.position="bottom")
 ```
 
-
-
-### R session information
-
-```{r, results='hide'}
-sessionInfo()
