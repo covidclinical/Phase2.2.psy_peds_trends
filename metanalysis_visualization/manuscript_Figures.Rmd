@@ -21,7 +21,7 @@ paket <- function(pak){
     install.packages(new_pak, dependencies = TRUE,repos="https://cloud.r-project.org/")
   sapply(pak, library, character.only = TRUE)
 }
-listOfPackages <- c("tidyverse", "tidyr","devtools","RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis", "UpSetR", "scales")
+listOfPackages <- c("tidyverse", "tidyr","devtools","RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis", "UpSetR", "scales", "EHRtemporalVariability")
 paket(listOfPackages)
 
 if (! "ComplexHeatmap" %in% rownames(installed.packages())) install_github("jokergoo/ComplexHeatmap")
@@ -533,6 +533,7 @@ perc_disorder_group_total <- perc_disorder_group_all %>%
 
 perc_disorder_group_total %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = disorder_group )) +
+  facet_wrap( ~ disorder_group, scales = "free" ) +
   geom_line( aes(color = disorder_group )) +
   geom_point( aes( color = disorder_group )) +
   geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")+
@@ -541,15 +542,98 @@ perc_disorder_group_total %>%
   theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.border = element_rect(colour = "black", fill = NA))
-#   
-# perc_disorder_group_country <- perc_disorder_group_all %>%
-#   select( - percentage_dg ) %>%
-#   inner_join( country_map ) %>%
-#   group_by( time_p, disorder_group, country ) %>%
-#   mutate( total_cases = sum( count_icd ), 
-#           dg_cases = sum( count_dg ), 
-#           percentage = 100* dg_cases / total_cases ) %>%
-#   rbind( perc_disorder_group_total)
+
+
+percentages_htm <- perc_disorder_group_total %>%
+  select( time_p, disorder_group, percentage ) %>%
+  unique() %>%
+  pivot_wider( names_from =  disorder_group, 
+               values_from = percentage )
+
+dates <- percentages_htm$time_p 
+
+percentages_htm <- percentages_htm[  , -1]
+
+counts_htm <- perc_disorder_group_total %>%
+  select( time_p, disorder_group, dg_cases ) %>%
+  unique() %>%
+  pivot_wider( names_from =  disorder_group, 
+               values_from = dg_cases )
+counts_htm <- counts_htm[  , -1]
+
+tempVariabilityInput <- new('DataTemporalMap', probabilityMap = as.matrix(percentages_htm), 
+         countsMap = as.matrix(counts_htm), dates = dates, support = as.data.frame(names(percentages_htm)), 
+         variableName = "example", variableType = "character", period = "month")
+plotDataTemporalMap(tempVariabilityInput, absolute = TRUE)
+
+#### facet wrap in 3 groups based on %
+### most prevalent
+perc_disorder_group_total %>%
+  filter(disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" ))  %>%
+  ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
+  facet_wrap( ~ disorder_group ) +
+  geom_line( aes(color = country )) +
+  geom_point( aes( color = country )) +
+  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")+
+  labs(x ="", y = "percentage of patients (%)")+
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
+  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA)) +
+  scale_color_manual( values = cbPalette )
+
+#medium prevalent
+perc_disorder_group_total %>%
+  filter(disorder_group %in% c("Trauma and Stressor-Related Disorders", "Mental Health Symptom", "Disruptive, Impulse Control and Conduct Disorders", 
+                               "Feeding and Eating Disorders"))  %>%
+  ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
+  facet_wrap( ~ disorder_group ) +
+  geom_line( aes(color = country )) +
+  geom_point( aes( color = country )) +
+  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")+
+  labs(x ="", y = "percentage of patients (%)")+
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
+  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA)) +
+  scale_color_manual( values = cbPalette )
+
+
+#low prevalent
+perc_disorder_group_total %>%
+  filter(disorder_group %in% c("Miscellaneous", "Substance-Related and Addictive Disorders", 
+                               "Personality Disorders", "Bipolar and Related Disorders", "Sleep-Wake Disorders", 
+                               "Schizophrenia Spectrum and Other Psychotic Disorders", "Somatic Symptom and Related Disorders", 
+                               "Obsessive-Compulsive and Related Disorders", "Dissociative Disorders" ))  %>%
+  ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
+  facet_wrap( ~ disorder_group ) +
+  geom_line( aes(color = country )) +
+  geom_point( aes( color = country )) +
+  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")+
+  labs(x ="", y = "percentage of patients (%)")+
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
+  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA)) +
+  scale_color_manual( values = cbPalette )
+
+
+
+perc_disorder_group_total %>%
+  filter(disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" ))  %>%
+  ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
+  facet_wrap( ~ disorder_group ) +
+  geom_line( aes(color = country )) +
+  geom_point( aes( color = country )) +
+  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
+  labs(x ="", y = "percentage of patients (%)")+
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
+  scale_color_manual( values = cbPalette ) + 
+  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6), 
+        strip.text = element_text(size = 10, face = "bold"),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA), 
+        legend.position="bottom")
 
 perc_disorder_group_total %>%
   filter( disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury", 
