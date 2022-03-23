@@ -525,6 +525,7 @@ model_meta_country <- rma(data = trends_country,
 
 forest(model_meta_country, 
        slab = trends_country$country,
+       plim = c(1, NA),
        order = "obs", 
        showweights = TRUE,
        header = "Countries",
