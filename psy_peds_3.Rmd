@@ -163,7 +163,7 @@ The file containing the ICD10 psychiatric related codes is located in
 the `public-data` folder of the GitHub repository.
 
 ```{r}
-icdCodes <- read.csv("public-data/pediatric_psychiatric_ICD10_codesV2.csv", header = TRUE, colClasses = "character") %>%
+icdCodes <- read.csv("public-data/pediatric_psychiatric_ICD10_codesV3.csv", header = TRUE, colClasses = "character") %>%
    filter( flag %in% c("originalCodes", "FrenchSpecificCodes")) %>%
    dplyr::select( disorder_group, ICD10_Code, description )
 ```
