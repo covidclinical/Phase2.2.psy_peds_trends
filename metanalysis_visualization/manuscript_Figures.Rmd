@@ -475,10 +475,6 @@ ggsave("boostrapped_all.png", height = 20, width = 32, units = "cm")
 ## Meta-analysis of temporal trends
 
 ```{r}
-## Estimate sampling variances
-```
-
-```{r}
 trends_siteid <- df_coefficients_boot %>% 
   group_by(siteid) %>% 
   summarise(mean_boot = mean(`periodduring_pandemic:time`),
@@ -495,31 +491,41 @@ model_meta_siteid <- metafor::rma(yi = observed,
                                   measure = "MN",
                                   method = "DL",
                                   data = trends_siteid) 
+
 metafor::forest(model_meta_siteid,
                 slab = trends_siteid$siteid,
                 header="Sites",
-                mlab="Overall temporal trend")
+                mlab="Overall periods' slope differences")
 ```
+
 
 ```{r}
-trends_country <- df_coefficients_boot %>% 
+trends_country <- trends_siteid %>% 
   left_join(country_map, by = "siteid") %>% 
   group_by(country) %>% 
-  summarise(mean_boot = mean(`periodduring_pandemic:time`),
-         var_boot = var(`periodduring_pandemic:time`), 
-         z = mean_boot / sqrt(var_boot), 
-         pvalue = pnorm(z, lower.tail = FALSE)*2 )
+  group_modify(.f = function(x, ...) {
+    as.data.frame(
+      predict(rma(yi = observed, 
+                vi = var_boot,
+                measure = "MN",
+                method = "DL",
+                data = x))
+    )
+  },
+  .keep = TRUE)
 
-model_meta_country <- metafor::rma(yi = mean_boot, 
-             vi = var_boot,
-             measure = "MN",
-             method = "FE",
-  data = trends_country) 
-metafor::forest(model_meta_country,
-                slab = trends_country$country,
-                header="Sites",
-                mlab="Overall temporal trend")
+model_meta_country <- rma(data = trends_country, 
+                          yi = pred, 
+                          vi = se**2, 
+                          measure = "MN", 
+                          method = "DL")
+
+forest(model_meta_country, 
+       slab = trends_country$country,
+       header = "Countries",
+       mlab = "Overall periods' slope differences")
 ```
+
 
 ### Disorder group 
 ```{r}
