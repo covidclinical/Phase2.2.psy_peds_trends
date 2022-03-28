@@ -576,7 +576,31 @@ counts_htm <- counts_htm[  , -1]
 tempVariabilityInput <- new('DataTemporalMap', probabilityMap = as.matrix(percentages_htm), 
          countsMap = as.matrix(counts_htm), dates = dates, support = as.data.frame(names(percentages_htm)), 
          variableName = "example", variableType = "character", period = "month")
-plotDataTemporalMap(tempVariabilityInput, absolute = TRUE)
+
+vline <- function(x = 0, color = "green") {
+  list(
+    type = "line",
+    y0 = 0,
+    y1 = 1,
+    yref = "paper",
+    x0 = x,
+    x1 = x,
+    line = list(color = color, dash="dot"))
+}
+
+fig = plotDataTemporalMap(x)
+
+fig <- fig %>%
+  layout(
+    title = " ",
+    xaxis = list(
+      type = 'date',
+      tickformat = "%b-%y", 
+      tickangle=-45, 
+      tickvals=dates), 
+    shapes = list(vline(as.Date("2020-03-15"))))
+
+fig
 
 #### facet wrap in 3 groups based on %
 ### most prevalent
