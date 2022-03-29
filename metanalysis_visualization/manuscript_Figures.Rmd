@@ -579,7 +579,31 @@ counts_htm <- counts_htm[  , -1]
 tempVariabilityInput <- new('DataTemporalMap', probabilityMap = as.matrix(percentages_htm), 
          countsMap = as.matrix(counts_htm), dates = dates, support = as.data.frame(names(percentages_htm)), 
          variableName = "example", variableType = "character", period = "month")
-plotDataTemporalMap(tempVariabilityInput, absolute = TRUE)
+
+vline <- function(x = 0, color = "green") {
+  list(
+    type = "line",
+    y0 = 0,
+    y1 = 1,
+    yref = "paper",
+    x0 = x,
+    x1 = x,
+    line = list(color = color, dash="dot"))
+}
+
+fig = plotDataTemporalMap(x)
+
+fig <- fig %>%
+  layout(
+    title = " ",
+    xaxis = list(
+      type = 'date',
+      tickformat = "%b-%y", 
+      tickangle=-45, 
+      tickvals=dates), 
+    shapes = list(vline(as.Date("2020-03-15"))))
+
+fig
 
 #### facet wrap in 3 groups based on %
 ### most prevalent
@@ -751,9 +775,10 @@ ggsave("its_seasonality_site.png",g, height = 20, width = 32, units = "cm")
 ```{r}
 library(reshape2)
 
-counts <- patient_count_psy_period_psy_all %>%
-  mutate( total_cases = count_no_psy_patients + count_psy_patients) %>%
-  select( siteid, time_p, time, month_year, count_psy_patients, total_cases)
+counts <- count_icd_all %>%
+  mutate( time = seq_along(time_p),
+         month_year = format(time_p, "%m")) %>%
+  select( siteid, time_p, time, month_year, count_psy_patients = count_psy, total_cases = count_icd )
 
 counts2 <- reshape2::melt(counts ,  id.vars = c('siteid', 'time_p', 'time','month_year'), variable.name = 'group')
 counts2$group <- gsub("count_psy_patients", "patients with psychiatric conditions", counts2$group )
@@ -776,10 +801,10 @@ counts2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
 
 #### All together
 ```{r}
-counts_agg <- patient_count_psy_period_psy_all %>%
+counts_agg <- counts %>%
   group_by( time_p ) %>%
   mutate( psy_cases = sum( count_psy_patients), 
-    total_cases = sum(count_no_psy_patients) + sum(count_psy_patients)) %>%
+    total_cases = sum(total_cases)) %>%
   select( time_p, time, month_year, psy_cases, total_cases)
 
 counts_agg2 <- reshape2::melt(counts_agg ,  id.vars = c('time_p', 'time','month_year'), variable.name = 'group')
