@@ -332,7 +332,10 @@ bootstrapping_slopes <- function(patient_count_psy_period_psy,
   return(list(bootstrapped_coefficients_df, 
               bootstrapped_fitted_df))
 }
+```
 
+
+```{r}
 # Get count_icd_all in the same format that patient_count_psy_period_psy_all, because first n last months missing ... 
 count_icd_all_boot <- count_icd_all %>% 
   group_by(siteid) %>% # necessary to generate time correctly 
