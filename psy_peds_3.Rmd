@@ -110,11 +110,11 @@ time_period <-"months" #possible values: days, weeks, months
 
 ```{r}
 # cut-off dates used in the analysis, these should not be changed
-history_start_date <- as.Date("2019-01-01")
-history_end_date <- as.Date("2021-05-31")
+# history_start_date <- as.Date("2019-01-01")
+# history_end_date <- as.Date("2021-05-31")
 pandemic_start_date <- as.Date("2020-03-15")
-start_date_plots <- as.Date("2019-01-15")
-end_date_plots <- as.Date("2021-05-01")
+start_date_plots <- as.Date("2019-01-01")
+end_date_plots <- as.Date("2021-06-01")
 ```
 
 ## Data loading
