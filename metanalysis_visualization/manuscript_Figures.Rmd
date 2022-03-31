@@ -50,8 +50,8 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 ```{r}
 # cut-off dates used in the analysis, these should not be changed
 time_period <-"months" #possible values: days, weeks, months
-history_start_date <- as.Date("2019-01-01")
-history_end_date <- as.Date("2021-05-31")
+#history_start_date <- as.Date("2019-01-01")
+#history_end_date <- as.Date("2021-05-31")
 pandemic_start_date <- as.Date("2020-03-15")
 start_date_plots <- as.Date("2019-01-01")
 end_date_plots <- as.Date("2021-05-31")
@@ -69,7 +69,7 @@ country_map <- read.delim( file = paste0( outputDir, "country_mapping.txt"))
 Put all the aggregated counts from the different sites together
 ```{r}
 for( i in 1:length( outputFiles )){
-  print(i)
+  print(outputFiles[i])
   load(paste0( outputDir, outputFiles[i]))
   if( i == 1 ){
     count_icd_all <- count_icd
@@ -109,10 +109,41 @@ for( i in 1:length( outputFiles )){
 
 ```
 
+# Filter by dates
+```{r}
+start_date_plots <- as.Date("2019-01-01")
+end_date_plots <- as.Date("2021-05-31")
+
+bootstrapped_fitted_all <-  bootstrapped_fitted_all %>%
+  filter( time_p <= end_date_plots &
+          time_p >= start_date_plots)
+
+count_icd_all <-  count_icd_all %>%
+  filter( time_p <= end_date_plots &
+          time_p >= start_date_plots)
+
+patient_count_psy_period_psy_all <- patient_count_psy_period_psy_all %>%
+  filter( time_p <= end_date_plots &
+          time_p >= start_date_plots)
+  
+patients_hospitalized_agg_sex_perc_all <- patients_hospitalized_agg_sex_perc_all %>%
+  filter( time_p <= end_date_plots &
+          time_p >= start_date_plots)
+
+perc_disorder_group_all <- perc_disorder_group_all %>%
+  filter( time_p <= end_date_plots &
+          time_p >= start_date_plots)
+
+ratios_patients_with_without_psy_all <- ratios_patients_with_without_psy_all %>%  
+  filter( time_p <= end_date_plots &
+          time_p >= start_date_plots)
+```
+
+
+
 ### Table 1
 
 ```{r Extracting age information}
-
 age_table1_all <- table1_all %>% 
   filter(name == "Age" | (name == "Total" & Category == "Sex")) %>% 
   select(name, siteid, before_pandemic, during_pandemic) %>% 
@@ -347,13 +378,14 @@ ggplot(bootstrapped_fitted_all, aes(x = time_p, y = predicted, group = interacti
             vjust = 1,
             size = 4,
             inherit.aes = FALSE) +
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
   labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
        subtitle = "Parametric bootstrap estimation: (1000 iterations)",
        x = "Calendar dates",
        y = "Percentage",
        color = "Period") +
   theme(strip.text = element_text(size = 10),
-        axis.text.x = element_text(size = 8), 
+        axis.text.x=element_text(angle = 45, hjust=1, size = 8),
         axis.text.y = element_text(size = 8), 
         axis.title.x = element_text(size = 8),
         axis.title.y = element_text(size = 8),
@@ -364,47 +396,6 @@ ggsave("boostrapped_all_extended.png", height = 20, width = 32, units = "cm")
 
 
 
-```{r}
-### Feb 19-April 21
-patient_count_psy_period_psy_all <- patient_count_psy_period_psy_all %>%
-  left_join( country_map )
-
-ggplot(bootstrapped_fitted_all, aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
-  facet_wrap("plotsLabel", scales = "free_y", labeller = label_wrap_gen(width = 35,multi_line = TRUE)) +
-  geom_line(aes(color = period),
-            alpha = 0.03) +
-  geom_line(data = quantile_bootstrapped_fitted_all,
-            aes(y = value, group = interaction(quantiles, period)),
-            linetype = "dashed") +
-  geom_line(data = quantile_bootstrapped_fitted_all[quantile_bootstrapped_fitted_all$quantiles == "50%", ],
-            aes(y = value, group = period)) +
-  geom_point(data = patient_count_psy_period_psy_all,
-             aes(y = percentage, group=NULL),
-             alpha = 0.5) +
-  scale_colour_manual(values = cbPalette) +
-  guides(color = guide_legend(override.aes = list(alpha = 1))) +
-  geom_label(data = plot_annotations_df, 
-             aes(label=label), 
-            x = -Inf,
-            y = +Inf,
-            hjust = 0,
-            vjust = 1,
-            size = 4,
-            inherit.aes = FALSE) +
-  labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
-       subtitle = "Parametric bootstrap estimation: (1000 iterations)",
-       x = "Calendar dates",
-       y = "Percentage",
-       color = "Period") +
-  theme(strip.text = element_text(size = 10),
-        axis.text.x = element_text(size = 8), 
-        axis.text.y = element_text(size = 8), 
-        axis.title.x = element_text(size = 8),
-        axis.title.y = element_text(size = 8),
-        title = element_text(size = 14),
-        plot.subtitle = element_text(size = 12, face = "italic")) 
-ggsave("boostrapped_all.png", height = 20, width = 32, units = "cm")
-```
 
 
 ## Meta-analysis of temporal trends
@@ -822,8 +813,9 @@ for( i in 1:length(sites)){
   labs(title = sites[i],
        x = "Calendar dates",
        y = "Percentage") +
+      scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
      theme(strip.text = element_text(size = 10),
-        axis.text.x = element_text(size = 8), 
+        axis.text.x = element_text(angle = 45, hjust=1, size = 8), 
         axis.text.y = element_text(size = 8), 
         axis.title.x = element_text(size = 8),
         axis.title.y = element_text(size = 8),
@@ -831,7 +823,6 @@ for( i in 1:length(sites)){
         plot.subtitle = element_text(size = 12, face = "italic"))
 
 }
-
 
 g <- do.call(grid.arrange,p)
 ggsave("its_seasonality_site.png",g, height = 20, width = 32, units = "cm")
@@ -857,7 +848,7 @@ counts2$group <- gsub("count_psy_patients", "patients with psychiatric condition
 counts2$group <- gsub("total_cases", "total number of patients", counts2$group )
 
 
-counts2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
+counts_plot <- counts2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
   geom_point( aes( shape= group, color = group )) +
   facet_wrap2("plotsLabel", axes = "all", scales ="free", labeller = label_wrap_gen(width = 35,multi_line = TRUE)) + 
   geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
@@ -869,6 +860,9 @@ counts2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
         panel.border = element_rect(colour = "black", fill = NA), 
         legend.position="bottom")
+counts_plot
+ggsave("counts_plot.png",counts_plot, height = 20, width = 32, units = "cm")
+
 ```
 
 #### All together
