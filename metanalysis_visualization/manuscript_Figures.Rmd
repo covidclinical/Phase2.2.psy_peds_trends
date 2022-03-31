@@ -186,96 +186,6 @@ table1 %>%
   kableExtra::group_rows(index = setNames(rle(table1$Category)[[1]], rle(table1$Category)[[2]]))
 ```
 
-### Sex Summary
-```{r}
-sexInfo_per_country <- table1_all %>%
-  filter( Category == "Sex") %>%
-  mutate ( counts_before = as.numeric(sapply(strsplit( as.character(before_pandemic), " "), '[', 1)), 
-           counts_during = as.numeric(sapply(strsplit( as.character(during_pandemic), " "), '[', 1))) %>%
-  select( name, siteid, counts_before, counts_during ) %>%
-  inner_join( country_map ) %>%
-  group_by( name, country ) %>%
-  summarise( before = sum( counts_before), 
-             during = sum( counts_during )) %>%
-  pivot_longer(names_to = "period", cols=c(before, during)) 
-
-sexInfo_all <- table1_all %>%
-  filter( Category == "Sex") %>%
-  mutate ( counts_before = as.numeric(sapply(strsplit( as.character(before_pandemic), " "), '[', 1)), 
-           counts_during = as.numeric(sapply(strsplit( as.character(during_pandemic), " "), '[', 1))) %>%
-  select( name, siteid, counts_before, counts_during ) %>%
-  inner_join( country_map ) %>%
-  group_by( name ) %>%
-  summarise( before = sum( counts_before), 
-             during = sum( counts_during )) %>%
-  pivot_longer(names_to = "period", cols=c(before, during)) %>%
-  mutate( country = 'ALL' ) %>%
-  select( name, country, period, value ) %>%
-  rbind( sexInfo_per_country)
-
-sexInfo_all %>%
-  ggplot( aes( x= name, y = value, fill = period )) +
-  geom_bar( stat = "identity", position = "dodge") +
-  facet_wrap("country", scales = "free_y") + 
-  labs(x ="", y = "number of patients") +
-  theme(axis.text.x=element_text(hjust=1, size = 8), 
-        strip.text = element_text(size = 10, face = "bold"),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
-        panel.border = element_rect(colour = "black", fill = NA))+ 
-  scale_fill_manual("Pandemic \n period", values = c("before" = "grey", "during" = "orange"))
-
-```
-
-
-```{r}
-patients_hospitalized_agg_sex_total <- patients_hospitalized_agg_sex_perc_all %>%
-  select( - percentage ) %>%
-  group_by( time_p, sex ) %>%
-  mutate( total_cases = sum( count ), 
-          sex_cases = sum( count_sex ), 
-          percentage = 100* sex_cases / total_cases, 
-          country = "ALL") 
-
-patients_hospitalized_agg_sex_total %>%
-  ggplot( aes( x= as.Date( time_p ), y = percentage, group = sex )) +
-  geom_line( aes( linetype = sex , color = sex)) +
-  geom_point( aes( shape = sex, color = sex )) +
-  scale_colour_manual(values=c("#FF6600","#339999")) +
-  scale_fill_manual(values=c("#FF6600","#339999"))+
-  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")+
-  labs(x ="", y = "percentage of patients (%)")+
-  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
-  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        panel.border = element_rect(colour = "black", fill = NA))
-  
-#patients_hospitalized_agg_sex_country <- patients_hospitalized_agg_sex_perc_all %>%
-#  select( - percentage ) %>%
-#  inner_join( country_map ) %>%
-#  group_by( time_p, sex, country ) %>%
-#  mutate( total_cases = sum( count ), 
-#          sex_cases = sum( count_sex ), 
-#          percentage = 100* sex_cases / total_cases) %>%
-#  rbind( patients_hospitalized_agg_sex_total)
-
-# patients_hospitalized_agg_sex_country %>%
-#   ggplot( aes( x= as.Date( time_p ), y = percentage, group = sex )) +
-#   geom_line( aes(linetype = sex, color = sex )) +
-#   geom_point( aes( shape= sex, color = sex )) +
-#   scale_colour_manual(values=c("#FF6600","#339999")) +
-#   scale_fill_manual(values=c("#FF6600","#339999"))+
-#   #scale_y_continuous(breaks = seq(0, 30, by = 1)) +
-#   facet_wrap2("country", axes = "all") + 
-#   geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
-#   labs(x ="", y = "percentage of patients (%)")+
-#   scale_x_date(breaks = "2 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
-#   theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6), 
-#         strip.text = element_text(size = 10, face = "bold"),
-#         panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
-#         panel.border = element_rect(colour = "black", fill = NA), 
-#         legend.position="bottom")
-```
-
 
 ## Interrupted Time Series Analysis 
 
@@ -294,7 +204,7 @@ coefficients_df <- patient_count_psy_period_psy_all %>%
   rename(observed_diff = estimate)
 ```
 
-## Recompute the bootstrap 
+## Define bootstrap functions 
 
 ```{r}
 # Call function from another file : bootstrap.R
@@ -303,32 +213,37 @@ binom_proportion <- function(n, prob, size) {
   (rbinom(n, size, prob) / size) * 100
 }
 
-bootstrapping_slopes <- function(patient_count_psy_period_psy, 
-                                    bootstrap_size) {
-  bootstrapped_timepoints <- mapply(binom_proportion,
-                                    n = bootstrap_size,
-                                    size = patient_count_psy_period_psy$count_no_psy_patients +
-                                      patient_count_psy_period_psy$count_psy_patients,
-                                    prob = patient_count_psy_period_psy$percentage/100)
+bootstrapping_slopes <- function(df, 
+                                 bootstrap_size, 
+                                 count = "count_icd", 
+                                 percentage = "percentage", 
+                                 group_name = .y) {
+  bootstrapped_timepoints <- mapply(
+    binom_proportion,
+    n = bootstrap_size,
+    size = df[[count]],
+    prob = df[[percentage]]/100)
   bootstrapped_sample_list <- vector(mode = "list", length = bootstrap_size)
   bootstrapped_coefficients_list <- vector(mode = "list", length = bootstrap_size)
   for (iteration in 1:bootstrap_size) {
-    df_iteration <- data.frame(period = patient_count_psy_period_psy$period,
-                               time = patient_count_psy_period_psy$time,
+    df_iteration <- data.frame(period = df$period,
+                               time = df$time,
                                percentage = bootstrapped_timepoints[iteration, ])
-    ts_linear_percent <- lm(percentage ~ period * time, df_iteration)
+    ts_linear_percent <- lm(as.formula(paste0(percentage, "~ period * time")), df_iteration)
     linear_model <- broom::tidy(ts_linear_percent) %>%
       filter(term %in% c("time", "periodduring_pandemic:time"))
     coefficients <- linear_model$estimate
     names(coefficients) <- linear_model$term
     bootstrapped_coefficients_list[[iteration]] <- coefficients
     df_iteration$predicted <- predict(ts_linear_percent)
-    df_iteration$time_p <- patient_count_psy_period_psy$time_p
+    df_iteration$time_p <- df$time_p
     bootstrapped_sample_list[[iteration]] <- df_iteration
   }
-  bootstrapped_fitted_df <- bind_rows(bootstrapped_sample_list, .id = "iteration")
+  bootstrapped_fitted_df <- bind_rows(bootstrapped_sample_list, .id = "iteration") %>% 
+    mutate(group = group_name)
   bootstrapped_coefficients_df <- bind_rows(bootstrapped_coefficients_list,
-                                          .id = "iteration")
+                                          .id = "iteration") %>% 
+    mutate(group = group_name)
   return(list(bootstrapped_coefficients_df, 
               bootstrapped_fitted_df))
 }
@@ -339,16 +254,14 @@ bootstrapping_slopes <- function(patient_count_psy_period_psy,
 # Get count_icd_all in the same format that patient_count_psy_period_psy_all, because first n last months missing ... 
 count_icd_all_boot <- count_icd_all %>% 
   group_by(siteid) %>% # necessary to generate time correctly 
-  rename(count_psy_patients = count_psy, 
-         percentage = percentage_psy) %>% 
-  mutate(count_no_psy_patients = count_icd - count_psy_patients, 
-         month_year = format(time_p, "%m"),
+  rename(percentage = percentage_psy) %>% 
+  mutate(month_year = format(time_p, "%m"),
          time = seq_along(time_p))
   
-bootstrapped <- count_icd_all_boot %>% 
+bootstrapped <- count_icd_all_boot %>%
   group_by(siteid) %>% 
   group_map( ~bootstrapping_slopes(.x, bootstrap_size = bootstrap_size))
-names(bootstrapped) <- unique(count_icd_all$siteid)
+names(bootstrapped) <- unique(count_icd_all_boot$siteid)
 
 bootstrapped_coefficients_all <- lapply(bootstrapped, `[[`, 1) %>% bind_rows(.id = "siteid")
 bootstrapped_fitted_all <- lapply(bootstrapped, `[[`, 2) %>% bind_rows(.id = "siteid")
@@ -358,15 +271,6 @@ bootstrapped_fitted_all <- lapply(bootstrapped, `[[`, 2) %>% bind_rows(.id = "si
 ### Primary analysis 
 
 ```{r}
-quantile_bootstrapped_fitted_all <- bootstrapped_fitted_all %>%
-  group_by(time_p, period, siteid) %>%
-  summarise("2.5%" = quantile(predicted, 0.025),
-            "50%" = median(predicted, 0.5),
-            "97.5%" = quantile(predicted, 0.975)) %>%
-  pivot_longer(cols = c("2.5%", "50%", "97.5%"),
-               names_to = "quantiles")
-
-
 annotation_function <- function(df, ...) {
   z <- unique(df[["observed_diff"]]) / sd(df[["periodduring_pandemic:time"]])
   pvalue_coeff_interaction = round(pnorm(abs(z), lower.tail = FALSE) * 2, 3)
@@ -376,7 +280,20 @@ annotation_function <- function(df, ...) {
          pvalue_coeff_interaction,
          ")")
 }
+```
 
+```{r}
+quantile_bootstrapped_fitted_all <- bootstrapped_fitted_all %>%
+  group_by(time_p, period, siteid) %>%
+  summarise("2.5%" = quantile(predicted, 0.025),
+            "50%" = median(predicted, 0.5),
+            "97.5%" = quantile(predicted, 0.975)) %>%
+  pivot_longer(cols = c("2.5%", "50%", "97.5%"),
+               names_to = "quantiles")
+```
+
+
+```{r}
 df_coefficients_boot <- bootstrapped_coefficients_all %>% 
   left_join(coefficients_df, by = "siteid")
 
@@ -488,7 +405,7 @@ trends_siteid <- df_coefficients_boot %>%
 ```
 
 ```{r}
-# Random effect effects
+# Random effect
 model_meta_siteid <- metafor::rma(yi = observed, 
                                   vi = var_boot,
                                   measure = "MN",
@@ -534,6 +451,143 @@ forest(model_meta_country,
        header = "Countries",
        mlab = "Overall periods' slope differences")
 ```
+
+
+### Sex Summary
+
+```{r}
+sexInfo_per_country <- table1_all %>%
+  filter( Category == "Sex") %>%
+  mutate ( counts_before = as.numeric(sapply(strsplit( as.character(before_pandemic), " "), '[', 1)), 
+           counts_during = as.numeric(sapply(strsplit( as.character(during_pandemic), " "), '[', 1))) %>%
+  select( name, siteid, counts_before, counts_during ) %>%
+  inner_join( country_map ) %>%
+  group_by( name, country ) %>%
+  summarise( before = sum( counts_before), 
+             during = sum( counts_during )) %>%
+  pivot_longer(names_to = "period", cols=c(before, during)) 
+
+sexInfo_all <- table1_all %>%
+  filter( Category == "Sex") %>%
+  mutate ( counts_before = as.numeric(sapply(strsplit( as.character(before_pandemic), " "), '[', 1)), 
+           counts_during = as.numeric(sapply(strsplit( as.character(during_pandemic), " "), '[', 1))) %>%
+  select( name, siteid, counts_before, counts_during ) %>%
+  inner_join( country_map ) %>%
+  group_by( name ) %>%
+  summarise( before = sum( counts_before), 
+             during = sum( counts_during )) %>%
+  pivot_longer(names_to = "period", cols=c(before, during)) %>%
+  mutate( country = 'ALL' ) %>%
+  select( name, country, period, value ) %>%
+  rbind( sexInfo_per_country)
+
+sexInfo_all %>%
+  ggplot( aes( x= name, y = value, fill = period )) +
+  geom_bar( stat = "identity", position = "dodge") +
+  facet_wrap("country", scales = "free_y") + 
+  labs(x ="", y = "number of patients") +
+  theme(axis.text.x=element_text(hjust=1, size = 8), 
+        strip.text = element_text(size = 10, face = "bold"),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA))+ 
+  scale_fill_manual("Pandemic \n period", values = c("before" = "grey", "during" = "orange"))
+
+```
+
+
+```{r}
+patients_hospitalized_agg_sex_total <- patients_hospitalized_agg_sex_perc_all %>%
+  select( - percentage ) %>%
+  group_by( time_p, sex ) %>%
+  mutate( total_cases = sum( count ), 
+          sex_cases = sum( count_sex ), 
+          percentage = 100* sex_cases / total_cases, 
+          country = "ALL") 
+
+patients_hospitalized_agg_sex_total %>%
+  ggplot( aes( x= as.Date( time_p ), y = percentage, group = sex )) +
+  geom_line( aes( linetype = sex , color = sex)) +
+  geom_point( aes( shape = sex, color = sex )) +
+  scale_colour_manual(values=c("#FF6600","#339999")) +
+  scale_fill_manual(values=c("#FF6600","#339999"))+
+  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")+
+  labs(x ="", y = "percentage of patients (%)")+
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
+  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA))
+  
+```
+
+
+```{r Interrupted time series by sex}
+
+  # pivot_wider(names_from =  sex, values_from = c(count, percentage))
+  # group_by(siteid) %>% # necessary to generate time correctly 
+  # rename(count_psy_patients = count_psy, 
+  #        percentage = percentage_psy) %>% 
+  # mutate(count_no_psy_patients = count_icd - count_psy_patients, 
+  #        month_year = format(time_p, "%m"),
+  #        time = seq_along(time_p))
+  
+bootstrap_size = 10
+
+patients_hospitalized_agg_sex_perc_all <- patients_hospitalized_agg_sex_perc_all %>% 
+  mutate(period = ifelse(time_p <= as.Date("2020-03-15"), "before_pandemic", "during_pandemic")) %>% 
+  select(time_p, period, sex, count, percentage, siteid) 
+
+bootstrapped_sex <- patients_hospitalized_agg_sex_perc_all %>%
+  group_by(siteid, sex) %>% 
+  mutate(month_year = format(time_p, "%m"),
+         time = seq_along(time_p))  %>% 
+ group_map( ~bootstrapping_slopes(.x, bootstrap_size = bootstrap_size, count = "count"))
+names(bootstrapped_sex) <- unique(patients_hospitalized_agg_sex_perc_all$siteid)
+
+bootstrapped_coefficients_sex <- lapply(bootstrapped_sex, `[[`, 1) %>% bind_rows(.id = "siteid")
+bootstrapped_fitted_sex <- lapply(bootstrapped_sex, `[[`, 2) %>% bind_rows(.id = "siteid")
+
+quantile_bootstrapped_fitted_sex <- bootstrapped_fitted_sex %>%
+  group_by(time_p, period, siteid) %>%
+  summarise("2.5%" = quantile(predicted, 0.025),
+            "50%" = median(predicted, 0.5),
+            "97.5%" = quantile(predicted, 0.975)) %>%
+  pivot_longer(cols = c("2.5%", "50%", "97.5%"),
+               names_to = "quantiles")
+
+
+```
+
+```{r}
+coefficients_df_sex <- patients_hospitalized_agg_sex_perc_all %>% 
+  group_by(siteid, sex) %>% 
+    mutate(month_year = format(time_p, "%m"),
+         time = seq_along(time_p))  %>% 
+  group_modify(coefficient_slope_calculation) %>% 
+  rename(observed_diff = estimate)
+
+```
+
+
+```{r}
+df_coefficients_boot_sex <- bootstrapped_coefficients_sex %>% 
+  left_join(coefficients_df_sex, by = c("siteid", "sex"))
+```
+
+
+```{r}
+names_site_id <- unique(df_coefficients_boot_sex$siteid)
+
+plot_annotations <- df_coefficients_boot_sex %>% 
+  group_by(siteid, sex) %>% 
+  group_map( annotation_function ) %>% 
+  set_names(names_site_id) %>% 
+  unlist()
+plot_annotations_df <- data.frame(
+  siteid = names(plot_annotations), 
+  label = plot_annotations
+)
+```
+
 
 
 ### Disorder group 
