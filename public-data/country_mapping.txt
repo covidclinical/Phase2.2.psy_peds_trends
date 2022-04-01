@@ -1,0 +1,8 @@
+siteid	country	plotsLabel
+APHP	France	Assistance Publique Hôpitaux de Paris (France)
+FRBDX	France	Bordeaux University Hospital (France)
+BCH	USA	Boston Children's Hospital (USA)
+Lurie	USA	Lurie Children's Hospital of Chicago (USA)
+UMICH	USA	University of Michigan (USA)
+CHOP	USA	The Children’s Hospital of Philadelphia (USA)
+CCHMC	USA	Cincinnati Children's Hospital Medical Center (USA)
