@@ -109,7 +109,7 @@ history_start_date <- as.Date("2019-01-01")
 history_end_date <- as.Date("2021-05-31")
 pandemic_start_date <- as.Date("2020-03-15")
 start_date_plots <- as.Date("2019-01-15")
-end_date_plots <- as.Date("2021-05-01")
+end_date_plots <- as.Date("2021-06-01")
 ```
 
 ## Data loading
@@ -866,6 +866,14 @@ table1 %>%
   kableExtra::group_rows(index = setNames(rle(table1$Category)[[1]], rle(table1$Category)[[2]]))
 ```
 
+# Add the length of hospitalization data
+```{r}
+length_hospitalisation_values <- read.delim("../output/CHOP/length_hospitalization_formated.txt") %>%
+  mutate( period = tolower( Period )) %>%
+  select(  len_hospitalisation = Hospitalization.Length,  siteid, period)
+```
+
+
 # Save the output in a RData file. 
 ```{r}
 site = "CHOP"
@@ -890,6 +898,7 @@ save( count_icd,
       perc_disorder_group,
       patients_hospitalized_agg_sex_perc,
       mental_codes_qc_output,
+      length_hospitalisation_values,
       table1,
       file = paste0("../output/CHOP/peds_psy_aggResults_", site, ".RData"))
 
