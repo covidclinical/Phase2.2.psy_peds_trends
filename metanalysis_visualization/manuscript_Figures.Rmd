@@ -349,8 +349,11 @@ quantile_bootstrapped_fitted_all <- quantile_bootstrapped_fitted_all %>% left_jo
 
 
 ```{r}
+plot_annotations_df <-plot_annotations_df %>%
+  left_join( country_map ) 
+
 ggplot(bootstrapped_fitted_all, aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
-  facet_wrap("siteid", scales = "free_y", labeller = label_wrap_gen(width = 35,multi_line = TRUE)) +
+  facet_wrap("plotsLabel", scales = "free_y", labeller = label_wrap_gen(width = 35,multi_line = TRUE)) +
   geom_line(aes(color = period),
             alpha = 0.03) +
   geom_line(data = quantile_bootstrapped_fitted_all,
@@ -384,7 +387,7 @@ ggplot(bootstrapped_fitted_all, aes(x = time_p, y = predicted, group = interacti
         axis.title.y = element_text(size = 8),
         title = element_text(size = 14),
         plot.subtitle = element_text(size = 12, face = "italic")) 
-ggsave("boostrapped_all.png", height = 20, width = 45, units = "cm")
+ggsave("boostrapped_all_long.png", height = 20, width = 45, units = "cm")
 ```
 
 
@@ -402,6 +405,8 @@ trends_siteid <- df_coefficients_boot %>%
 
 ```{r}
 # Random effect
+trends_siteid <- trends_siteid %>%
+  left_join( country_map )
 model_meta_siteid <- metafor::rma(yi = observed, 
                                   vi = var_boot,
                                   measure = "MN",
@@ -409,7 +414,7 @@ model_meta_siteid <- metafor::rma(yi = observed,
                                   data = trends_siteid) 
 
 metafor::forest(model_meta_siteid,
-                slab = trends_siteid$siteid,
+                slab = trends_siteid$plotsLabel,
                 plim = c(1, NA),
                 order = "obs",
                 cex=0.7,
@@ -421,7 +426,6 @@ metafor::forest(model_meta_siteid,
 
 ```{r}
 trends_country <- trends_siteid %>% 
-  left_join(country_map, by = "siteid") %>% 
   group_by(country) %>% 
   group_modify(.f = function(x, ...) {
     as.data.frame(
