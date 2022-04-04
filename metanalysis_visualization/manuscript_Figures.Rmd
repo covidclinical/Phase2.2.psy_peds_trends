@@ -541,7 +541,7 @@ bootstrapped_fitted_sex <- lapply(bootstrapped_sex, `[[`, 2) %>% bind_rows()
 ```
 
 
-```{r Interrupted time series by sex}
+```{r Interrupted time series by sex 2}
 quantile_bootstrapped_fitted_sex <- bootstrapped_fitted_sex %>%
   # group_by(time_p, period, plotsLabel, sex) %>%
   group_by(time_p, period,  sex) %>%
@@ -690,12 +690,12 @@ perc_disorder_group_total_fix <- perc_disorder_group_complete %>%
 perc_disorder_group_total_first <- perc_disorder_group_all %>%
   select( - percentage_dg ) %>%
   group_by( time_p, disorder_group ) %>%
-  mutate( total_cases = sum( count_icd ), 
+  mutate( total_cases = sum( count_icd, na.rm = TRUE ), 
           dg_cases = sum( count_dg ), 
           percentage = 100* dg_cases / total_cases, 
           country = "ALL") 
 
-perc_disorder_group_total_fix %>%
+perc_disorder_group_total_first %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = disorder_group )) +
   facet_wrap( ~ disorder_group, scales = "free" ) +
   geom_line( aes(color = disorder_group )) +
@@ -708,7 +708,7 @@ perc_disorder_group_total_fix %>%
         panel.border = element_rect(colour = "black", fill = NA))
 
 
-percentages_htm <- perc_disorder_group_total %>%
+percentages_htm <- perc_disorder_group_total_first %>%
   select( time_p, disorder_group, percentage ) %>%
   unique() %>%
   pivot_wider( names_from =  disorder_group, 
@@ -718,7 +718,7 @@ dates <- percentages_htm$time_p
 
 percentages_htm <- percentages_htm[  , -1]
 
-counts_htm <- perc_disorder_group_total %>%
+counts_htm <- perc_disorder_group_total_first %>%
   select( time_p, disorder_group, dg_cases ) %>%
   unique() %>%
   pivot_wider( names_from =  disorder_group, 
@@ -756,7 +756,7 @@ fig
 
 #### facet wrap in 3 groups based on %
 ### most prevalent
-perc_disorder_group_total %>%
+perc_disorder_group_total_first %>%
   filter(disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" ))  %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
   facet_wrap( ~ disorder_group ) +
@@ -771,7 +771,7 @@ perc_disorder_group_total %>%
   scale_color_manual( values = cbPalette )
 
 #medium prevalent
-perc_disorder_group_total %>%
+perc_disorder_group_total_first %>%
   filter(disorder_group %in% c("Trauma and Stressor-Related Disorders", "Mental Health Symptom", "Disruptive, Impulse Control and Conduct Disorders", 
                                "Feeding and Eating Disorders"))  %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
@@ -788,7 +788,7 @@ perc_disorder_group_total %>%
 
 
 #low prevalent
-perc_disorder_group_total %>%
+perc_disorder_group_total_first %>%
   filter(disorder_group %in% c("Miscellaneous", "Substance-Related and Addictive Disorders", 
                                "Personality Disorders", "Bipolar and Related Disorders", "Sleep-Wake Disorders", 
                                "Schizophrenia Spectrum and Other Psychotic Disorders", "Somatic Symptom and Related Disorders", 
@@ -807,7 +807,7 @@ perc_disorder_group_total %>%
 
 
 
-perc_disorder_group_total %>%
+perc_disorder_group_total_first %>%
   filter(disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" ))  %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
   facet_wrap( ~ disorder_group ) +
@@ -823,7 +823,7 @@ perc_disorder_group_total %>%
         panel.border = element_rect(colour = "black", fill = NA), 
         legend.position="bottom")
 
-perc_disorder_group_total %>%
+perc_disorder_group_total_first %>%
   filter( disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury", 
   "Mental Health Symptoms", "Feeding and Eating Disorders" )) %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
@@ -864,6 +864,7 @@ swr = Vectorize(swr)
 positions <- c("BCH", "CCHMC","CHOP", "UMICH", "Lurie", "FRBDX", "APHP")
 
 numberOfCodesPerDisorderGroup %>%
+  left_join( country_map ) %>%
   mutate( disorder_group = swr( disorder_group ) )  %>%
   ggplot( aes( x= siteid, y = icd_codes_count, fill = country )) +
   geom_bar( stat = "identity") +
