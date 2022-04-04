@@ -655,14 +655,31 @@ ggplot(bootstrapped_fitted_sex, aes(x = time_p, y = predicted, group = interacti
 ### Disorder group fix 
 
 ```{r}
+table_iterations_disorder <- with(perc_disorder_group_all,
+  expand.grid(time_p = unique(time_p),
+              disorder_group = unique(disorder_group), 
+              siteid = unique(siteid)
+  )
+)
 
-perc_disorder_group_total_fix <- perc_disorder_group_all %>%
+perc_disorder_group_complete <- perc_disorder_group_all %>% 
+  full_join(table_iterations_disorder) %>% 
+  arrange(siteid, time_p, disorder_group) %>% 
+  group_by(siteid, time_p) %>% 
+  fill(count_icd, 
+       period, 
+       country , 
+       plotsLabel, 
+       .direction = "downup") %>% 
+  ungroup() %>% 
+  replace_na(list(count_dg = 0, percentage_dg = 0))
+
+perc_disorder_group_total_fix <- perc_disorder_group_complete %>%
   group_by( time_p, disorder_group ) %>%
   summarise( total_diagnoses = sum(count_icd, na.rm = TRUE),
-             percentage = mean(percentage_dg * count_icd / total_diagnoses, na.rm = TRUE), 
+             sum_dg_psy = sum(count_dg),
+             percentage = (sum_dg_psy / total_diagnoses) * 100, 
              country = "ALL") 
-
-
 
 ```
 
