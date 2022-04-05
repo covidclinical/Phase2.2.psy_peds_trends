@@ -678,11 +678,11 @@ perc_disorder_group_complete <- perc_disorder_group_all %>%
   ungroup() %>% 
   replace_na(list(count_dg = 0, percentage_dg = 0))
 
-perc_disorder_group_total_fix <- perc_disorder_group_complete %>%
+perc_disorder_group_total <- perc_disorder_group_complete %>%
   group_by( time_p, disorder_group ) %>%
   summarise( total_diagnoses = sum(count_icd, na.rm = TRUE),
-             sum_dg_psy = sum(count_dg),
-             percentage = (sum_dg_psy / total_diagnoses) * 100, 
+             dg_cases = sum(count_dg),
+             percentage = (dg_cases / total_diagnoses) * 100, 
              country = "ALL") 
 
 ```
@@ -691,15 +691,7 @@ perc_disorder_group_total_fix <- perc_disorder_group_complete %>%
 
 ### Disorder group 
 ```{r}
-perc_disorder_group_total_first <- perc_disorder_group_all %>%
-  select( - percentage_dg ) %>%
-  group_by( time_p, disorder_group ) %>%
-  mutate( total_cases = sum( count_icd, na.rm = TRUE ), 
-          dg_cases = sum( count_dg ), 
-          percentage = 100* dg_cases / total_cases, 
-          country = "ALL") 
-
-perc_disorder_group_total_first %>%
+perc_disorder_group_total %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = disorder_group )) +
   facet_wrap( ~ disorder_group, scales = "free" ) +
   geom_line( aes(color = disorder_group )) +
@@ -712,7 +704,7 @@ perc_disorder_group_total_first %>%
         panel.border = element_rect(colour = "black", fill = NA))
 
 
-percentages_htm <- perc_disorder_group_total_first %>%
+percentages_htm <- perc_disorder_group_total %>%
   select( time_p, disorder_group, percentage ) %>%
   unique() %>%
   pivot_wider( names_from =  disorder_group, 
@@ -722,13 +714,12 @@ dates <- percentages_htm$time_p
 
 percentages_htm <- percentages_htm[  , -1]
 
-counts_htm <- perc_disorder_group_total_first %>%
+counts_htm <- perc_disorder_group_total %>%
   select( time_p, disorder_group, dg_cases ) %>%
   unique() %>%
   pivot_wider( names_from =  disorder_group, 
                values_from = dg_cases )
 counts_htm <- counts_htm[  , -1]
-
 tempVariabilityInput <- new('DataTemporalMap', probabilityMap = as.matrix(percentages_htm), 
          countsMap = as.matrix(counts_htm), dates = dates, support = as.data.frame(names(percentages_htm)), 
          variableName = "example", variableType = "character", period = "month")
@@ -760,7 +751,7 @@ fig
 
 #### facet wrap in 3 groups based on %
 ### most prevalent
-perc_disorder_group_total_first %>%
+perc_disorder_group_total %>%
   filter(disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" ))  %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
   facet_wrap( ~ disorder_group ) +
@@ -775,7 +766,7 @@ perc_disorder_group_total_first %>%
   scale_color_manual( values = cbPalette )
 
 #medium prevalent
-perc_disorder_group_total_first %>%
+perc_disorder_group_total %>%
   filter(disorder_group %in% c("Trauma and Stressor-Related Disorders", "Mental Health Symptom", "Disruptive, Impulse Control and Conduct Disorders", 
                                "Feeding and Eating Disorders"))  %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
@@ -792,7 +783,7 @@ perc_disorder_group_total_first %>%
 
 
 #low prevalent
-perc_disorder_group_total_first %>%
+perc_disorder_group_total %>%
   filter(disorder_group %in% c("Miscellaneous", "Substance-Related and Addictive Disorders", 
                                "Personality Disorders", "Bipolar and Related Disorders", "Sleep-Wake Disorders", 
                                "Schizophrenia Spectrum and Other Psychotic Disorders", "Somatic Symptom and Related Disorders", 
@@ -811,7 +802,7 @@ perc_disorder_group_total_first %>%
 
 
 
-perc_disorder_group_total_first %>%
+perc_disorder_group_total %>%
   filter(disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" ))  %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
   facet_wrap( ~ disorder_group ) +
@@ -827,7 +818,7 @@ perc_disorder_group_total_first %>%
         panel.border = element_rect(colour = "black", fill = NA), 
         legend.position="bottom")
 
-perc_disorder_group_total_first %>%
+perc_disorder_group_total %>%
   filter( disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury", 
   "Mental Health Symptoms", "Feeding and Eating Disorders" )) %>%
   ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
@@ -849,6 +840,7 @@ perc_disorder_group_total_first %>%
 
 ### Estimate number of ICD codes per site and disorder group
 Represent this in 16 pannels, if we put all together, due to the different scales we will not be able to really see the differences between results. 
+
 ```{r}
 mental_codes_qc_output_all <- mental_codes_qc_output_all %>%
     mutate( concept_code = gsub("[.]", "", concept_code ) ) %>%
