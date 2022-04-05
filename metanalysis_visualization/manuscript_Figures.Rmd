@@ -519,15 +519,18 @@ patients_hospitalized_agg_sex_total %>%
   
 ```
 
+#### Bootstrapping results by sex
 
 ```{r Interrupted time series by sex}
-
 patients_hospitalized_agg_sex_total <- patients_hospitalized_agg_sex_total %>% 
   mutate(period = ifelse(time_p <= as.Date("2020-03-15"), "before_pandemic", "during_pandemic")) %>% 
   select(time_p, period, sex, count_sex, percentage, siteid)
 # %>% 
 #   inner_join(country_map)
+```
 
+
+```{r Interrupted time series by sex}
 bootstrapped_sex <- patients_hospitalized_agg_sex_total %>%
   group_by(sex) %>% 
   # group_by(plotsLabel, sex) %>% 
@@ -541,10 +544,6 @@ bootstrapped_sex <- patients_hospitalized_agg_sex_total %>%
 
 bootstrapped_coefficients_sex <- lapply(bootstrapped_sex, `[[`, 1) %>% bind_rows()
 bootstrapped_fitted_sex <- lapply(bootstrapped_sex, `[[`, 2) %>% bind_rows()
-```
-
-
-```{r Interrupted time series by sex 2}
 quantile_bootstrapped_fitted_sex <- bootstrapped_fitted_sex %>%
   # group_by(time_p, period, plotsLabel, sex) %>%
   group_by(time_p, period,  sex) %>%
@@ -553,9 +552,6 @@ quantile_bootstrapped_fitted_sex <- bootstrapped_fitted_sex %>%
             "97.5%" = quantile(predicted, 0.975)) %>%
   pivot_longer(cols = c("2.5%", "50%", "97.5%"),
                names_to = "quantiles")
-```
-
-```{r}
 coefficients_df_sex <- patients_hospitalized_agg_sex_total %>% 
   group_by(sex) %>% 
   # group_by(plotsLabel, sex) %>% 
@@ -564,18 +560,14 @@ coefficients_df_sex <- patients_hospitalized_agg_sex_total %>%
   group_modify(coefficient_slope_calculation) %>% 
   rename(observed_diff = estimate)
 
-```
-
-
-```{r}
 df_coefficients_boot_sex <- bootstrapped_coefficients_sex %>% 
   # left_join(coefficients_df_sex, by = c("plotsLabel", "sex"))
   left_join(coefficients_df_sex, by = c("sex"))
 ```
 
-```{r}
-names_sex <- unique(df_coefficients_boot_sex$sex)
 
+```{r annotation bootstrap disorder sex}
+names_sex <- unique(df_coefficients_boot_sex$sex)
 
 ## Using only male, but female and male necessarily yield equal p-values
 plot_annotations_sex_df <- annotation_function(
@@ -656,7 +648,8 @@ ggplot(bootstrapped_fitted_sex, aes(x = time_p, y = predicted, group = interacti
         title = element_text(size = 14),
   plot.subtitle = element_text(size = 12, face = "italic"))
 ```
-### Disorder group fix 
+
+### Disorder group 
 
 ```{r}
 table_iterations_disorder <- with(perc_disorder_group_all,
@@ -683,7 +676,118 @@ perc_disorder_group_total <- perc_disorder_group_complete %>%
   summarise( total_diagnoses = sum(count_icd, na.rm = TRUE),
              dg_cases = sum(count_dg),
              percentage = (dg_cases / total_diagnoses) * 100, 
-             country = "ALL") 
+             country = "ALL", 
+             siteid = "ALL") %>% 
+  mutate(period = ifelse(time_p < pandemic_start_date,
+                         "before_pandemic", 
+                         "during_pandemic"))
+
+```
+
+
+
+
+#### Bootstrapping results by disorder groups
+
+```{r}
+disorders_to_select <- c(
+  "Anxiety Disorders", 
+  "Depressive Disorders", 
+  "Feeding and Eating Disorders", 
+  "Suicide or Self-Injury"
+)
+
+bootstrapped_disorders <- perc_disorder_group_total %>%
+  filter(disorder_group %in% disorders_to_select) %>% 
+  group_by(disorder_group) %>% 
+  mutate(month_year = format(time_p, "%m"),
+         time = seq_along(time_p))  %>% 
+ group_map(~ bootstrapping_slopes(.x,
+                                  group_name = .y,
+                                  bootstrap_size = bootstrap_size,
+                                  count = "dg_cases", 
+                                  percentage = "percentage"))
+
+bootstrapped_coefficients_disorder <- lapply(bootstrapped_disorders, `[[`, 1) %>% bind_rows()
+bootstrapped_fitted_disorder <- lapply(bootstrapped_disorders, `[[`, 2) %>% bind_rows()
+quantile_bootstrapped_fitted_disorder <- bootstrapped_fitted_disorder %>%
+  # group_by(time_p, period, plotsLabel, sex) %>%
+  group_by(time_p, period,  disorder_group) %>%
+  summarise("2.5%" = quantile(predicted, 0.025),
+            "50%" = median(predicted, 0.5),
+            "97.5%" = quantile(predicted, 0.975)) %>%
+  pivot_longer(cols = c("2.5%", "50%", "97.5%"),
+               names_to = "quantiles")
+coefficients_df_disorder <- perc_disorder_group_total %>% 
+  group_by(disorder_group) %>% 
+  mutate(month_year = format(time_p, "%m"),
+         time = seq_along(time_p))  %>% 
+  group_modify(coefficient_slope_calculation) %>% 
+  rename(observed_diff = estimate)
+
+df_coefficients_boot_disorder <- bootstrapped_coefficients_disorder %>% 
+  left_join(coefficients_df_disorder, by = c("disorder_group"))
+```
+
+```{r annotation boostrap disorders}
+names_disorder <- unique(df_coefficients_boot_disorder$disorder_group)
+
+plot_annotations_disorder <- df_coefficients_boot_disorder %>% 
+  group_by(disorder_group) %>% 
+  group_map( annotation_function ) %>% 
+  set_names(names_disorder) %>% 
+  unlist()
+plot_annotations_disorder_df <- data.frame(
+  disorder_group = names(plot_annotations_disorder), 
+  label = plot_annotations_disorder
+)
+```
+
+
+```{r}
+# plot_annotations_df <- plot_annotations_df %>%
+#   left_join( country_map ) 
+
+ggplot(bootstrapped_fitted_disorder,
+       aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
+  facet_wrap("disorder_group",
+             scales = "free_y",
+             labeller = label_wrap_gen(width = 35,multi_line = TRUE)) +
+  geom_line(aes(color = period),
+            alpha = 0.03) +
+  geom_line(data = quantile_bootstrapped_fitted_disorder,
+            aes(y = value, group = interaction(quantiles, period)),
+            linetype = "dashed") +
+  geom_line(data = quantile_bootstrapped_fitted_disorder[quantile_bootstrapped_fitted_disorder$quantiles == "50%", ],
+            aes(y = value, group = period)) +
+  geom_point(data = filter(perc_disorder_group_total,
+                           disorder_group %in% disorders_to_select),
+             aes(y = percentage, group=NULL),
+             alpha = 0.5) +
+  scale_colour_manual(values = cbPalette) +
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+  geom_label(data = plot_annotations_disorder_df, 
+             aes(label=label), 
+            x = -Inf,
+            y = +Inf,
+            hjust = 0,
+            vjust = 1,
+            size = 4,
+            inherit.aes = FALSE) +
+  labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
+       subtitle = "Parametric bootstrap estimation: (1000 iterations)",
+       x = "Calendar dates",
+       y = "Percentage",
+       color = "Period") +
+  theme(strip.text = element_text(size = 10),
+        axis.text.x=element_text(angle = 45, hjust=1, size = 8),
+        axis.text.y = element_text(size = 8), 
+        axis.title.x = element_text(size = 8),
+        axis.title.y = element_text(size = 8),
+        title = element_text(size = 14),
+        plot.subtitle = element_text(size = 12, face = "italic")) 
+# ggsave("boostrapped_disorders.png", height = 20, width = 45, units = "cm")
 
 ```
 
