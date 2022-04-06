@@ -61,7 +61,7 @@ end_date_plots <- as.Date("2021-05-31")
 Each site shared the aggregated counts results. Putting all the results together. 
 
 ```{r}
-outputDir <- "../../output/previous_output/"
+outputDir <- "../../output/latest_output//"
 outputFiles <- list.files( path = outputDir, pattern = "\\.RData")
 country_map <- read.delim( file = "../public-data/country_mapping.txt")
 ```
@@ -530,7 +530,7 @@ patients_hospitalized_agg_sex_total <- patients_hospitalized_agg_sex_total %>%
 ```
 
 
-```{r Interrupted time series by sex}
+```{r }
 bootstrapped_sex <- patients_hospitalized_agg_sex_total %>%
   group_by(sex) %>% 
   # group_by(plotsLabel, sex) %>% 
@@ -787,7 +787,7 @@ ggplot(bootstrapped_fitted_disorder,
         axis.title.y = element_text(size = 8),
         title = element_text(size = 14),
         plot.subtitle = element_text(size = 12, face = "italic")) 
-# ggsave("boostrapped_disorders.png", height = 20, width = 45, units = "cm")
+ggsave("boostrapped_disorders.png", height = 14, width = 25, units = "cm")
 
 ```
 
