@@ -530,7 +530,7 @@ patients_hospitalized_agg_sex_total <- patients_hospitalized_agg_sex_total %>%
 ```
 
 
-```{r Interrupted time series by sex}
+```{r Interrupted time series by sex bootstrap}
 bootstrapped_sex <- patients_hospitalized_agg_sex_total %>%
   group_by(sex) %>% 
   # group_by(plotsLabel, sex) %>% 
