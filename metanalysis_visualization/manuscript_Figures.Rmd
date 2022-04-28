@@ -53,8 +53,8 @@ time_period <-"months" #possible values: days, weeks, months
 #history_start_date <- as.Date("2019-01-01")
 #history_end_date <- as.Date("2021-05-31")
 pandemic_start_date <- as.Date("2020-03-15")
-start_date_plots <- as.Date("2019-01-01")
-end_date_plots <- as.Date("2021-05-31")
+start_date_plots <- as.Date("2019-02-01")
+end_date_plots <- as.Date("2021-04-30")
 ```
 
 ## Read the input file by site
@@ -111,8 +111,8 @@ for( i in 1:length( outputFiles )){
 
 # Filter by dates
 ```{r}
-start_date_plots <- as.Date("2019-01-01")
-end_date_plots <- as.Date("2021-05-31")
+start_date_plots <- as.Date("2019-02-01")
+end_date_plots <- as.Date("2021-04-30")
 
 filter_by_dates <- function(df_,
                             start_date_plot,
@@ -239,7 +239,7 @@ coefficients_df <- patient_count_psy_period_psy_all %>%
 
 ```{r}
 # Call function from another file : bootstrap.R
-bootstrap_size <- 1000
+bootstrap_size <- 10000
 binom_proportion <- function(n, prob, size) {
   (rbinom(n, size, prob) / size) * 100
 }
@@ -253,7 +253,7 @@ bootstrapping_slopes <- function(df,
   bootstrapped_timepoints <- mapply(
     binom_proportion,
     n = bootstrap_size,
-    size = df[[count]],
+    size = as.integer(df[[count]]),
     prob = df[[percentage]]/100)
   bootstrapped_sample_list <- vector(mode = "list", length = bootstrap_size)
   bootstrapped_coefficients_list <- vector(mode = "list", length = bootstrap_size)
@@ -376,7 +376,7 @@ ggplot(bootstrapped_fitted_all, aes(x = time_p, y = predicted, group = interacti
             size = 4,
             inherit.aes = FALSE) +
   labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
-       subtitle = "Parametric bootstrap estimation: (1000 iterations)",
+       subtitle = "Parametric bootstrap estimation: (10000 iterations)",
        x = "Calendar dates",
        y = "Percentage",
        color = "Period") +
@@ -387,7 +387,7 @@ ggplot(bootstrapped_fitted_all, aes(x = time_p, y = predicted, group = interacti
         axis.title.y = element_text(size = 8),
         title = element_text(size = 14),
         plot.subtitle = element_text(size = 12, face = "italic")) 
-ggsave("boostrapped_all_long.png", height = 20, width = 45, units = "cm")
+ggsave("figure1_boostrapped_all.png", height = 20, width = 45, units = "cm")
 ```
 
 
@@ -421,6 +421,8 @@ metafor::forest(model_meta_siteid,
                 showweights = TRUE,
                 header="Sites",
                 mlab="Overall periods' slope differences")
+ggsave("figure2A_metaanalysis_persite.png", height = 20, width = 45, units = "cm")
+
 ```
 
 
@@ -451,6 +453,8 @@ forest(model_meta_country,
        showweights = TRUE,
        header = "Countries",
        mlab = "Overall periods' slope differences")
+ggsave("figure2B_metaanalysis_country.png", height = 20, width = 45, units = "cm")
+
 ```
 
 
@@ -574,29 +578,6 @@ plot_annotations_sex_df <- annotation_function(
   df_coefficients_boot_sex[df_coefficients_boot_sex$sex == "female", ]
 ) %>% data.frame(label = ., 
                  plotsLabel = "Female")
-
-# plot_annotations_sex_df <- df_coefficients_boot_sex %>% 
-#   group_by(sex) %>% 
-#   group_map(annotation_function) %>%
-#   paste(str_to_title(names_sex), ., sep = ": ") %>% 
-#   as_tibble() %>% 
-#   rename(label = value)
-# bind_cols(group_names) %>% 
-#                rename(label = value) %>% 
-#                mutate(label = paste(stringr::str_to_title(sex), label, sep = ": ")) %>% 
-#                mutate(plotsLabel = names_site_id)
-#              , .keep = TRUE) %>% 
-  # group_map( function(df, group_names) group_by(df, plotsLabel) %>%
-  #              annotation_function() %>%
-               # as_tibble() %>%
-               # bind_cols(group_names) %>%
-               # rename(label = value) %>%
-               # mutate(label = paste(stringr::str_to_title(sex), label, sep = ": ")) %>%
-  #              mutate(plotsLabel = names_site_id)
-  #            , .keep = TRUE) %>% 
-  # set_names(unique(df_coefficients_boot_sex$sex))
-
-
 ```
 
 
@@ -626,17 +607,8 @@ ggplot(bootstrapped_fitted_sex, aes(x = time_p, y = predicted, group = interacti
             vjust = 1,
             size = 4,
             inherit.aes = FALSE) +
-  # geom_label(data = plot_annotations_sex_df[["male"]],
-  #            aes(label=label),
-  #            x = -Inf,
-  #            y = 15,
-  #            hjust = 0,
-  #            vjust = 0,
-  #            size = 4,
-  #           inherit.aes = FALSE) +
-  # ylim(10, 90) +
   labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
-  subtitle = "Parametric bootstrap estimation: (1000 iterations)",
+  subtitle = "Parametric bootstrap estimation: (10000 iterations)",
        x = "Calendar dates",
        y = "Percentage",
        color = "Period") +
@@ -647,6 +619,8 @@ ggplot(bootstrapped_fitted_sex, aes(x = time_p, y = predicted, group = interacti
         axis.title.y = element_text(size = 8),
         title = element_text(size = 14),
   plot.subtitle = element_text(size = 12, face = "italic"))
+ggsave("figure4_ITS_sex.png", height = 20, width = 45, units = "cm")
+
 ```
 
 ### Disorder group 
@@ -689,7 +663,7 @@ perc_disorder_group_total <- perc_disorder_group_complete %>%
 
 #### Bootstrapping results by disorder groups
 
-```{r}
+```{r }
 disorders_to_select <- c(
   "Anxiety Disorders", 
   "Depressive Disorders", 
@@ -776,7 +750,7 @@ ggplot(bootstrapped_fitted_disorder,
             size = 4,
             inherit.aes = FALSE) +
   labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
-       subtitle = "Parametric bootstrap estimation: (1000 iterations)",
+       subtitle = "Parametric bootstrap estimation: (10000 iterations)",
        x = "Calendar dates",
        y = "Percentage",
        color = "Period") +
@@ -786,8 +760,8 @@ ggplot(bootstrapped_fitted_disorder,
         axis.title.x = element_text(size = 8),
         axis.title.y = element_text(size = 8),
         title = element_text(size = 14),
-        plot.subtitle = element_text(size = 12, face = "italic")) 
-ggsave("boostrapped_disorders.png", height = 14, width = 25, units = "cm")
+        plot.subtitle = element_text(size = 8, face = "italic")) 
+ggsave("figure3_boostrapped_disorders.png", height = 15, width = 35, units = "cm")
 
 ```
 
@@ -852,6 +826,8 @@ fig <- fig %>%
     shapes = list(vline(as.Date("2020-03-15"))))
 
 fig
+ggsave("figure_supp3_counts_disorder.png", height = 20, width = 45, units = "cm")
+
 
 #### facet wrap in 3 groups based on %
 ### most prevalent
@@ -976,6 +952,8 @@ numberOfCodesPerDisorderGroup %>%
         strip.text = element_text(size = 7), 
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         legend.position="bottom") 
+ggsave("figure_supp2_ICDdictionaryQC.png", height = 20, width = 45, units = "cm")
+
 ```
 
 
@@ -1047,7 +1025,7 @@ counts_plot <- counts2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= 
         panel.border = element_rect(colour = "black", fill = NA), 
         legend.position="bottom")
 counts_plot
-ggsave("counts_plot.png",counts_plot, height = 20, width = 32, units = "cm")
+ggsave("figure_supp1A_counts_per_site.png",counts_plot, height = 20, width = 32, units = "cm")
 
 ```
 
@@ -1075,5 +1053,7 @@ counts_agg2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
         panel.border = element_rect(colour = "black", fill = NA), 
         legend.position="bottom")
+ggsave("figure_supp1B_counts_all.png",counts_plot, height = 20, width = 32, units = "cm")
+
 ```
 
