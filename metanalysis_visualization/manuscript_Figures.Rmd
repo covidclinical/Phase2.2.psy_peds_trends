@@ -380,13 +380,14 @@ ggplot(bootstrapped_fitted_all, aes(x = time_p, y = predicted, group = interacti
        x = "Calendar dates",
        y = "Percentage",
        color = "Period") +
-  theme(strip.text = element_text(size = 10),
+  theme(strip.text = element_text(size = 14),
         axis.text.x=element_text(angle = 45, hjust=1, size = 8),
         axis.text.y = element_text(size = 8), 
         axis.title.x = element_text(size = 8),
         axis.title.y = element_text(size = 8),
         title = element_text(size = 14),
-        plot.subtitle = element_text(size = 12, face = "italic")) 
+        plot.subtitle = element_text(size = 12, face = "italic"), 
+        legend.position="bottom") 
 ggsave("figure1_boostrapped_all.png", height = 20, width = 45, units = "cm")
 ```
 
@@ -405,6 +406,8 @@ trends_siteid <- df_coefficients_boot %>%
 
 ```{r}
 # Random effect
+png(file='./figure2A_metaanalysis_persite.png') 
+
 trends_siteid <- trends_siteid %>%
   left_join( country_map )
 model_meta_siteid <- metafor::rma(yi = observed, 
@@ -421,12 +424,15 @@ metafor::forest(model_meta_siteid,
                 showweights = TRUE,
                 header="Sites",
                 mlab="Overall periods' slope differences")
-ggsave("figure2A_metaanalysis_persite.png", height = 20, width = 45, units = "cm")
+dev.off()
+#ggsave("figure2A_metaanalysis_persite.png", height = 20, width = 45, units = "cm")
 
 ```
 
 
 ```{r}
+png(file='figure2B_metaanalysis_country.png') 
+
 trends_country <- trends_siteid %>% 
   group_by(country) %>% 
   group_modify(.f = function(x, ...) {
@@ -453,8 +459,7 @@ forest(model_meta_country,
        showweights = TRUE,
        header = "Countries",
        mlab = "Overall periods' slope differences")
-ggsave("figure2B_metaanalysis_country.png", height = 20, width = 45, units = "cm")
-
+dev.off()
 ```
 
 
@@ -618,9 +623,9 @@ ggplot(bootstrapped_fitted_sex, aes(x = time_p, y = predicted, group = interacti
         axis.title.x = element_text(size = 8),
         axis.title.y = element_text(size = 8),
         title = element_text(size = 14),
-  plot.subtitle = element_text(size = 12, face = "italic"))
-ggsave("figure4_ITS_sex.png", height = 20, width = 45, units = "cm")
-
+  plot.subtitle = element_text(size = 12, face = "italic"), 
+  legend.position = "bottom")
+ggsave("figure4_ITS_sex.png", height = 20, width = 20, units = "cm")
 ```
 
 ### Disorder group 
@@ -760,8 +765,9 @@ ggplot(bootstrapped_fitted_disorder,
         axis.title.x = element_text(size = 8),
         axis.title.y = element_text(size = 8),
         title = element_text(size = 14),
-        plot.subtitle = element_text(size = 8, face = "italic")) 
-ggsave("figure3_boostrapped_disorders.png", height = 15, width = 35, units = "cm")
+        plot.subtitle = element_text(size = 8, face = "italic"), 
+        legend.position = "bottom") 
+ggsave("figure3_boostrapped_disorders.png", height = 15, width = 25, units = "cm")
 
 ```
 
@@ -826,96 +832,7 @@ fig <- fig %>%
     shapes = list(vline(as.Date("2020-03-15"))))
 
 fig
-ggsave("figure_supp3_counts_disorder.png", height = 20, width = 45, units = "cm")
-
-
-#### facet wrap in 3 groups based on %
-### most prevalent
-perc_disorder_group_total %>%
-  filter(disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" ))  %>%
-  ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
-  facet_wrap( ~ disorder_group ) +
-  geom_line( aes(color = country )) +
-  geom_point( aes( color = country )) +
-  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")+
-  labs(x ="", y = "percentage of patients (%)")+
-  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
-  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        panel.border = element_rect(colour = "black", fill = NA)) +
-  scale_color_manual( values = cbPalette )
-
-#medium prevalent
-perc_disorder_group_total %>%
-  filter(disorder_group %in% c("Trauma and Stressor-Related Disorders", "Mental Health Symptom", "Disruptive, Impulse Control and Conduct Disorders", 
-                               "Feeding and Eating Disorders"))  %>%
-  ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
-  facet_wrap( ~ disorder_group ) +
-  geom_line( aes(color = country )) +
-  geom_point( aes( color = country )) +
-  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")+
-  labs(x ="", y = "percentage of patients (%)")+
-  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
-  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        panel.border = element_rect(colour = "black", fill = NA)) +
-  scale_color_manual( values = cbPalette )
-
-
-#low prevalent
-perc_disorder_group_total %>%
-  filter(disorder_group %in% c("Miscellaneous", "Substance-Related and Addictive Disorders", 
-                               "Personality Disorders", "Bipolar and Related Disorders", "Sleep-Wake Disorders", 
-                               "Schizophrenia Spectrum and Other Psychotic Disorders", "Somatic Symptom and Related Disorders", 
-                               "Obsessive-Compulsive and Related Disorders", "Dissociative Disorders" ))  %>%
-  ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
-  facet_wrap( ~ disorder_group ) +
-  geom_line( aes(color = country )) +
-  geom_point( aes( color = country )) +
-  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")+
-  labs(x ="", y = "percentage of patients (%)")+
-  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
-  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        panel.border = element_rect(colour = "black", fill = NA)) +
-  scale_color_manual( values = cbPalette )
-
-
-
-perc_disorder_group_total %>%
-  filter(disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury" ))  %>%
-  ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
-  facet_wrap( ~ disorder_group ) +
-  geom_line( aes(color = country )) +
-  geom_point( aes( color = country )) +
-  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
-  labs(x ="", y = "percentage of patients (%)")+
-  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
-  scale_color_manual( values = cbPalette ) + 
-  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6), 
-        strip.text = element_text(size = 10, face = "bold"),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
-        panel.border = element_rect(colour = "black", fill = NA), 
-        legend.position="bottom")
-
-perc_disorder_group_total %>%
-  filter( disorder_group %in% c("Anxiety Disorders", "Depressive Disorders", "Suicide or Self-Injury", 
-  "Mental Health Symptoms", "Feeding and Eating Disorders" )) %>%
-  ggplot( aes( x= as.Date( time_p ), y = percentage, group = country )) +
-  geom_line( aes(linetype = country, color = country )) +
-  geom_point( aes( shape= country, color = country )) +
-  #scale_y_continuous(breaks = seq(0, 30, by = 5)) +
-  facet_wrap2("disorder_group", axes = "all", scales ="free") + 
-  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
-  labs(x ="", y = "percentage of patients (%)")+
-  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0)) +
-  scale_color_manual( values = cbPalette ) + 
-  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6), 
-        strip.text = element_text(size = 10, face = "bold"),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
-        panel.border = element_rect(colour = "black", fill = NA), 
-        legend.position="bottom")
-  
+#plotly::orca(fig, file = "figure_supp3_counts_disorder.png")
 ```
 
 ### Estimate number of ICD codes per site and disorder group
@@ -962,7 +879,6 @@ ggsave("figure_supp2_ICDdictionaryQC.png", height = 20, width = 45, units = "cm"
 
 ### By site
 ```{r}
-head(patient_count_psy_period_psy_all)
 sites <- unique( patient_count_psy_period_psy_all$siteid )
 source("../metanalysis_visualization/time_series_analysis_plotting.R")
 p <- list()
@@ -991,7 +907,7 @@ for( i in 1:length(sites)){
 }
 
 g <- do.call(grid.arrange,p)
-ggsave("its_seasonality_site.png",g, height = 20, width = 32, units = "cm")
+#ggsave("its_seasonality_site.png",g, height = 20, width = 32, units = "cm")
 
 ```
 
@@ -1042,7 +958,7 @@ counts_agg2$group <- gsub("count_psy_patients", "patients with psychiatric condi
 counts_agg2$group <- gsub("total_cases", "total number of patients", counts_agg2$group )
 
 
-counts_agg2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
+counts_agg2plot <- counts_agg2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
   geom_point( aes( shape= group, color = group )) +
   geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed") +
   labs(x ="", y = "number of patients")+
@@ -1053,7 +969,8 @@ counts_agg2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
         panel.border = element_rect(colour = "black", fill = NA), 
         legend.position="bottom")
-ggsave("figure_supp1B_counts_all.png",counts_plot, height = 20, width = 32, units = "cm")
+counts_agg2plot
+ggsave("figure_supp1B_counts_all.png",counts_agg2plot, height = 20, width = 32, units = "cm")
 
 ```
 
