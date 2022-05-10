@@ -463,9 +463,12 @@ metafor::forest(model_meta_siteid,
                 cex=0.7,
                 showweights = TRUE,
                 header="Sites",
-                mlab="Overall periods' slope differences")
+                xlab = "Mean of the coefficients",
+                mlab="Overall effect")
 dev.off()
 #ggsave("figure2A_metaanalysis_persite.png", height = 20, width = 45, units = "cm")
+
+forest.meta( x = model_meta_siteid) 
 
 ```
 
@@ -498,7 +501,8 @@ forest(model_meta_country,
        order = "obs", 
        showweights = TRUE,
        header = "Countries",
-       mlab = "Overall periods' slope differences")
+       xlab = "Mean of the coefficients",
+       mlab="Overall effect")
 dev.off()
 ```
 
