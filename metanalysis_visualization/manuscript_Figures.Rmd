@@ -239,7 +239,7 @@ coefficients_df <- patient_count_psy_period_psy_all %>%
 
 ```{r}
 # Call function from another file : bootstrap.R
-bootstrap_size <- 1000
+bootstrap_size <- 10000
 binom_proportion <- function(n, prob, size) {
   (rbinom(n, size, prob) / size) * 100
 }
@@ -505,7 +505,7 @@ bootstrapped_sex <- patients_hospitalized_agg_sex_total %>%
          time = seq_along(time_p))  %>% 
  group_map(~ bootstrapping_slopes(.x,
                                   group_name = .y,
-                                  bootstrap_size = 10000,
+                                  bootstrap_size = bootstrap_size,
                                   count = "count_sex", 
                                   percentage = "percentage"))
 
@@ -541,7 +541,7 @@ names_sex <- unique(df_coefficients_boot_sex$sex)
 pvalue_sex_slope_diff <- bootstrap_pvalue_calculation(  df_coefficients_boot_sex[df_coefficients_boot_sex$sex == "female", ]
 )
 
-plot_annotations_sex_df <- paste0("Female/male proportion coefficient differences: ",
+plot_annotations_sex_df <- paste0("Female proportion period differences: ",
                                   pvalue_sex_slope_diff$observed_diff,
                                   " (pvalue: ",
                                   format.pval(pvalue_sex_slope_diff$pvalue, 
@@ -555,7 +555,7 @@ plot_annotations_sex_df <- paste0("Female/male proportion coefficient difference
 ```{r bootstrap_plot}
 ggplot(bootstrapped_fitted_sex, aes(x = time_p, y = predicted/100, group = interaction(iteration, period, sex))) +
   geom_line(aes(color = interaction(period, sex)),
-            alpha = 0.003) +
+            alpha = 0.01) +
   geom_line(data = quantile_bootstrapped_fitted_sex,
             aes(y = value/100, group = interaction(quantiles, period, sex)),
             linetype = "dashed") +
@@ -592,6 +592,7 @@ ggplot(bootstrapped_fitted_sex, aes(x = time_p, y = predicted/100, group = inter
         axis.title.y = element_text(size = 8),
         title = element_text(size = 14),
   plot.subtitle = element_text(size = 12, face = "italic"))
+
 ggsave("figure4_ITS_sex.png", height = 20, width = 20, units = "cm")
 ```
 
@@ -702,8 +703,9 @@ plot_annotations_disorder_df <- data.frame(
 # plot_annotations_df <- plot_annotations_df %>%
 #   left_join( country_map ) 
 
-ggplot(bootstrapped_fitted_disorder,
-       aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
+bootstrapped_fitted_disorder %>% 
+  mutate(period = recode_factor(period, "before_pandemic" = "Before pandemic onset", "during_pandemic" = "Since pandemic onset")) %>% 
+  ggplot(aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
   facet_wrap("disorder_group",
              scales = "free_y",
              labeller = label_wrap_gen(width = 35,multi_line = TRUE)) +
