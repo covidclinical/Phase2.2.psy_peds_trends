@@ -331,6 +331,7 @@ bootstrapped_fitted_all <- lapply(bootstrapped, `[[`, 2) %>% bind_rows()
 bootstrap_pvalue_calculation <- function(df, ...) {
   z <- unique(df[["observed_diff"]]) / sd(df[["periodduring_pandemic:time"]])
   pvalue_coeff_interaction <- round(pnorm(abs(z), lower.tail = FALSE) * 2, 3)
+  pvalue_coeff_interaction <- ifelse( pvalue_coeff_interaction >= 0.01, round( pvalue_coeff_interaction, 2), pvalue_coeff_interaction)
   list("pvalue" = pvalue_coeff_interaction, 
        "observed_diff" = round(unique(df[["observed_diff"]]), 2)
   ) 
@@ -351,7 +352,7 @@ quantile_bootstrapped_fitted_all <- bootstrapped_fitted_all %>%
 
 ```{r}
 df_coefficients_boot <- bootstrapped_coefficients_all %>% 
-  left_join(coefficients_df, by = "siteid")
+  left_join(coefficients_df, by = "siteid") 
 names_site_id <- unique(df_coefficients_boot$siteid)
 
 plot_annotations <- df_coefficients_boot %>% 
@@ -362,11 +363,15 @@ plot_annotations <- df_coefficients_boot %>%
     paste0("Coeffs differences: ",
            vec$observed_diff,
            " (pvalue: ",
-           format.pval(vec$pvalue, 
-                       eps = 10**-5),
+           format.pval(vec$pvalue,
+                       digits = 2,
+                       eps = 10**-5, 
+                       nsmall = 2),
            ")")
   }) %>% 
   unlist()
+
+### change p-value round 
 
 plot_annotations_df <- data.frame(
   siteid = names(plot_annotations), 
@@ -409,8 +414,9 @@ ggplot(bootstrapped_fitted_all, aes(x = time_p, y = predicted, group = interacti
             vjust = 1,
             size = 4,
             inherit.aes = FALSE) +
-  labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
-       subtitle = "Parametric bootstrap estimation: (10000 iterations)",
+  labs(
+    #title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
+    #subtitle = "Parametric bootstrap estimation: (10000 iterations)",
        x = "Calendar dates",
        y = "Percentage",
        color = "Period") +
@@ -756,8 +762,9 @@ bootstrapped_fitted_disorder %>%
             vjust = 1,
             size = 4,
             inherit.aes = FALSE) +
-  labs(title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
-       subtitle = "Parametric bootstrap estimation: (10000 iterations)",
+  labs(
+    #title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
+    # subtitle = "Parametric bootstrap estimation: (10000 iterations)",
        x = "Calendar dates",
        y = "Percentage",
        color = "Period") +
