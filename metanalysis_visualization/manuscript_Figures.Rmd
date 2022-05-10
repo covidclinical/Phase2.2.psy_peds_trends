@@ -21,7 +21,7 @@ paket <- function(pak){
     install.packages(new_pak, dependencies = TRUE,repos="https://cloud.r-project.org/")
   sapply(pak, library, character.only = TRUE)
 }
-listOfPackages <- c("tidyverse", "tidyr","devtools","RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis", "UpSetR", "scales", "EHRtemporalVariability", "plotly")
+listOfPackages <- c("tidyverse", "tidyr","devtools","RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis", "UpSetR", "scales", "EHRtemporalVariability", "plotly", "gmodels")
 paket(listOfPackages)
 
 if (! "ComplexHeatmap" %in% rownames(installed.packages())) install_github("jokergoo/ComplexHeatmap")
@@ -48,10 +48,7 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 ```
 
 ```{r}
-# cut-off dates used in the analysis, these should not be changed
 time_period <-"months" #possible values: days, weeks, months
-#history_start_date <- as.Date("2019-01-01")
-#history_end_date <- as.Date("2021-05-31")
 pandemic_start_date <- as.Date("2020-03-15")
 start_date_plots <- as.Date("2019-02-01")
 end_date_plots <- as.Date("2021-04-30")
@@ -61,7 +58,7 @@ end_date_plots <- as.Date("2021-04-30")
 Each site shared the aggregated counts results. Putting all the results together. 
 
 ```{r}
-outputDir <- "../../output/latest_output//"
+outputDir <- "../../output/latest_output/"
 outputFiles <- list.files( path = outputDir, pattern = "\\.RData")
 country_map <- read.delim( file = "../public-data/country_mapping.txt")
 ```
@@ -155,17 +152,20 @@ age_table1_all <- table1_all %>%
               id_cols = c(siteid, period)) %>% 
   mutate(mean_age = as.numeric(sub("\\s\\(.*", "", x = Age, perl = TRUE)),
          sd_age = as.numeric(str_extract(pattern = "(?<=\\(sd:\\s)[0-9]{1,2}\\.[0-9]{1,2}(?=\\))", 
-                                         string = Age)),
+                                         string = Age)), 
          Total = as.numeric(sub("\\s\\(.*", "", x = Total, perl = TRUE))
   ) %>% 
   group_by(period) %>% 
-  summarise(mean_age = round(sum(Total * mean_age) / sum(Total), 2), 
-            sd_age = round(sum(Total * sd_age) / sum(Total), 2)) %>% 
-  mutate(Age = paste0(as.character(mean_age), " (sd: ", as.character(sd_age), ")")) %>% 
+  summarise(conf_interval = gmodels::ci( mean_age ),
+            mean_age = round(sum(Total * mean_age) / sum(Total), 2), 
+            sd_age = round(sum(Total * sd_age) / sum(Total), 2), 
+            ci_age = paste0("[", round(as.numeric(conf_interval[2]), 2), " , ",  round(as.numeric(conf_interval[3]),2), "]")) %>% 
+  mutate(Age = paste0(as.character(mean_age), " (sd: ", as.character(sd_age), ")", as.character(ci_age))) %>% 
   select(period, Age) %>% 
+  unique() %>%
   pivot_wider(names_from = period, values_from = Age) %>% 
   mutate(Category = "Age", 
-         name = "mean (sd)") %>% 
+         name = "mean (sd), 95% CI") %>% 
   select(Category, name, before_pandemic, during_pandemic) %>% 
   rename(before_pandemic_count = before_pandemic, 
          during_pandemic_count = during_pandemic)
@@ -174,12 +174,28 @@ age_table1_all <- table1_all %>%
 
 ```{r}
 median_table1_all <- length_hospitalisation_values_all %>% 
-  filter(siteid != "CCHMC") %>% # temporary
   group_by(period) %>% 
-  summarise(median_hospitalisation = median(len_hospitalisation)) %>% 
+  summarise(median_hospitalisation = mean(len_hospitalisation)) %>% 
   pivot_wider(names_from = period, values_from = median_hospitalisation) %>% 
   mutate(Category = "Length of stays", 
          name = "median") %>% 
+  select(Category, name, before_pandemic, during_pandemic) %>% 
+  rename(before_pandemic_count = before_pandemic, 
+         during_pandemic_count = during_pandemic)
+median_table1_all$before_pandemic_count <- as.character(median_table1_all$before_pandemic_count)
+median_table1_all$during_pandemic_count <- as.character(median_table1_all$during_pandemic_count)
+
+mean_table1_all <- length_hospitalisation_values_all %>% 
+  group_by(period) %>% 
+  summarise(mean_hospitalisation = round( mean(len_hospitalisation), 2), 
+            conf_interval = gmodels::ci( len_hospitalisation ), 
+            ci_length = paste0("[", round(as.numeric(conf_interval[2]), 2), " , ",  round(as.numeric(conf_interval[3]),2), "]")) %>%
+  mutate(mean_hospitalisation = paste0(as.character(mean_hospitalisation), as.character(ci_length))) %>% 
+  select(period, mean_hospitalisation) %>%
+  unique() %>%
+  pivot_wider(names_from = period, values_from = mean_hospitalisation) %>% 
+  mutate(Category = "Length of stays", 
+         name = "mean [95% CI]") %>% 
   select(Category, name, before_pandemic, during_pandemic) %>% 
   rename(before_pandemic_count = before_pandemic, 
          during_pandemic_count = during_pandemic)
@@ -189,15 +205,20 @@ median_table1_all <- length_hospitalisation_values_all %>%
 ```{r}
 sex_table1_all <- table1_all %>%
   filter( Category == "Sex" & name != "Total") %>%
-  mutate( before_counts = sapply(strsplit( before_pandemic, " "), '[', 1), 
-          during_counts = sapply(strsplit( during_pandemic, " "), '[', 1)) %>%
+  mutate( before_counts = as.numeric(sapply(strsplit( before_pandemic, " "), '[', 1)), 
+          during_counts = as.numeric(sapply(strsplit( during_pandemic, " "), '[', 1)), 
+          before_total = sum( before_counts ), 
+          during_total = sum( during_counts)) %>%
   group_by( name ) %>%
   summarise( before_pandemic_count = sum( as.numeric( before_counts )), 
-             during_pandemic_count = sum( as.numeric( during_counts ))) %>%
-  mutate( Category = "Sex") %>%
-  select( Category, name, before_pandemic_count, during_pandemic_count )
-
-sex_table1_all <- rbind( sex_table1_all, c("Total", "",sum( sex_table1_all$before_pandemic_count), sum( sex_table1_all$during_pandemic_count)))
+             during_pandemic_count = sum( as.numeric( during_counts )), 
+             before_pandemic_perc  = round(100*before_pandemic_count/before_total, 1), 
+             during_pandemic_perc  = round(100*during_pandemic_count/during_total, 1)) %>%
+  mutate( Category = "Sex", 
+          before_pandemic_count = paste0( before_pandemic_count, " (", before_pandemic_perc, ")"), 
+          during_pandemic_count = paste0( during_pandemic_count, " (", during_pandemic_perc, ")")) %>%
+  select( Category, name, before_pandemic_count, during_pandemic_count ) %>%
+  unique()
 
 dg_table1_all <- table1_all %>%
   filter( Category == "Disorder groups" & name != "Total") %>%
@@ -205,11 +226,15 @@ dg_table1_all <- table1_all %>%
           during_counts = sapply(strsplit( during_pandemic, " "), '[', 1)) %>%
   group_by( name ) %>%
   summarise( before_pandemic_count = sum( as.numeric( before_counts ), na.rm = TRUE), 
-             during_pandemic_count = sum( as.numeric( during_counts ), na.rm = TRUE)) %>%
-  mutate( Category = "Disorder groups") %>%
+             during_pandemic_count = sum( as.numeric( during_counts ), na.rm = TRUE), 
+              before_pandemic_perc  = round(100*before_pandemic_count/9696, 1), 
+             during_pandemic_perc  = round(100*during_pandemic_count/10561, 1)) %>%
+  mutate( Category = "Disorder groups", 
+           before_pandemic_count = paste0( before_pandemic_count, " (", before_pandemic_perc, ")"), 
+          during_pandemic_count = paste0( during_pandemic_count, " (", during_pandemic_perc, ")"))%>%
   select( Category, name, before_pandemic_count, during_pandemic_count )
 
-table1 <- rbind( sex_table1_all, age_table1_all, median_table1_all, dg_table1_all )
+table1 <- rbind( sex_table1_all, age_table1_all, median_table1_all, mean_table1_all, dg_table1_all )
 
 table1 %>%
   kable( booktabs = T) %>%
