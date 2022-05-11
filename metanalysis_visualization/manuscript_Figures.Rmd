@@ -507,6 +507,52 @@ dev.off()
 ```
 
 
+## Forest plot meta library
+
+### By site
+```{r}
+m.siteid <- metagen(TE = observed,
+                 seTE = var_boot,
+                 data = trends_siteid,
+                 studlab = plotsLabel,
+                 sm = "MN",
+                 fixed = FALSE,
+                 random = TRUE,
+                 method.tau = "DL")
+
+summary(m.siteid)
+
+forest.meta(m.siteid, 
+            sortvar = TE,
+            print.tau2 = FALSE,
+            leftlabs = c("Country"))
+
+forest.meta(m.siteid, layout = "JAMA")
+```
+
+
+### By country
+```{r}
+m.country <- metagen(TE = pred,
+                 seTE = se**2,
+                 data = trends_country,
+                 studlab = country,
+                 sm = "MN",
+                 fixed = FALSE,
+                 random = TRUE,
+                 method.tau = "DL")
+
+summary(m.country)
+
+forest.meta(m.country, 
+            sortvar = TE,
+            print.tau2 = FALSE,
+            leftlabs = c("Country"))
+
+forest.meta(m.country, layout = "JAMA")
+```
+
+
 ### Sex Summary
 
 ```{r, include=FALSE}
