@@ -567,6 +567,73 @@ df_coefficients_boot_sex <- bootstrapped_coefficients_sex %>%
   left_join(coefficients_df_sex, by = c("sex"))
 ```
 
+### Alternative plot 
+
+```{r annotation boostrap disorders}
+names_sex <- unique(df_coefficients_boot_sex$sex)
+
+plot_annotations_sex <- df_coefficients_boot_sex %>% 
+  group_by(sex) %>% 
+  group_map( bootstrap_pvalue_calculation ) %>%
+  set_names(names_sex) %>% 
+  lapply(FUN = function(vec) {
+    paste0("Coeffs differences: ",
+           vec$observed_diff,
+           " (pvalue: ",
+           format.pval(vec$pvalue, 
+                       eps = 10**-5),
+           ")")
+  }) %>% 
+  unlist()
+plot_annotations_sex_df <- data.frame(
+  sex = names(plot_annotations_sex), 
+  label = plot_annotations_sex
+)
+```
+
+```{r}
+bootstrapped_fitted_sex %>% 
+  mutate(period = recode_factor(period, "before_pandemic" = "Before pandemic onset", "during_pandemic" = "Since pandemic onset")) %>% 
+  ggplot(aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
+  facet_wrap("sex",
+             scales = "free_y",
+             labeller = label_wrap_gen(width = 35,multi_line = TRUE)) +
+  geom_line(aes(color = period),
+            alpha = 0.03) +
+  geom_line(data = quantile_bootstrapped_fitted_sex,
+            aes(y = value, group = interaction(quantiles, period)),
+            linetype = "dashed") +
+  geom_line(data = quantile_bootstrapped_fitted_sex[quantile_bootstrapped_fitted_sex$quantiles == "50%", ],
+            aes(y = value, group = period)) +
+  geom_point(data = patients_hospitalized_agg_sex_total,
+             aes(y = percentage, group=NULL),
+             alpha = 0.5) +
+  scale_colour_manual(values = cbPalette) +
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+  geom_label(data = plot_annotations_sex_df, 
+             aes(label=label), 
+            x = -Inf,
+            y = +Inf,
+            hjust = 0,
+            vjust = 1,
+            size = 4,
+            inherit.aes = FALSE) +
+  labs(x = "Calendar dates",
+       y = "Percentage",
+       color = "Period") +
+  theme(strip.text = element_text(size = 10),
+        axis.text.x=element_text(angle = 45, hjust=1, size = 8),
+        axis.text.y = element_text(size = 8), 
+        axis.title.x = element_text(size = 8),
+        axis.title.y = element_text(size = 8),
+        title = element_text(size = 14),
+        plot.subtitle = element_text(size = 8, face = "italic"), 
+        legend.position = "bottom") 
+ggsave("figure4_boostrapped_sex.png", height = 15, width = 25, units = "cm")
+```
+
+#### Oiriginal plot 
 
 ```{r annotation bootstrap disorder sex}
 names_sex <- unique(df_coefficients_boot_sex$sex)
@@ -584,8 +651,6 @@ plot_annotations_sex_df <- paste0("Female proportion period differences: ",
   data.frame(label = ., 
              plotsLabel = "Female")
 ```
-
-
 
 ```{r bootstrap_plot}
 ggplot(bootstrapped_fitted_sex, aes(x = time_p, y = predicted/100, group = interaction(iteration, period, sex))) +
