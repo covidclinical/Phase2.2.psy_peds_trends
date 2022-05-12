@@ -467,9 +467,6 @@ metafor::forest(model_meta_siteid,
                 mlab="Overall effect")
 dev.off()
 #ggsave("figure2A_metaanalysis_persite.png", height = 20, width = 45, units = "cm")
-
-forest.meta( x = model_meta_siteid) 
-
 ```
 
 
@@ -512,7 +509,7 @@ dev.off()
 ### By site
 ```{r}
 m.siteid <- metagen(TE = observed,
-                 seTE = var_boot,
+                 seTE = sqrt( var_boot ),
                  data = trends_siteid,
                  studlab = plotsLabel,
                  sm = "MN",
@@ -525,7 +522,7 @@ summary(m.siteid)
 forest.meta(m.siteid, 
             sortvar = TE,
             print.tau2 = FALSE,
-            leftlabs = c("Country"))
+            leftlabs = c("plotsLabel"))
 
 forest.meta(m.siteid, layout = "JAMA")
 ```
@@ -534,7 +531,7 @@ forest.meta(m.siteid, layout = "JAMA")
 ### By country
 ```{r}
 m.country <- metagen(TE = pred,
-                 seTE = se**2,
+                 seTE = sqrt( se**2 ),
                  data = trends_country,
                  studlab = country,
                  sm = "MN",
