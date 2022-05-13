@@ -436,14 +436,21 @@ ggsave("figure1_boostrapped_all.png", height = 20, width = 45, units = "cm")
 
 
 
-
 ```{r}
 pvalues_boot_before <- bootstrapped_coefficients_all %>% 
   left_join(filter(coefficients_df, term == "time"), by = "siteid") %>% 
   group_by(siteid) %>% 
   group_map( bootstrap_pvalue_calculation, slope_name = "before_slope" ) %>% 
   setNames(unique(bootstrapped_coefficients_all$siteid)) %>% 
-  bind_rows(.id = "siteid")
+  bind_rows(.id = "siteid") %>% 
+  mutate(string = paste0(observed_slope_coefficient, " (", pvalue, ")")) %>% 
+  mutate(string = paste0(observed_slope_coefficient, " (", format.pval(pvalue,
+                                                                       digits = 2,
+                                                                       eps = 10**-3, 
+                                                                       nsmall = 2),
+                         ")")) %>% 
+  select(siteid, string) %>% 
+  rename("Before pandemic trend (p-value)" = string)
 
 pvalues_boot_after <- bootstrapped_coefficients_all %>% 
   left_join(coefficients_df %>%
@@ -455,7 +462,40 @@ pvalues_boot_after <- bootstrapped_coefficients_all %>%
   group_by(siteid) %>% 
   group_map( bootstrap_pvalue_calculation, slope_name = "during_slope" ) %>% 
   setNames(unique(bootstrapped_coefficients_all$siteid)) %>% 
-  bind_rows(.id = "siteid")
+  bind_rows(.id = "siteid")%>% 
+  mutate(string = paste0(observed_slope_coefficient, " (", format.pval(pvalue,
+                                                                       digits = 2,
+                                                                       eps = 10**-3, 
+                                                                       nsmall = 2),
+                         ")")) %>% 
+  select(siteid, string) %>% 
+  rename("Since pandemic trend (p-value)" = string)
+
+
+pvalues_boot_difference <- bootstrapped_coefficients_all %>% 
+  left_join(filter(coefficients_df, term == "periodduring_pandemic:time"), by = "siteid") %>% 
+  group_by(siteid) %>% 
+  group_map( bootstrap_pvalue_calculation, slope_name = "difference_slope" ) %>% 
+  setNames(unique(bootstrapped_coefficients_all$siteid)) %>% 
+  bind_rows(.id = "siteid") %>% 
+  mutate(string = paste0(observed_slope_coefficient, " (", pvalue, ")")) %>% 
+  mutate(string = paste0(observed_slope_coefficient, " (", format.pval(pvalue,
+                                                                       digits = 2,
+                                                                       eps = 10**-3, 
+                                                                       nsmall = 2),
+                         ")")) %>% 
+  select(siteid, string) %>% 
+  rename("Before/since pandemic trend difference (p-value)" = string)
+
+inner_join(pvalues_boot_before, pvalues_boot_after) %>% 
+  inner_join(pvalues_boot_difference) %>% 
+  inner_join(country_map) %>% 
+  select(plotsLabel, everything(), -country, -siteid) %>% 
+  arrange(plotsLabel) 
+# %>% 
+#   flextable::flextable() %>% 
+#   flextable::autofit() %>% 
+#   flextable::save_as_docx(path = "trends_pval.docx")
 
 ```
 
