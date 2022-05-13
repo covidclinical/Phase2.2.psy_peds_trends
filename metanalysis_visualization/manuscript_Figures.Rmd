@@ -263,7 +263,7 @@ coefficients_df <- patient_count_psy_period_psy_all %>%
 
 ```{r}
 # Call function from another file : bootstrap.R
-bootstrap_size <- 100
+bootstrap_size <- 10000
 binom_proportion <- function(n, prob, size) {
   (rbinom(n, size, prob) / size) * 100
 }
