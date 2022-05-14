@@ -642,13 +642,13 @@ bootstrapped_coefficients_sex <- lapply(bootstrapped_sex, `[[`, 1) %>%
 
 
 df_coefficients_boot_sex <- bootstrapped_coefficients_sex %>% 
-  left_join(coefficients_df_sex, by = c("sex"))
+  left_join(observed_coefficients_df_sex, by = c("sex"))
 
 
 pvalues_boot_sex <- bootstrapped_coefficients_sex %>% 
   group_by(sex, term) %>% 
   group_modify( bootstrap_pvalue_calculation, .keep = TRUE) %>% 
-  mutate(label = paste0("Female proportion period differences: ",
+  mutate(label = paste0("Female proportion since pandemic coefficient: ",
                         observed_slope_coefficient,
                         " (pvalue: ",
                         format.pval(pvalue, digits = 2, eps = 10**-2), ")")
@@ -710,10 +710,10 @@ plot_annotations_sex_df <- pvalues_boot_sex %>%
 
 
 ```{r bootstrap_plot}
-ggplot(bootstrapped_fitted_sex,
+plot_sex <- ggplot(bootstrapped_fitted_sex,
        aes(x = time_p, y = predicted/100, group = interaction(iteration, period, sex))) +
   geom_line(aes(color = interaction(period, sex)),
-            alpha = 0.01) +
+            alpha = 0.02) +
   geom_line(data = quantile_bootstrapped_fitted_sex,
             aes(y = value/100, group = interaction(quantiles, period, sex)),
             linetype = "dashed") +
@@ -738,13 +738,23 @@ ggplot(bootstrapped_fitted_sex,
              vjust = 1,
              size = 4,
              inherit.aes = FALSE) +
-  annotate("text_female", x = 7, y = 0.85, label = "Female proportion") + 
-  annotate("text_male", x = 7, y = 0.15, label = "Male proportion") + 
-  labs(title = "Interrupted Time Series Analysis: Patients sex proportion",
+  annotate("label",
+           x = as.Date('2019-08-01'),
+           y = 0.69,
+           label = "Female proportion", 
+           fill = "#A6CEE3") +
+  annotate("label",
+           x = as.Date('2019-08-01'),
+           y = 0.3,
+           label = "Male proportion", 
+           fill = "#B2DF8A") +
+  # annotate("text", x = 7, y = 0.15, label = "Male proportion") +
+  labs(title = "Patients sex proportion trends among psychiatric-related visits",
        subtitle = "Parametric bootstrap estimation: (10000 iterations)",
        x = "Calendar dates",
        y = "Sex proportion",
        color = "Sex") +
+  ylim(0.25, 0.75) + 
   theme(strip.text = element_text(size = 10),
         axis.text.x=element_text(angle = 45, hjust=1, size = 10),
         axis.text.y = element_text(size = 10),
@@ -752,8 +762,8 @@ ggplot(bootstrapped_fitted_sex,
         axis.title.y = element_text(size = 10),
         title = element_text(size = 14),
   plot.subtitle = element_text(size = 12, face = "italic"))
-
-ggsave("figure4_ITS_sex.png", height = 15, width = 20, units = "cm")
+plot_sex
+ggsave(plot = plot_sex, filename = "figure4_ITS_sex.png", height = 15, width = 20, units = "cm")
 ```
 
 
