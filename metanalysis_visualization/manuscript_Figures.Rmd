@@ -21,7 +21,7 @@ paket <- function(pak){
     install.packages(new_pak, dependencies = TRUE,repos="https://cloud.r-project.org/")
   sapply(pak, library, character.only = TRUE)
 }
-listOfPackages <- c("tidyverse", "tidyr","devtools","RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis", "UpSetR", "scales", "EHRtemporalVariability", "plotly", "gmodels")
+listOfPackages <- c("tidyverse", "tidyr","devtools","RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis", "UpSetR", "scales", "EHRtemporalVariability", "plotly", "gmodels", "flextable")
 paket(listOfPackages)
 
 if (! "ComplexHeatmap" %in% rownames(installed.packages())) install_github("jokergoo/ComplexHeatmap")
@@ -386,11 +386,10 @@ quantile_bootstrapped_fitted_all <- bootstrapped_fitted_all %>%
 ```
 
 
-#### Trend differences 
+#### Primary analysis plot 
 
 
 ```{r}
-
 plot_annotations_df_primary <- pvalues_boot %>%
   select(siteid, label) %>% 
   filter(term == "difference_slope") %>% 
@@ -586,19 +585,37 @@ patients_hospitalized_agg_sex_total <- patients_hospitalized_agg_sex_perc_all %>
   summarise( total = sum( count ), 
              count_sex = sum( count_sex ), 
              percentage = 100* count_sex / total, 
-             siteid = "ALL")
+             siteid = "ALL") %>%  
+  mutate(period = ifelse(time_p <= as.Date("2020-03-15"), "before_pandemic", "during_pandemic")) %>% 
+  select(time_p, period, sex, count_sex, percentage, siteid)
 ```
 
+
+#### Observed results: disorders
+
+```{r}
+observed_coefficients_df_sex <- patients_hospitalized_agg_sex_total %>% 
+  group_by(sex) %>% 
+  mutate(month_year = format(time_p, "%m"),
+         time = seq_along(time_p))  %>% 
+  group_modify(coefficient_slope_calculation, 
+               slope_name = c("time", "periodduring_pandemic:time")
+               ) %>% 
+  rename(observed_slope_coefficient = estimate) %>% 
+  pivot_wider(names_from = term,
+              values_from = observed_slope_coefficient) %>% 
+  rename(before_slope = time, 
+         difference_slope = `periodduring_pandemic:time`) %>% 
+  mutate(during_slope = before_slope + difference_slope) %>% 
+  pivot_longer(cols = c(before_slope, difference_slope, during_slope), 
+               names_to = "term", 
+               values_to = "observed_slope_coefficient")
+
+```
 
 
 #### Bootstrapping results by sex
 
-
-```{r}
-patients_hospitalized_agg_sex_total <- patients_hospitalized_agg_sex_total %>% 
-  mutate(period = ifelse(time_p <= as.Date("2020-03-15"), "before_pandemic", "during_pandemic")) %>% 
-  select(time_p, period, sex, count_sex, percentage, siteid)
-```
 
 
 ```{r }
@@ -615,8 +632,35 @@ bootstrapped_sex <- patients_hospitalized_agg_sex_total %>%
 bootstrapped_coefficients_sex <- lapply(bootstrapped_sex, `[[`, 1) %>%
   bind_rows() %>% 
   rename(before_slope = time, 
-         difference_slope = `periodduring_pandemic:time`)
-  
+         difference_slope = `periodduring_pandemic:time`) %>% 
+  mutate(during_slope = before_slope + difference_slope) %>% 
+  select(iteration, sex, everything()) %>% 
+  pivot_longer(cols = c(before_slope, difference_slope, during_slope), 
+               names_to = "term", 
+               values_to = "bootstrapped_slope_coefficient") %>% 
+  left_join(observed_coefficients_df_sex, by = c("sex", "term"))
+
+
+df_coefficients_boot_sex <- bootstrapped_coefficients_sex %>% 
+  left_join(coefficients_df_sex, by = c("sex"))
+
+
+pvalues_boot_sex <- bootstrapped_coefficients_sex %>% 
+  group_by(sex, term) %>% 
+  group_modify( bootstrap_pvalue_calculation, .keep = TRUE) %>% 
+  mutate(label = paste0("Female proportion period differences: ",
+                        observed_slope_coefficient,
+                        " (pvalue: ",
+                        format.pval(pvalue, digits = 2, eps = 10**-2), ")")
+  )
+
+ci_boot_sex <- bootstrapped_coefficients_sex %>% 
+  group_by(sex, term) %>% 
+  summarise("2.5%" = quantile(bootstrapped_slope_coefficient, 0.025), 
+            "50%" = quantile(bootstrapped_slope_coefficient, 0.50), 
+            "97.5%" = quantile(bootstrapped_slope_coefficient, 0.975)) %>% 
+  mutate(ci = paste0("[", as.character(round(`2.5%`, 2)), "; ", as.character(round(`97.5%`, 2)), "]"))
+
 bootstrapped_fitted_sex <- lapply(bootstrapped_sex, `[[`, 2) %>% bind_rows()
 
 quantile_bootstrapped_fitted_sex <- bootstrapped_fitted_sex %>%
@@ -627,43 +671,94 @@ quantile_bootstrapped_fitted_sex <- bootstrapped_fitted_sex %>%
   pivot_longer(cols = c("2.5%", "50%", "97.5%"),
                names_to = "quantiles")
 
-coefficients_df_sex <- patients_hospitalized_agg_sex_total %>% 
-  group_by(sex) %>% 
-  mutate(month_year = format(time_p, "%m"),
-         time = seq_along(time_p))  %>% 
-  group_modify(coefficient_slope_calculation, 
-               slope_name = "periodduring_pandemic:time") %>% 
-  rename(observed_slope_coefficient = estimate)
 
-df_coefficients_boot_sex <- bootstrapped_coefficients_sex %>% 
-  left_join(coefficients_df_sex, by = c("sex"))
 ```
 
-### Alternative plot 
+#### Table with bootstrapped coefficients, and pvalues
 
-```{r }
-names_sex <- unique(df_coefficients_boot_sex$sex)
-
-plot_annotations_sex <- df_coefficients_boot_sex %>% 
-  group_by(sex) %>% 
-  group_map( bootstrap_pvalue_calculation, slope_name = "difference_slope" ) %>%
-  set_names(names_sex) %>% 
-  lapply(FUN = function(vec) {
-    paste0("Coeffs differences: ",
-           vec$observed_slope_coefficient,
-           " (pvalue: ",
-           format.pval(vec$pvalue, 
-                       eps = 10**-3),
-           ")")
-  }) %>% 
-  unlist()
-plot_annotations_sex_df <- data.frame(
-  sex = names(plot_annotations_sex), 
-  label = plot_annotations_sex
-)
-```
 
 ```{r}
+pvalues_boot_sex %>% 
+  inner_join(ci_boot_sex) %>% 
+  arrange(sex) %>% 
+  mutate(string = paste0(observed_slope_coefficient, " ", ci, " (", format.pval(pvalue, digits = 3, eps = 10**-2), ")")) %>% 
+  select(sex, string) %>% 
+  pivot_wider(names_from = term, values_from = string) %>% 
+  select(sex, before_slope, during_slope, difference_slope) %>% 
+  rename("Before pandemic trend [95% CI] (p-value)" = before_slope,
+        "Since pandemic trend [95% CI] (p-value)" = during_slope,
+        "Difference before/since pandemic trend [95% CI] (p-value)" = difference_slope) %>% 
+  flextable::flextable() %>% 
+  flextable::save_as_docx(path = "table_sex.docx")
+
+```
+
+
+
+
+#### Original plot 
+
+
+```{r}
+plot_annotations_sex_df <- pvalues_boot_sex %>%
+  select(term, sex, label) %>% 
+  filter(term == "difference_slope" & sex == "female") %>% 
+  mutate(plotsLabel = "Female") 
+
+```
+
+
+
+```{r bootstrap_plot}
+ggplot(bootstrapped_fitted_sex,
+       aes(x = time_p, y = predicted/100, group = interaction(iteration, period, sex))) +
+  geom_line(aes(color = interaction(period, sex)),
+            alpha = 0.01) +
+  geom_line(data = quantile_bootstrapped_fitted_sex,
+            aes(y = value/100, group = interaction(quantiles, period, sex)),
+            linetype = "dashed") +
+  geom_line(data = quantile_bootstrapped_fitted_sex[quantile_bootstrapped_fitted_sex$quantiles == "50%", ],
+            aes(y = value/100, group = interaction(period, sex))) +
+  geom_point(data = patients_hospitalized_agg_sex_total,
+             aes(y = percentage/100, group=sex),
+             alpha = 1) +
+  # scale_color_brewer(palette = "Paired") +
+  scale_color_manual(labels = c("Female", "Male", "", ""),
+                     values = c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C")) +
+  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
+  guides(colour = guide_legend(
+    override.aes = list(alpha = 1,
+                        colour = c('#1F78B4', '#33A02C', NA, NA))) 
+  ) +
+  geom_label(data = plot_annotations_sex_df,
+             aes(label = label),
+             x = -Inf,
+             y = +Inf,
+             hjust = 0,
+             vjust = 1,
+             size = 4,
+             inherit.aes = FALSE) +
+  annotate("text_female", x = 7, y = 0.85, label = "Female proportion") + 
+  annotate("text_male", x = 7, y = 0.15, label = "Male proportion") + 
+  labs(title = "Interrupted Time Series Analysis: Patients sex proportion",
+       subtitle = "Parametric bootstrap estimation: (10000 iterations)",
+       x = "Calendar dates",
+       y = "Sex proportion",
+       color = "Sex") +
+  theme(strip.text = element_text(size = 10),
+        axis.text.x=element_text(angle = 45, hjust=1, size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        title = element_text(size = 14),
+  plot.subtitle = element_text(size = 12, face = "italic"))
+
+ggsave("figure4_ITS_sex.png", height = 15, width = 20, units = "cm")
+```
+
+
+#### Alternative plot 
+```{r, include=FALSE}
 bootstrapped_fitted_sex %>% 
   mutate(period = recode_factor(period, "before_pandemic" = "Before pandemic onset", "during_pandemic" = "Since pandemic onset")) %>% 
   ggplot(aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
@@ -703,74 +798,6 @@ bootstrapped_fitted_sex %>%
         plot.subtitle = element_text(size = 8, face = "italic"), 
         legend.position = "bottom") 
 ggsave("figure4_boostrapped_sex.png", height = 15, width = 25, units = "cm")
-```
-
-#### Original plot 
-
-```{r annotation bootstrap disorder sex}
-names_sex <- unique(df_coefficients_boot_sex$sex)
-
-## Using only male, but female and male necessarily yield equal p-values
-
-pvalue_sex_slope_diff <- bootstrap_pvalue_calculation(
-  df_coefficients_boot_sex[df_coefficients_boot_sex$sex == "female", ], 
-  slope_name = "difference_slope"
-)
-
-plot_annotations_sex_df <- paste0("Female proportion period differences: ",
-                                  pvalue_sex_slope_diff$difference_slope,
-                                  " (pvalue: ",
-                                  format.pval(pvalue_sex_slope_diff$pvalue,
-                                              digits = 2,
-                                              eps = 10**-3, 
-                                              nsmall = 2),")") %>%
-  data.frame(label = ., 
-             plotsLabel = "Female")
-```
-
-```{r bootstrap_plot}
-ggplot(bootstrapped_fitted_sex,
-       aes(x = time_p, y = predicted/100, group = interaction(iteration, period, sex))) +
-  geom_line(aes(color = interaction(period, sex)),
-            alpha = 0.01) +
-  geom_line(data = quantile_bootstrapped_fitted_sex,
-            aes(y = value/100, group = interaction(quantiles, period, sex)),
-            linetype = "dashed") +
-  geom_line(data = quantile_bootstrapped_fitted_sex[quantile_bootstrapped_fitted_sex$quantiles == "50%", ],
-            aes(y = value/100, group = interaction(period, sex))) +
-  geom_point(data = patients_hospitalized_agg_sex_total,
-             aes(y = percentage/100, group=sex),
-             alpha = 1) +
-  # scale_color_brewer(palette = "Paired") +
-  scale_color_manual(labels = c("Female", "Male", "", ""),
-                     values = c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C")) +
-  scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
-  guides(colour = guide_legend(
-    override.aes = list(alpha = 1,
-                        colour = c('#1F78B4', '#33A02C', NA, NA))) 
-  ) +
-  geom_label(data = plot_annotations_sex_df,
-             aes(label = label),
-             x = -Inf,
-             y = +Inf,
-             hjust = 0,
-             vjust = 1,
-             size = 4,
-             inherit.aes = FALSE) +
-  labs(title = "Interrupted Time Series Analysis: Patients sex proportion",
-       subtitle = "Parametric bootstrap estimation: (10000 iterations)",
-       x = "Calendar dates",
-       y = "Sex proportion",
-       color = "Sex") +
-  theme(strip.text = element_text(size = 10),
-        axis.text.x=element_text(angle = 45, hjust=1, size = 8),
-        axis.text.y = element_text(size = 8),
-        axis.title.x = element_text(size = 8),
-        axis.title.y = element_text(size = 8),
-        title = element_text(size = 14),
-  plot.subtitle = element_text(size = 12, face = "italic"))
-
-ggsave("figure4_ITS_sex.png", height = 20, width = 20, units = "cm")
 ```
 
 ### Secondary analysis: :disorder group 
