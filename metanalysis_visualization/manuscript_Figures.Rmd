@@ -171,7 +171,7 @@ age_table1_all <- table1_all %>%
 ```{r}
 median_table1_all <- length_hospitalisation_values_all %>% 
   group_by(period) %>% 
-  summarise(median_hospitalisation = mean(len_hospitalisation)) %>% 
+  summarise(median_hospitalisation = median(len_hospitalisation)) %>% 
   pivot_wider(names_from = period, values_from = median_hospitalisation) %>% 
   mutate(Category = "Length of stays", 
          name = "median") %>% 
@@ -241,6 +241,7 @@ table1 %>%
 
 ## Interrupted Time Series Analysis 
 
+### Calculate LR coefficients
 
 ```{r}
 # Estimating regression slopes from linear regression ('observed coefficients')
@@ -251,15 +252,23 @@ coefficient_slope_calculation <- function(df, slope_name = "periodduring_pandemi
     select(term, estimate)
 } 
 
-coefficients_df <- patient_count_psy_period_psy_all %>% 
+observed_coefficients_df <- patient_count_psy_period_psy_all %>% 
   group_by(siteid) %>% 
   group_modify(coefficient_slope_calculation,
                slope_name = c("time", "periodduring_pandemic:time")
                ) %>% 
-  rename(observed_slope_coefficient = estimate)
+  rename(observed_slope_coefficient = estimate) %>% 
+  pivot_wider(names_from = term,
+              values_from = observed_slope_coefficient) %>% 
+  rename(before_slope = time, 
+         difference_slope = `periodduring_pandemic:time`) %>% 
+  mutate(during_slope = before_slope + difference_slope) %>% 
+  pivot_longer(cols = c(before_slope, difference_slope, during_slope), 
+               names_to = "term", 
+               values_to = "observed_slope_coefficient")
 ```
 
-## Define bootstrap functions 
+### Define bootstrap functions 
 
 ```{r}
 # Call function from another file : bootstrap.R
@@ -305,11 +314,11 @@ bootstrapping_slopes <- function(df,
 ```
 
 ```{r}
-bootstrap_pvalue_calculation <- function(df, slope_name, ...) {
-  z <- unique(df[["observed_slope_coefficient"]]) / sd(df[[slope_name]])
+bootstrap_pvalue_calculation <- function(df, ...) {
+  z <- unique(df[["observed_slope_coefficient"]]) / sd(df[["bootstrapped_slope_coefficient"]])
   pvalue_coeff_interaction <- round(pnorm(abs(z), lower.tail = FALSE) * 2, 3)
   pvalue_coeff_interaction <- ifelse( pvalue_coeff_interaction >= 0.01, round( pvalue_coeff_interaction, 2), pvalue_coeff_interaction)
-  list("pvalue" = pvalue_coeff_interaction,
+  data.frame("pvalue" = pvalue_coeff_interaction,
        "observed_slope_coefficient" = round(unique(df[["observed_slope_coefficient"]]), 2)
   )
 }
@@ -317,7 +326,7 @@ bootstrap_pvalue_calculation <- function(df, slope_name, ...) {
 
 
 
-#### Calculate bootstrap
+#### Calculate bootstrap: primary analysis
 
 ```{r}
 # Get count_icd_all in the same format that patient_count_psy_period_psy_all, because first n last months missing ... 
@@ -337,8 +346,29 @@ bootstrapped_coefficients_all <- lapply(bootstrapped, `[[`, 1) %>%
   rename(before_slope = time, 
          difference_slope = `periodduring_pandemic:time`) %>% 
   mutate(during_slope = before_slope + difference_slope) %>% 
-  select(iteration, siteid, everything())
+  select(iteration, siteid, everything()) %>% 
+    pivot_longer(cols = c(before_slope, difference_slope, during_slope), 
+               names_to = "term", 
+               values_to = "bootstrapped_slope_coefficient") %>% 
+  left_join(observed_coefficients_df, by = c("siteid", "term"))
 
+pvalues_boot <- bootstrapped_coefficients_all %>% 
+  group_by(siteid, term) %>% 
+  group_modify( bootstrap_pvalue_calculation, .keep = TRUE) %>% 
+  mutate(label = paste0("Coeffs differences: ",
+                        observed_slope_coefficient,
+                        " (pvalue: ",
+                        format.pval(pvalue, digits = 2, eps = 10**-2), ")")
+  )
+
+ci_boot <- bootstrapped_coefficients_all %>% 
+  group_by(siteid, term) %>% 
+  summarise("2.5%" = quantile(bootstrapped_slope_coefficient, 0.025), 
+            "50%" = quantile(bootstrapped_slope_coefficient, 0.50), 
+            "97.5%" = quantile(bootstrapped_slope_coefficient, 0.975)) %>% 
+  mutate(ci = paste0("[", as.character(round(`2.5%`, 2)), "; ", as.character(round(`97.5%`, 2)), "]"))
+
+  
 bootstrapped_fitted_all <- lapply(bootstrapped, `[[`, 2) %>% 
   bind_rows() %>%
   left_join(country_map, by = "siteid")
@@ -356,37 +386,15 @@ quantile_bootstrapped_fitted_all <- bootstrapped_fitted_all %>%
 ```
 
 
-### Primary analysis 
+#### Trend differences 
 
 
 ```{r}
-df_coefficients_boot_primary <- bootstrapped_coefficients_all %>% 
-  left_join(filter(coefficients_df, term == "periodduring_pandemic:time"),
-            by = "siteid") 
 
-names_site_id <- unique(df_coefficients_boot_primary$siteid)
-
-plot_annotations_primary <- df_coefficients_boot_primary %>% 
-  group_by(siteid) %>% 
-  group_map( bootstrap_pvalue_calculation, slope_name = "difference_slope" ) %>% 
-  set_names(names_site_id) %>% 
-  lapply(FUN = function(vec) {
-    paste0("Coeffs differences: ",
-           vec$observed_slope_coefficient,
-           " (pvalue: ",
-           format.pval(vec$pvalue,
-                       digits = 2,
-                       eps = 10**-3, 
-                       nsmall = 2),
-           ")")
-  }) %>% 
-  unlist()
-
-plot_annotations_df_primary <- data.frame(
-  siteid = names(plot_annotations_primary), 
-  label = plot_annotations_primary
-) %>%
-  left_join( country_map ) 
+plot_annotations_df_primary <- pvalues_boot %>%
+  select(siteid, label) %>% 
+  filter(term == "difference_slope") %>% 
+  left_join(country_map)
 ```
 
 ```{r}
@@ -432,83 +440,34 @@ ggsave("figure1_boostrapped_all.png", height = 20, width = 45, units = "cm")
 ```
 
 
-## Secondary analysis : slopes before/during
-
+## Table with bootstrapped coefficients, and pvalues
 
 
 ```{r}
-pvalues_boot_before <- bootstrapped_coefficients_all %>% 
-  left_join(filter(coefficients_df, term == "time"), by = "siteid") %>% 
-  group_by(siteid) %>% 
-  group_map( bootstrap_pvalue_calculation, slope_name = "before_slope" ) %>% 
-  setNames(unique(bootstrapped_coefficients_all$siteid)) %>% 
-  bind_rows(.id = "siteid") %>% 
-  mutate(string = paste0(observed_slope_coefficient, " (", pvalue, ")")) %>% 
-  mutate(string = paste0(observed_slope_coefficient, " (", format.pval(pvalue,
-                                                                       digits = 2,
-                                                                       eps = 10**-3, 
-                                                                       nsmall = 2),
-                         ")")) %>% 
-  select(siteid, string) %>% 
-  rename("Before pandemic trend (p-value)" = string)
-
-pvalues_boot_after <- bootstrapped_coefficients_all %>% 
-  left_join(coefficients_df %>%
-              pivot_wider(names_from = term,
-                          values_from = observed_slope_coefficient) %>% 
-              mutate(observed_slope_coefficient = time + `periodduring_pandemic:time`) %>% 
-              select(siteid, observed_slope_coefficient),
-            by = "siteid") %>% 
-  group_by(siteid) %>% 
-  group_map( bootstrap_pvalue_calculation, slope_name = "during_slope" ) %>% 
-  setNames(unique(bootstrapped_coefficients_all$siteid)) %>% 
-  bind_rows(.id = "siteid")%>% 
-  mutate(string = paste0(observed_slope_coefficient, " (", format.pval(pvalue,
-                                                                       digits = 2,
-                                                                       eps = 10**-3, 
-                                                                       nsmall = 2),
-                         ")")) %>% 
-  select(siteid, string) %>% 
-  rename("Since pandemic trend (p-value)" = string)
-
-
-pvalues_boot_difference <- bootstrapped_coefficients_all %>% 
-  left_join(filter(coefficients_df, term == "periodduring_pandemic:time"), by = "siteid") %>% 
-  group_by(siteid) %>% 
-  group_map( bootstrap_pvalue_calculation, slope_name = "difference_slope" ) %>% 
-  setNames(unique(bootstrapped_coefficients_all$siteid)) %>% 
-  bind_rows(.id = "siteid") %>% 
-  mutate(string = paste0(observed_slope_coefficient, " (", pvalue, ")")) %>% 
-  mutate(string = paste0(observed_slope_coefficient, " (", format.pval(pvalue,
-                                                                       digits = 2,
-                                                                       eps = 10**-3, 
-                                                                       nsmall = 2),
-                         ")")) %>% 
-  select(siteid, string) %>% 
-  rename("Before/since pandemic trend difference (p-value)" = string)
-
-inner_join(pvalues_boot_before, pvalues_boot_after) %>% 
-  inner_join(pvalues_boot_difference) %>% 
+pvalues_boot %>% 
+  inner_join(ci_boot) %>% 
   inner_join(country_map) %>% 
-  select(plotsLabel, everything(), -country, -siteid) %>% 
-  arrange(plotsLabel) 
-# %>% 
-#   flextable::flextable() %>% 
-#   flextable::autofit() %>% 
-#   flextable::save_as_docx(path = "trends_pval.docx")
+  arrange(plotsLabel) %>% 
+  mutate(string = paste0(observed_slope_coefficient, " ", ci, " (", format.pval(pvalue, digits = 3, eps = 10**-2), ")")) %>% 
+  select(plotsLabel, string) %>% 
+  pivot_wider(names_from = term, values_from = string) %>% 
+  select(plotsLabel, before_slope, during_slope, difference_slope) %>% 
+  rename("Before pandemic trend [95% CI] (p-value)" = before_slope,
+        "Since pandemic trend [95% CI] (p-value)" = during_slope,
+        "Difference before/since pandemic trend [95% CI] (p-value)" = difference_slope)
 
 ```
-
 
 
 ## Meta-analysis of temporal trends
 
 ```{r}
-trends_siteid <- df_coefficients_boot_primary %>% 
+trends_siteid <- bootstrapped_coefficients_all %>% 
+  filter(term == "difference_slope") %>% 
   group_by(siteid) %>% 
-  summarise(mean_boot = mean(difference_slope),
+  summarise(mean_boot = mean(bootstrapped_slope_coefficient),
             observed = unique(observed_slope_coefficient),
-            var_boot = var(difference_slope), 
+            var_boot = var(bootstrapped_slope_coefficient), 
             z = mean_boot / sqrt(var_boot), 
             pvalue = pnorm(z, lower.tail = FALSE)*2 )
 ```
@@ -572,10 +531,9 @@ forest(model_meta_country,
 dev.off()
 ```
 
+### Meta analysis with another package
 
-## Forest plot meta library
-
-### By site
+#### Site
 ```{r}
 m.siteid <- metagen(TE = observed,
                  seTE = sqrt( var_boot ),
@@ -597,7 +555,7 @@ forest.meta(m.siteid, layout = "JAMA")
 ```
 
 
-### By country
+#### By country
 ```{r}
 m.country <- metagen(TE = pred,
                  seTE = se,
@@ -815,7 +773,7 @@ ggplot(bootstrapped_fitted_sex,
 ggsave("figure4_ITS_sex.png", height = 20, width = 20, units = "cm")
 ```
 
-### Disorder group 
+### Secondary analysis: :disorder group 
 
 ```{r}
 table_iterations_disorder <- with(perc_disorder_group_all,
@@ -837,6 +795,15 @@ perc_disorder_group_complete <- perc_disorder_group_all %>%
   ungroup() %>% 
   replace_na(list(count_dg = 0, percentage_dg = 0))
 
+
+disorders_to_select <- c(
+  "Anxiety Disorders", 
+  "Depressive Disorders", 
+  "Feeding and Eating Disorders", 
+  "Suicide or Self-Injury"
+)
+
+
 perc_disorder_group_total <- perc_disorder_group_complete %>%
   group_by( time_p, disorder_group ) %>%
   summarise( total_diagnoses = sum(count_icd, na.rm = TRUE),
@@ -846,90 +813,124 @@ perc_disorder_group_total <- perc_disorder_group_complete %>%
              siteid = "ALL") %>% 
   mutate(period = ifelse(time_p < pandemic_start_date,
                          "before_pandemic", 
-                         "during_pandemic"))
+                         "during_pandemic")) %>% 
+    filter(disorder_group %in% disorders_to_select)
+  
 
 ```
 
 
 
+#### Observed results: disorders
 
-#### Bootstrapping results by disorder groups
-
-```{r }
-disorders_to_select <- c(
-  "Anxiety Disorders", 
-  "Depressive Disorders", 
-  "Feeding and Eating Disorders", 
-  "Suicide or Self-Injury"
-)
-
-bootstrapped_disorders <- perc_disorder_group_total %>%
-  filter(disorder_group %in% disorders_to_select) %>% 
-  group_by(disorder_group) %>% 
-  mutate(month_year = format(time_p, "%m"),
-         time = seq_along(time_p))  %>% 
- group_map(~ bootstrapping_slopes(.x,
-                                  group_name = .y,
-                                  bootstrap_size = bootstrap_size,
-                                  count = "dg_cases", 
-                                  percentage = "percentage"))
-
-bootstrapped_coefficients_disorder <- lapply(bootstrapped_disorders, `[[`, 1) %>%
-  bind_rows() %>% 
-  rename(before_slope = time, 
-         difference_slope = `periodduring_pandemic:time`)
-
-bootstrapped_fitted_disorder <- lapply(bootstrapped_disorders, `[[`, 2) %>%
-  bind_rows()
-
-quantile_bootstrapped_fitted_disorder <- bootstrapped_fitted_disorder %>%
-  # group_by(time_p, period, plotsLabel, sex) %>%
-  group_by(time_p, period,  disorder_group) %>%
-  summarise("2.5%" = quantile(predicted, 0.025),
-            "50%" = median(predicted, 0.5),
-            "97.5%" = quantile(predicted, 0.975)) %>%
-  pivot_longer(cols = c("2.5%", "50%", "97.5%"),
-               names_to = "quantiles")
-coefficients_df_disorder <- perc_disorder_group_total %>% 
+```{r}
+observed_coefficients_df_disorder <- perc_disorder_group_total %>% 
   group_by(disorder_group) %>% 
   mutate(month_year = format(time_p, "%m"),
          time = seq_along(time_p))  %>% 
   group_modify(coefficient_slope_calculation, 
-               slope_name = "periodduring_pandemic:time"
+               slope_name = c("time", "periodduring_pandemic:time")
                ) %>% 
-  rename(observed_slope_coefficient = estimate)
+  rename(observed_slope_coefficient = estimate) %>% 
+  pivot_wider(names_from = term,
+              values_from = observed_slope_coefficient) %>% 
+  rename(before_slope = time, 
+         difference_slope = `periodduring_pandemic:time`) %>% 
+  mutate(during_slope = before_slope + difference_slope) %>% 
+  pivot_longer(cols = c(before_slope, difference_slope, during_slope), 
+               names_to = "term", 
+               values_to = "observed_slope_coefficient")
 
-df_coefficients_boot_disorder <- bootstrapped_coefficients_disorder %>% 
-  left_join(coefficients_df_disorder, by = c("disorder_group"))
 ```
 
-```{r annotation boostrap disorders}
-names_disorder <- unique(df_coefficients_boot_disorder$disorder_group)
 
-plot_annotations_disorder <- df_coefficients_boot_disorder %>% 
+#### Calculate bootstrap: disorders groups
+
+```{r}
+# Get count_icd_all in the same format that patient_count_psy_period_psy_all, because first n last months missing ... 
+
+bootstrapped_disorders <- perc_disorder_group_total %>%
   group_by(disorder_group) %>% 
-  group_map( bootstrap_pvalue_calculation, slope_name = "difference_slope" ) %>%
-  set_names(names_disorder) %>% 
-  lapply(FUN = function(vec) {
-    paste0("Coeffs differences: ",
-           vec$observed_slope_coefficient,
-           " (pvalue: ",
-           format.pval(vec$pvalue, 
-                       eps = 10**-3),
-           ")")
-  }) %>% 
-  unlist()
-plot_annotations_disorder_df <- data.frame(
-  disorder_group = names(plot_annotations_disorder), 
-  label = plot_annotations_disorder
-)
+  mutate(month_year = format(time_p, "%m"),
+         time = seq_along(time_p))  %>% 
+  group_map( ~bootstrapping_slopes(.x,
+                                   group_name = .y,
+                                   bootstrap_size = bootstrap_size,
+                                   count = "dg_cases", 
+                                   percentage = "percentage"))
+names(bootstrapped_disorders) <- unique(perc_disorder_group_total$disorder_group)
+
+bootstrapped_coefficients_disorders <- lapply(bootstrapped_disorders, `[[`, 1) %>% 
+  bind_rows() %>% 
+  rename(before_slope = time, 
+         difference_slope = `periodduring_pandemic:time`) %>% 
+  mutate(during_slope = before_slope + difference_slope) %>% 
+  select(iteration, disorder_group, everything()) %>% 
+    pivot_longer(cols = c(before_slope, difference_slope, during_slope), 
+               names_to = "term", 
+               values_to = "bootstrapped_slope_coefficient") %>% 
+  left_join(observed_coefficients_df_disorder, by = c("disorder_group", "term"))
+
+pvalues_boot_disorders <- bootstrapped_coefficients_disorders %>% 
+  group_by(disorder_group, term) %>% 
+  group_modify( bootstrap_pvalue_calculation, .keep = TRUE) %>% 
+  mutate(label = paste0("Coeffs differences: ",
+                        observed_slope_coefficient,
+                        " (pvalue: ",
+                        format.pval(pvalue, digits = 2, eps = 10**-2), ")")
+  )
+
+ci_boot_disorders <- bootstrapped_coefficients_disorders %>% 
+  group_by(disorder_group, term) %>% 
+  summarise("2.5%" = quantile(bootstrapped_slope_coefficient, 0.025), 
+            "50%" = quantile(bootstrapped_slope_coefficient, 0.50), 
+            "97.5%" = quantile(bootstrapped_slope_coefficient, 0.975)) %>% 
+  mutate(ci = paste0("[", as.character(round(`2.5%`, 2)), "; ", as.character(round(`97.5%`, 2)), "]"))
+
+  
+bootstrapped_fitted_disorder <- lapply(bootstrapped_disorders, `[[`, 2) %>% 
+  bind_rows() 
+
+quantile_bootstrapped_fitted_disorder <- bootstrapped_fitted_disorder %>%
+  group_by(time_p, period, disorder_group) %>%
+  summarise("2.5%" = quantile(predicted, 0.025),
+            "50%" = median(predicted, 0.5),
+            "97.5%" = quantile(predicted, 0.975)) %>%
+  pivot_longer(cols = c("2.5%", "50%", "97.5%"),
+               names_to = "quantiles") 
+
+
+```
+
+#### Table coefficients disorders
+
+```{r}
+pvalues_boot_disorders %>% 
+  inner_join(ci_boot_disorders) %>% 
+  arrange(disorder_group) %>% 
+  mutate(string = paste0(observed_slope_coefficient, " ", ci, " (", format.pval(pvalue, digits = 3, eps = 10**-2), ")")) %>% 
+  select(disorder_group, string) %>% 
+  pivot_wider(names_from = term, values_from = string) %>% 
+  select(disorder_group, before_slope, during_slope, difference_slope) %>% 
+  rename("Before pandemic trend [95% CI] (p-value)" = before_slope,
+        "Since pandemic trend [95% CI] (p-value)" = during_slope,
+        "Difference before/since pandemic trend [95% CI] (p-value)" = difference_slope) %>% 
+  flextable::flextable() %>% 
+  flextable::save_as_docx(path = "table_disorders.docx")
+
 ```
 
 
 ```{r}
-# plot_annotations_df <- plot_annotations_df %>%
-#   left_join( country_map ) 
 
+plot_annotations_disorder_df <-  pvalues_boot_disorders %>%
+  select(disorder_group, label) %>% 
+  filter(term == "difference_slope")
+```
+
+
+
+```{r}
 bootstrapped_fitted_disorder %>% 
   mutate(period = recode_factor(period, "before_pandemic" = "Before pandemic onset", "during_pandemic" = "Since pandemic onset")) %>% 
   ggplot(aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
