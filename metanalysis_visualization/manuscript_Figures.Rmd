@@ -355,7 +355,7 @@ bootstrapped_coefficients_all <- lapply(bootstrapped, `[[`, 1) %>%
 pvalues_boot <- bootstrapped_coefficients_all %>% 
   group_by(siteid, term) %>% 
   group_modify( bootstrap_pvalue_calculation, .keep = TRUE) %>% 
-  mutate(label = paste0("Coeffs differences: ",
+  mutate(label = paste0("Coefficient difference: ",
                         observed_slope_coefficient,
                         " (pvalue: ",
                         format.pval(pvalue, digits = 2, eps = 10**-2), ")")
@@ -911,7 +911,7 @@ bootstrapped_coefficients_disorders <- lapply(bootstrapped_disorders, `[[`, 1) %
 pvalues_boot_disorders <- bootstrapped_coefficients_disorders %>% 
   group_by(disorder_group, term) %>% 
   group_modify( bootstrap_pvalue_calculation, .keep = TRUE) %>% 
-  mutate(label = paste0("Coeffs differences: ",
+  mutate(label = paste0("Coefficient difference: ",
                         observed_slope_coefficient,
                         " (pvalue: ",
                         format.pval(pvalue, digits = 2, eps = 10**-2), ")")
