@@ -853,7 +853,7 @@ perc_disorder_group_total <- perc_disorder_group_complete %>%
                          "during_pandemic")) %>% 
     filter(disorder_group %in% disorders_to_select)
   
-
+perc_disorder_group_total$disorder_group <- gsub( "Feeding and Eating Disorders", "Eating Disorders", perc_disorder_group_total$disorder_group)
 ```
 
 
