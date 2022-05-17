@@ -773,32 +773,32 @@ ggsave(plot = plot_sex, filename = "figure4_ITS_sex.png", height = 15, width = 2
 
 #### Alternative plot 
 ```{r, include=FALSE}
-plot_annotations_sex_df2 <- data.frame(term=c("difference_solpe","difference_solpe"),
-                                       sex=c("female", "male"),
-                                       label=c("Coefficient difference: 0.77 (pvalue: <0.01)", "Coefficient difference: -0.77 (pvalue: 0.005)"),
-                                       plotsLabel=c("Female", "Male"))
+#plot_annotations_sex_df2 <- data.frame(term=c("difference_solpe","difference_solpe"),
+#                                       sex=c("female", "male"),
+#                                       label=c("Coefficient difference: 0.77 (pvalue: <0.01)", "Coefficient difference: -0.77 (pvalue: 0.005)"),
+#                                       plotsLabel=c("Female", "Male"))
 
 
 bootstrapped_fitted_sex %>% 
+  filter( sex == "female") %>%
   mutate(period = recode_factor(period, "before_pandemic" = "Before pandemic onset", "during_pandemic" = "Since pandemic onset")) %>% 
   ggplot(aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
   facet_wrap("sex",
-             #scales = "free_y",
              labeller = label_wrap_gen(width = 35,multi_line = TRUE)) +
   geom_line(aes(color = period),
             alpha = 0.03) +
-  geom_line(data = quantile_bootstrapped_fitted_sex,
+  geom_line(data = quantile_bootstrapped_fitted_sex[ quantile_bootstrapped_fitted_sex$sex =="female", ],
             aes(y = value, group = interaction(quantiles, period)),
             linetype = "dashed") +
-  geom_line(data = quantile_bootstrapped_fitted_sex[quantile_bootstrapped_fitted_sex$quantiles == "50%", ],
+  geom_line(data = quantile_bootstrapped_fitted_sex[quantile_bootstrapped_fitted_sex$sex =="female" & quantile_bootstrapped_fitted_sex$quantiles == "50%", ],
             aes(y = value, group = period)) +
-  geom_point(data = patients_hospitalized_agg_sex_total,
+  geom_point(data = patients_hospitalized_agg_sex_total[ patients_hospitalized_agg_sex_total$sex =="female",],
              aes(y = percentage, group=NULL),
              alpha = 0.5) +
   scale_colour_manual(values = cbPalette) +
   scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
   guides(color = guide_legend(override.aes = list(alpha = 1))) +
-  geom_label(data = plot_annotations_sex_df2, 
+  geom_label(data = plot_annotations_sex_df, 
              aes(label=label), 
             x = -Inf,
             y = +Inf,
@@ -864,6 +864,13 @@ perc_disorder_group_total <- perc_disorder_group_complete %>%
     filter(disorder_group %in% disorders_to_select)
   
 perc_disorder_group_total$disorder_group <- gsub( "Feeding and Eating Disorders", "Eating Disorders", perc_disorder_group_total$disorder_group)
+
+disorders_to_select <- c(
+  "Anxiety Disorders", 
+  "Depressive Disorders", 
+  "Eating Disorders", 
+  "Suicide or Self-Injury"
+)
 ```
 
 
