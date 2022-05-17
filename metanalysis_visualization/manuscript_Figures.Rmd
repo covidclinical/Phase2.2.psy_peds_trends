@@ -230,6 +230,29 @@ dg_table1_all <- table1_all %>%
           during_pandemic_count = paste0( during_pandemic_count, " (", during_pandemic_perc, ")"))%>%
   select( Category, name, before_pandemic_count, during_pandemic_count )
 
+### estimate thhe pvalue for the diosrder groups (chi.sq test)
+disorder_group_table_all <- table1_all %>%
+  filter( Category == "Disorder groups" & name != "Total") %>%
+  mutate( before_counts = sapply(strsplit( before_pandemic, " "), '[', 1), 
+          during_counts = sapply(strsplit( during_pandemic, " "), '[', 1)) %>%
+  group_by( name ) %>%
+  summarise( before_pandemic_yes = sum( as.numeric( before_counts ), na.rm = TRUE), 
+             during_pandemic_yes = sum( as.numeric( during_counts ), na.rm = TRUE), 
+             before_pandemic_no  = 9696-before_pandemic_yes, 
+             during_pandemic_no = 10561- during_pandemic_yes , 
+             p_value = chisq.test( matrix( c(before_pandemic_yes, during_pandemic_yes, before_pandemic_no,  during_pandemic_no), ncol = 2, nrow = 2))$p.value, 
+             p_value_formated = format.pval(p_value, digits=3, eps=0.001))
+
+
+p_value_breaks = c(-Inf, 0, 0.0001, 0.001, 0.01, 0.05, Inf)
+p_value_labels = c("", "****", "***", "**", "*", "")
+
+setDT(disorder_group_table_all)[, PVAL := cut(p_value,
+                                 breaks = p_value_breaks,
+                                 right = FALSE,
+                                 labels = p_value_labels)]
+#####
+
 table1 <- rbind( sex_table1_all, age_table1_all, median_table1_all, mean_table1_all, dg_table1_all )
 
 table1 %>%
