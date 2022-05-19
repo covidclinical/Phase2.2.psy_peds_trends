@@ -21,7 +21,7 @@ paket <- function(pak){
     install.packages(new_pak, dependencies = TRUE,repos="https://cloud.r-project.org/")
   sapply(pak, library, character.only = TRUE)
 }
-listOfPackages <- c("tidyverse", "tidyr","devtools","RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis", "UpSetR", "scales", "EHRtemporalVariability", "plotly", "gmodels", "flextable")
+listOfPackages <- c("plotly", "tidyverse", "tidyr","devtools","RColorBrewer", "knitr", "kableExtra", "tsModel", "gridExtra", "dplyr", "metafor", "meta", "viridis", "UpSetR", "scales", "EHRtemporalVariability", "gmodels", "flextable", "data.table")
 paket(listOfPackages)
 
 if (! "ComplexHeatmap" %in% rownames(installed.packages())) install_github("jokergoo/ComplexHeatmap")
@@ -133,6 +133,13 @@ ratios_patients_with_without_psy_all <- left_join(ratios_patients_with_without_p
 
 ### Table 1
 
+```{r}
+total_unique_encounters <- patient_count_psy_period_psy_all %>% 
+  group_by(period) %>% 
+  summarise(total_unique_encounters = sum(count_no_psy_patients + count_psy_patients))
+```
+
+
 ```{r Extracting age information}
 
 age_table1_all <- table1_all %>% 
@@ -171,7 +178,7 @@ age_table1_all <- table1_all %>%
 ```{r}
 median_table1_all <- length_hospitalisation_values_all %>% 
   group_by(period) %>% 
-  summarise(median_hospitalisation = median(len_hospitalisation)) %>% 
+  summarise(median_hospitalisation = paste0(median(len_hospitalisation), " (", IQR(len_hospitalisation), ")")) %>% 
   pivot_wider(names_from = period, values_from = median_hospitalisation) %>% 
   mutate(Category = "Length of stays", 
          name = "median") %>% 
@@ -341,8 +348,9 @@ bootstrap_pvalue_calculation <- function(df, ...) {
   z <- unique(df[["observed_slope_coefficient"]]) / sd(df[["bootstrapped_slope_coefficient"]])
   pvalue_coeff_interaction <- round(pnorm(abs(z), lower.tail = FALSE) * 2, 3)
   pvalue_coeff_interaction <- ifelse( pvalue_coeff_interaction >= 0.01, round( pvalue_coeff_interaction, 2), pvalue_coeff_interaction)
-  data.frame("pvalue" = pvalue_coeff_interaction,
-       "observed_slope_coefficient" = round(unique(df[["observed_slope_coefficient"]]), 2)
+  data.frame(
+    "pvalue" = pvalue_coeff_interaction,
+    "observed_slope_coefficient" = round(unique(df[["observed_slope_coefficient"]]), 2)
   )
 }
 ```
@@ -736,7 +744,7 @@ plot_annotations_sex_df <- pvalues_boot_sex %>%
 plot_sex <- ggplot(bootstrapped_fitted_sex,
        aes(x = time_p, y = predicted/100, group = interaction(iteration, period, sex))) +
   geom_line(aes(color = interaction(period, sex)),
-            alpha = 0.02) +
+            alpha = 0.005) +
   geom_line(data = quantile_bootstrapped_fitted_sex,
             aes(y = value/100, group = interaction(quantiles, period, sex)),
             linetype = "dashed") +
