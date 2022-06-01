@@ -386,9 +386,9 @@ bootstrapped_coefficients_all <- lapply(bootstrapped, `[[`, 1) %>%
 pvalues_boot <- bootstrapped_coefficients_all %>% 
   group_by(siteid, term) %>% 
   group_modify( bootstrap_pvalue_calculation, .keep = TRUE) %>% 
-  mutate(label = paste0("Coefficient difference: ",
+  mutate(label = paste0("",
                         observed_slope_coefficient,
-                        " (pvalue: ",
+                        "% (p-value: ",
                         format.pval(pvalue, digits = 2, eps = 10**-2), ")")
   )
 
@@ -679,9 +679,9 @@ df_coefficients_boot_sex <- bootstrapped_coefficients_sex %>%
 pvalues_boot_sex <- bootstrapped_coefficients_sex %>% 
   group_by(sex, term) %>% 
   group_modify( bootstrap_pvalue_calculation, .keep = TRUE) %>% 
-  mutate(label = paste0("Coefficient difference: ",
+  mutate(label = paste0("",
                         observed_slope_coefficient,
-                        " (pvalue: ",
+                        "% (p-value: ",
                         format.pval(pvalue, digits = 3, eps = 10**-3), ")")
   )
 
@@ -763,7 +763,8 @@ bootstrapped_fitted_sex %>%
   geom_point(data = patients_hospitalized_agg_sex_total[ patients_hospitalized_agg_sex_total$sex =="female",],
              aes(y = percentage, group=NULL),
              alpha = 0.5) +
-  scale_colour_manual(values = wesanderson::wes_palette("GrandBudapest1", 3)) +
+  #scale_colour_manual(values = wesanderson::wes_palette("GrandBudapest1", 3)) +
+  scale_colour_manual(values = cbPalette) +
   scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
   guides(color = guide_legend(override.aes = list(alpha = 1))) +
   geom_label(data = plot_annotations_sex_df, 
@@ -960,9 +961,9 @@ bootstrapped_coefficients_disorders <- lapply(bootstrapped_disorders, `[[`, 1) %
 pvalues_boot_disorders <- bootstrapped_coefficients_disorders %>% 
   group_by(disorder_group, term) %>% 
   group_modify( bootstrap_pvalue_calculation, .keep = TRUE) %>% 
-  mutate(label = paste0("Coefficient difference: ",
+  mutate(label = paste0("",
                         observed_slope_coefficient,
-                        " (pvalue: ",
+                        "% (p-value: ",
                         format.pval(pvalue, digits = 2, eps = 10**-2), ")")
   )
 
@@ -1115,6 +1116,7 @@ fig = plotDataTemporalMap(tempVariabilityInput, absolute = TRUE)
 fig <- fig %>%
   layout(
     title = " ",
+      yaxis = list(autorange="reversed"), 
     xaxis = list(
       type = 'date',
       tickformat = "%b-%y", 
@@ -1123,6 +1125,7 @@ fig <- fig %>%
     shapes = list(vline(as.Date("2020-03-15"))))
 
 fig
+
 #plotly::orca(fig, file = "figure_supp3_counts_disorder.png")
 ```
 
@@ -1154,7 +1157,7 @@ numberOfCodesPerDisorderGroup %>%
   geom_bar( stat = "identity") +
   scale_fill_manual("Country of each site", values = c("USA" = "navy", "France" = "orange")) +
   facet_wrap( ~ disorder_group, scales = "free" ) +
-  labs(x ="site identifier", y = "ICD dictionary (number of ICD codes)") +
+  labs(x ="site identifier", y = "Number of ICD-10 codes") +
   scale_x_discrete(limits = positions) +
   theme(axis.text.x=element_text(angle=45,hjust=1, size = 6), 
         strip.text = element_text(size = 7), 
@@ -1180,8 +1183,8 @@ counts <- count_icd_all %>%
   select( plotsLabel, time_p, time, month_year, count_psy_patients = count_psy, total_cases = count_icd )
 
 counts2 <- reshape2::melt(counts ,  id.vars = c('plotsLabel', 'time_p', 'time','month_year'), variable.name = 'group')
-counts2$group <- gsub("count_psy_patients", "patients with psychiatric conditions", counts2$group )
-counts2$group <- gsub("total_cases", "total number of patients", counts2$group )
+counts2$group <- gsub("count_psy_patients", "Patients with mental health disorder", counts2$group )
+counts2$group <- gsub("total_cases", "Total number of patients", counts2$group )
 
 
 counts_plot <- counts2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
@@ -1210,9 +1213,8 @@ counts_agg <- counts %>%
   select( time_p, time, month_year, psy_cases, total_cases)
 
 counts_agg2 <- reshape2::melt(counts_agg ,  id.vars = c('time_p', 'time','month_year'), variable.name = 'group')
-counts_agg2$group <- gsub("count_psy_patients", "patients with psychiatric conditions", counts_agg2$group )
-counts_agg2$group <- gsub("total_cases", "total number of patients", counts_agg2$group )
-
+counts_agg2$group <- gsub("count_psy_patients", "Patients with mental health disorder", counts_agg2$group )
+counts_agg2$group <- gsub("total_cases", "Total number of patients", counts_agg2$group )
 
 counts_agg2plot <- counts_agg2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= group )) +
   geom_point( aes( shape= group, color = group )) +
