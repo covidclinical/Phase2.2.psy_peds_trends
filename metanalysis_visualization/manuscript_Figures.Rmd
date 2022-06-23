@@ -397,7 +397,7 @@ ci_boot <- bootstrapped_coefficients_all %>%
   summarise("2.5%" = quantile(bootstrapped_slope_coefficient, 0.025), 
             "50%" = quantile(bootstrapped_slope_coefficient, 0.50), 
             "97.5%" = quantile(bootstrapped_slope_coefficient, 0.975)) %>% 
-  mutate(ci = paste0("[95% CI ", as.character(round(`2.5%`, 2)), "–", as.character(round(`97.5%`, 2)), "]"))
+  mutate(ci = paste0("(95% CI ", as.character(format(round(`2.5%`, 2)), nsmall =2), "–", as.character(format(round(`97.5%`, 2)), nsmall=2), ")"))
 
   
 bootstrapped_fitted_all <- lapply(bootstrapped, `[[`, 2) %>% 
@@ -426,7 +426,8 @@ pvalues_boot_complete <- pvalues_boot %>%
   inner_join(ci_boot) %>% 
   inner_join(country_map) %>% 
   arrange(plotsLabel) %>% 
-  mutate(string = paste0(observed_slope_coefficient, "% ", ci, " (p-value ", format.pval(pvalue, digits = 3, eps = 10**-2), ")")) %>% 
+  #mutate(string = paste0(observed_slope_coefficient, "% ", ci, " (p-value ", format.pval(pvalue, digits = 3, eps = 10**-2), ")")) %>%
+  mutate(string = paste0(observed_slope_coefficient, "% ", ci)) %>%
   select(plotsLabel, string) %>% 
   pivot_wider(names_from = term, values_from = string) %>% 
   select(plotsLabel, before_slope, during_slope, difference_slope) %>% 
@@ -453,8 +454,12 @@ plot_annotations_df_primary <- pvalues_boot_complete %>%
 ```
 
 ```{r}
-ggplot(bootstrapped_fitted_all,
-       aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
+bootstrapped_fitted_all %>%
+  mutate( time_p = as.character(time_p),
+                  time_p = if_else(time_p == '2020-03-01', as.character('2020-03-15'), time_p),
+                  time_p = if_else(time_p == '2020-04-01', as.character('2020-03-16'), time_p),
+                  time_p = as.Date(time_p)) %>%
+  ggplot(aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
   facet_wrap("plotsLabel", scales = "free_y", labeller = label_wrap_gen(width = 35,multi_line = TRUE)) +
   geom_line(aes(color = period),
             alpha = 0.03) +
@@ -778,7 +783,11 @@ plot_annotations_sex_df <- pvalues_boot_sex_complete %>%
 
 bootstrapped_fitted_sex %>% 
   filter( sex == "female") %>%
-  mutate(period = recode_factor(period, "before_pandemic" = "Before pandemic onset", "during_pandemic" = "Since pandemic onset")) %>% 
+  mutate(period = recode_factor(period, "before_pandemic" = "Before pandemic onset", "during_pandemic" = "Since pandemic onset"), 
+                  time_p = as.character(time_p),
+                  time_p = if_else(time_p == '2020-03-01', as.character('2020-03-15'), time_p),
+                  time_p = if_else(time_p == '2020-04-01', as.character('2020-03-16'), time_p),
+                  time_p = as.Date(time_p)) %>% 
   ggplot(aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
   facet_wrap("sex",
              labeller = labeller(sex = c("female" = "Female proportion "))) +
