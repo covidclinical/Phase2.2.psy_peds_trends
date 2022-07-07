@@ -827,7 +827,8 @@ bootstrapped_fitted_sex %>%
                   time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
                   time_p = as.Date(time_p)),
             aes(y = value, group = period)) +
-  geom_point(data = patients_hospitalized_agg_sex_total[ patients_hospitalized_agg_sex_total$sex =="female",],
+  geom_point(data = patients_hospitalized_agg_sex_total[ patients_hospitalized_agg_sex_total$sex =="female",]  
+             %>% mutate( time_p = as.Date(time_p)+ 15),
              aes(y = percentage, group=NULL),
              alpha = 0.5) +
   #scale_colour_manual(values = wesanderson::wes_palette("GrandBudapest1", 3)) +
@@ -1069,7 +1070,7 @@ pvalues_boot_disorders_complete <- pvalues_boot_disorders %>%
   inner_join(ci_boot_disorders) %>% 
   arrange(disorder_group) %>% 
   #mutate(string = paste0(observed_slope_coefficient, " ", ci, " (", format.pval(pvalue, digits = 3, eps = 10**-2), ")")) %>% 
-  mutate(string = paste0(observed_slope_coefficient, " ", ci)) %>% 
+  mutate(string = paste0(observed_slope_coefficient, "% ", ci)) %>% 
   select(disorder_group, string) %>% 
   pivot_wider(names_from = term, values_from = string) %>% 
   select(disorder_group, before_slope, during_slope, difference_slope) %>% 
@@ -1133,11 +1134,11 @@ bootstrapped_fitted_disorder %>%
                   time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
                   time_p = as.Date(time_p)),
             aes(y = value, group = period)) +
-  geom_point(data = filter(perc_disorder_group_total,
+  geom_point(data = filter(perc_disorder_group_total  %>% mutate( time_p = as.Date(time_p)+ 15),
                            disorder_group %in% disorders_to_select),
              aes(y = percentage, group=NULL),
              alpha = 0.5) +
-  scale_colour_manual(values = cbPalette) +
+  scale_colour_manual(values = cbPalette, labels = c("pre-pandemic", "pandemic"), name = "Period") +
   geom_vline(xintercept = as.Date("2020-04-01"), linetype = 6)+
   scale_x_date(breaks = "1 month", labels=date_format("%b-%y"), expand=c(0.03,0))+
   guides(color = guide_legend(override.aes = list(alpha = 1))) +
