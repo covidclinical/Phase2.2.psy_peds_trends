@@ -136,7 +136,15 @@ ratios_patients_with_without_psy_all <- left_join(ratios_patients_with_without_p
 ```{r}
 total_unique_encounters <- patient_count_psy_period_psy_all %>% 
   group_by(period) %>% 
-  summarise(total_unique_encounters = sum(count_no_psy_patients + count_psy_patients))
+  summarise(total_unique_encounters = sum(count_no_psy_patients + count_psy_patients), 
+            psy = sum(count_psy_patients),
+            percent_psy = round(psy * 100 / total_unique_encounters, 2),
+            no_psy = sum(count_no_psy_patients), 
+            percent_no_psy = round(no_psy * 100 / total_unique_encounters, 2)
+  )
+print(total_unique_encounters)
+print(chisq.test(total_unique_encounters[, c("psy", "no_psy")]))
+
 ```
 
 
@@ -172,6 +180,12 @@ age_table1_all <- table1_all %>%
   select(Category, name, before_pandemic, during_pandemic) %>% 
   rename(before_pandemic_count = before_pandemic, 
          during_pandemic_count = during_pandemic)
+```
+
+```{r}
+z_age <- (14.55 - 14.65) / sqrt(1.86^2/9696 + 1.79^2/11101)
+pvalue_age <- 2*pnorm(z_age)
+
 ```
 
 
