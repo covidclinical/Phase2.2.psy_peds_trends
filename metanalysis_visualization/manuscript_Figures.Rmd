@@ -69,7 +69,6 @@ for( i in 1:length( outputFiles )){
   print(outputFiles[i])
   load(paste0( outputDir, outputFiles[i]))
   if( i == 1 ){
-    count_icd_all <- count_icd
     patients_hospitalized_agg_sex_perc_all <- patients_hospitalized_agg_sex_perc
     patient_count_psy_period_psy_all <- patient_count_psy_period_psy
     perc_disorder_group_all <- perc_disorder_group
@@ -79,7 +78,6 @@ for( i in 1:length( outputFiles )){
       select( disorder_group, description, concept_code, distinct_patients, distinct_observations, siteid )
     table1_all <- table1
   } else {
-    count_icd_all <- rbind(count_icd_all, count_icd)
     perc_disorder_group_all <- rbind(perc_disorder_group_all, perc_disorder_group)
     patients_hospitalized_agg_sex_perc_all <- rbind( patients_hospitalized_agg_sex_perc_all, patients_hospitalized_agg_sex_perc)
     mental_codes_qc_output_all <- rbind( mental_codes_qc_output_all,
@@ -93,7 +91,7 @@ for( i in 1:length( outputFiles )){
       rbind(length_hospitalisation_values_all, length_hospitalisation_values),
       error = function(e) length_hospitalisation_values_all
     )
-    rm(count_icd,patients_hospitalized_agg_sex_perc,patient_count_psy_period_psy,
+    rm(patients_hospitalized_agg_sex_perc,patient_count_psy_period_psy,
        perc_disorder_group,ratios_patients_with_without_psy,
        patient_count_psy_period_psy_clear, mental_codes_qc_output, table1, length_hospitalisation_values)
   }
@@ -112,18 +110,22 @@ filter_by_dates <- function(df_,
   df_[df_[["time_p"]] <= end_date_plots & df_[["time_p"]] >= start_date_plots, ]
 }
 
-
-count_icd_all <- filter_by_dates(count_icd_all, start_date_plots, end_date_plots)
 patient_count_psy_period_psy_all <- filter_by_dates(patient_count_psy_period_psy_all, start_date_plots, end_date_plots)
 patients_hospitalized_agg_sex_perc_all <- filter_by_dates(patients_hospitalized_agg_sex_perc_all, start_date_plots, end_date_plots)
 perc_disorder_group_all <- filter_by_dates(perc_disorder_group_all, start_date_plots, end_date_plots)
 ratios_patients_with_without_psy_all <- filter_by_dates(ratios_patients_with_without_psy_all, start_date_plots, end_date_plots)
 ```
 
+```{r}
+patient_count_psy_period_psy_all <- patient_count_psy_period_psy_all %>% 
+  mutate(count_icd = count_no_psy_patients + count_psy_patients)
+
+```
+
+
 # Add site complete name information
 
 ```{r}
-count_icd_all <- left_join(count_icd_all, country_map, on = "site_id")
 patient_count_psy_period_psy_all <- left_join(patient_count_psy_period_psy_all, country_map, on = "site_id")
 patients_hospitalized_agg_sex_perc_all <- left_join(patients_hospitalized_agg_sex_perc_all, country_map, on = "site_id")
 perc_disorder_group_all <- left_join(perc_disorder_group_all, country_map, on = "site_id")
@@ -192,7 +194,10 @@ pvalue_age <- 2*pnorm(z_age)
 ```{r}
 median_table1_all <- length_hospitalisation_values_all %>% 
   group_by(period) %>% 
-  summarise(median_hospitalisation = paste0(median(len_hospitalisation), " (", IQR(len_hospitalisation), ")")) %>% 
+  summarise(median_hospitalisation = paste0(median(len_hospitalisation),
+                                            " (",
+                                            IQR(len_hospitalisation), ")"), 
+            .groups = "drop") %>% 
   pivot_wider(names_from = period, values_from = median_hospitalisation) %>% 
   mutate(Category = "Length of stays", 
          name = "median") %>% 
@@ -205,8 +210,12 @@ median_table1_all$during_pandemic_count <- as.character(median_table1_all$during
 mean_table1_all <- length_hospitalisation_values_all %>% 
   group_by(period) %>% 
   summarise(mean_hospitalisation = round( mean(len_hospitalisation), 2), 
-            conf_interval = gmodels::ci( len_hospitalisation ), 
-            ci_length = paste0("[", round(as.numeric(conf_interval[2]), 2), " , ",  round(as.numeric(conf_interval[3]),2), "]")) %>%
+            conf_interval = gmodels::ci( len_hospitalisation), 
+            ci_length = paste0("[", round(as.numeric(conf_interval[2]), 2),
+                               " , ",
+                               round(as.numeric(conf_interval[3]),2), "]"), 
+            .groups = "drop"
+            ) %>%
   mutate(mean_hospitalisation = paste0(as.character(mean_hospitalisation), as.character(ci_length))) %>% 
   select(period, mean_hospitalisation) %>%
   unique() %>%
@@ -316,7 +325,7 @@ observed_coefficients_df <- patient_count_psy_period_psy_all %>%
 
 ```{r}
 # Call function from another file : bootstrap.R
-bootstrap_size <- 10000
+bootstrap_size <- 100
 binom_proportion <- function(n, prob, size) {
   (rbinom(n, size, prob) / size) * 100
 }
@@ -374,17 +383,11 @@ bootstrap_pvalue_calculation <- function(df, ...) {
 #### Calculate bootstrap: primary analysis
 
 ```{r}
-# Get count_icd_all in the same format that patient_count_psy_period_psy_all, because first n last months missing ... 
-count_icd_all_boot <- count_icd_all %>% 
-  group_by(siteid) %>% # necessary to generate time correctly 
-  rename(percentage = percentage_psy) %>% 
-  mutate(month_year = format(time_p, "%m"),
-         time = seq_along(time_p))
-  
-bootstrapped <- count_icd_all_boot %>%
+
+bootstrapped <- patient_count_psy_period_psy_all %>%
   group_by(siteid) %>% 
   group_map( ~bootstrapping_slopes(.x, group_name = .y, bootstrap_size = bootstrap_size))
-names(bootstrapped) <- unique(count_icd_all_boot$siteid)
+names(bootstrapped) <- unique(patient_count_psy_period_psy_all$siteid)
 
 bootstrapped_coefficients_all <- lapply(bootstrapped, `[[`, 1) %>% 
   bind_rows() %>% 
@@ -419,10 +422,11 @@ bootstrapped_fitted_all <- lapply(bootstrapped, `[[`, 2) %>%
   left_join(country_map, by = "siteid")
 
 quantile_bootstrapped_fitted_all <- bootstrapped_fitted_all %>%
-  group_by(time_p, period, siteid) %>%
+  group_by(time_p, time, period, siteid) %>%
   summarise("2.5%" = quantile(predicted, 0.025),
             "50%" = median(predicted, 0.5),
-            "97.5%" = quantile(predicted, 0.975)) %>%
+            "97.5%" = quantile(predicted, 0.975), 
+            .groups = "drop") %>%
   pivot_longer(cols = c("2.5%", "50%", "97.5%"),
                names_to = "quantiles") %>% 
   left_join(country_map, by = "siteid")
@@ -437,14 +441,14 @@ quantile_bootstrapped_fitted_all <- bootstrapped_fitted_all %>%
 
 ```{r}
 pvalues_boot_complete <- pvalues_boot %>% 
-  inner_join(ci_boot) %>% 
-  inner_join(country_map) %>% 
+  inner_join(ci_boot, by = c("siteid", "term")) %>% 
+  inner_join(country_map, by = c("siteid")) %>% 
   arrange(plotsLabel) %>% 
   #mutate(string = paste0(observed_slope_coefficient, "% ", ci, " (p-value ", format.pval(pvalue, digits = 3, eps = 10**-2), ")")) %>%
   mutate(string = paste0(observed_slope_coefficient, "% ", ci)) %>%
-  select(plotsLabel, string) %>% 
+  select(siteid, term, plotsLabel, string) %>% 
   pivot_wider(names_from = term, values_from = string) %>% 
-  select(plotsLabel, before_slope, during_slope, difference_slope) %>% 
+  select(siteid, plotsLabel, before_slope, during_slope, difference_slope) %>% 
   rename("Before pandemic trend [95% CI] (p-value)" = before_slope,
         "Since pandemic trend [95% CI] (p-value)" = during_slope,
         "Difference before/since pandemic trend [95% CI] (p-value)" = difference_slope)
@@ -455,17 +459,85 @@ pvalues_boot_complete <- pvalues_boot %>%
 
 
 ```{r}
-#plot_annotations_df_primary <- pvalues_boot %>%
-#  select(siteid, label) %>% 
-#  filter(term == "difference_slope") %>% 
-#  left_join(country_map)
-
 plot_annotations_df_primary <- pvalues_boot_complete %>%
   select( siteid, label = `Difference before/since pandemic trend [95% CI] (p-value)`, plotsLabel )%>% 
-  left_join(country_map)
-
-
+  left_join(country_map, by = c("siteid", "plotsLabel"))
 ```
+
+
+
+```{r, fig.width = 20, fig.height=14}
+bootstrapped_fitted_all %>%
+  # mutate( time = time + 0.5) %>% 
+  
+          # 
+          # ),
+          # time_p = as.character(time_p),
+          #         time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
+          #         time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
+          #         time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
+          #         time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
+          #         time_p = as.Date(time_p))%>%
+  ggplot(aes(x = time, y = predicted, group = interaction(iteration, period))) +
+  facet_wrap("plotsLabel", scales = "free_y", labeller = label_wrap_gen(width = 35,multi_line = TRUE), ncol = 2) +
+  geom_line(aes(color = period),
+            alpha = 0.03) +
+  geom_line(data = quantile_bootstrapped_fitted_all,
+            # %>% mutate(time_p = as.Date(time_p)+ 15,  time_p = as.character(time_p),
+            #       time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
+            #       time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
+            #       time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
+            #       time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
+            #       time_p = as.Date(time_p)),
+            aes(y = value, group = interaction(quantiles, period)),
+            linetype = "dashed") +
+  # geom_line(data = quantile_bootstrapped_fitted_all[quantile_bootstrapped_fitted_all$quantiles == "50%", ] 
+  #           %>% mutate(time_p = as.Date(time_p)+ 15, 
+  #                      time_p = as.character(time_p),
+  #                 time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
+  #                 time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
+  #                 time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
+  #                 time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
+  #                 time_p = as.Date(time_p)),
+  #           aes(y = value, group = period)) +
+  geom_point(data = patient_count_psy_period_psy_all,
+             # %>% mutate( time_p = as.Date(time_p)+ 15),
+             aes(y = percentage, group=NULL),
+             alpha = 0.5) +
+  scale_x_continuous(breaks = scales::breaks_width(1, offset = 0)) + 
+  geom_vline(xintercept = as.Date("2020-04-01"), linetype = 6)+
+  scale_x_date(breaks = "1 month", labels=date_format("%b %Y"), expand=c(0.03,0))+
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+  scale_colour_manual(values = cbPalette, labels = c("pre-pandemic", "pandemic"), name = "Period") +
+  geom_label(data = plot_annotations_df_primary, 
+             aes(label=label), 
+            x = -Inf,
+            y = +Inf,
+            hjust = 0,
+            vjust = 1,
+            size = 4,
+            inherit.aes = FALSE) +
+  labs(
+    #title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
+    #subtitle = "Parametric bootstrap estimation: (10000 iterations)",
+       x = "Calendar dates",
+       y = "Percentage",
+       color = "Period") +
+  theme(strip.text = element_text(size = 14),
+        axis.text.x=element_text(angle = 45, hjust=1, size = 8),
+        axis.text.y = element_text(size = 8), 
+        axis.title.x =element_blank(),
+        axis.title.y = element_text(size = 8),
+        panel.grid.minor.x = element_blank(), 
+        panel.grid.minor.y = element_blank(),
+        title = element_text(size = 14),
+        plot.subtitle = element_text(size = 12, face = "italic"), 
+        legend.position="bottom")
+
+# ggsave("figure1_boostrapped_all.png", height = 20, width = 25, units = "cm")
+```
+
+
 
 ```{r}
 bootstrapped_fitted_all %>%
@@ -1022,7 +1094,6 @@ observed_coefficients_df_disorder <- perc_disorder_group_total %>%
 #### Calculate bootstrap: disorders groups
 
 ```{r}
-# Get count_icd_all in the same format that patient_count_psy_period_psy_all, because first n last months missing ... 
 
 bootstrapped_disorders <- perc_disorder_group_total %>%
   group_by(disorder_group) %>% 
@@ -1300,10 +1371,8 @@ ggsave("figure_supp2_ICDdictionaryQC.png", height = 40, width = 45, units = "cm"
 ```{r}
 library(reshape2)
 
-counts <- count_icd_all %>%
-  mutate( time = seq_along(time_p),
-         month_year = format(time_p, "%m")) %>%
-  select( plotsLabel, time_p, time, month_year, count_psy_patients = count_psy, total_cases = count_icd )
+counts <- patient_count_psy_period_psy_all %>%
+  select( plotsLabel, time_p, time, month_year, count_psy_patients, total_cases = count_icd )
 
 counts2 <- reshape2::melt(counts ,  id.vars = c('plotsLabel', 'time_p', 'time','month_year'), variable.name = 'group')
 counts2$group <- gsub("count_psy_patients", "Patients with mental health disorder", counts2$group )
