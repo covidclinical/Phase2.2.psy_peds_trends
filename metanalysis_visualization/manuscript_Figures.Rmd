@@ -819,55 +819,49 @@ plot_annotations_sex_df <- pvalues_boot_sex_complete %>%
 
 
 ```{r }
-bootstrapped_fitted_sex %>% 
-  filter( sex == "female") %>%
-  ggplot(aes(x = time, y = predicted, group = interaction(iteration, period))) +
-  facet_wrap("sex",
-             labeller = labeller(sex = c("female" = "Female proportion "))) +
-  geom_line(aes(x = time + 0.5, color = period), alpha = 0.01) +
-  geom_line(aes(x = time + 0.5, 
-                y = value,
-                group = interaction(quantiles, period)),
-            data = filter(quantile_bootstrapped_fitted_sex, sex == "female" & quantiles %in% c("2.5%", "97.5%")),
+plot_sex <- ggplot(bootstrapped_fitted_sex,
+       aes(x = time_p, y = predicted/100, group = interaction(iteration, period, sex))) +
+  geom_line(aes(color = interaction(period, sex)),
+            alpha = 0.01) +
+  geom_line(data = quantile_bootstrapped_fitted_sex,
+            aes(y = value/100, group = interaction(quantiles, period, sex)),
             linetype = "dashed") +
-  geom_line(aes(x = time + 0.5, 
-                y = value,
-                group = period),
-            data = filter(quantile_bootstrapped_fitted_sex, sex == "female" & quantiles == "50%")) +
-  geom_point(aes(x = time + 0.5, y = percentage, group = NULL),
-             data = filter(patients_hospitalized_agg_sex_total, sex == "female"),
-             alpha = 0.5) +
-  scale_x_continuous(breaks = breaks_width(1),
-                     labels = time_to_time_p, 
-                     limits = c(2, 29),
-                     expand = c(0.03,0)) + 
-  geom_vline(xintercept = 16, linetype = 6 ) +
-  scale_colour_manual(values = cbPalette) +
-  guides(color = guide_legend(override.aes = list(alpha = 1))) +
-  scale_colour_manual(values = cbPalette, labels = c("pre-pandemic", "pandemic"), name = "Period") +
-  geom_label(data = plot_annotations_sex_df, 
-             aes(label=label), 
-             x = -Inf,
-             y = +Inf,
-             hjust = 0,
-             vjust = 1,
-             size = 4,
-             inherit.aes = FALSE) +
-  labs(x = "Calendar dates",
-       y = "Percentage",
-       color = "Period") +
+  geom_line(data = quantile_bootstrapped_fitted_sex[quantile_bootstrapped_fitted_sex$quantiles == "50%", ],
+            aes(y = value/100, group = interaction(period, sex))) +
+  geom_point(data = patients_hospitalized_agg_sex_total,
+             aes(y = percentage/100, group=sex),
+             alpha = 1) +
+  scale_color_manual(labels = c("Female", "Male", "", ""),
+                     values = c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C")) +
+  scale_x_date(breaks = "1 month", labels=date_format("%b %Y"), expand=c(0.03,0))+
+  guides(colour = guide_legend(
+    override.aes = list(alpha = 1,
+                        colour = c('#1F78B4', '#33A02C', NA, NA))) 
+  ) +
+  annotate("label",
+           x = as.Date('2019-10-01'),
+           y = 0.69,
+           label = "Female proportion [Coefficient difference: 0.77 (pvalue: <0.01)]", 
+           fill = "#A6CEE3") +
+  annotate("label",
+           x = as.Date('2019-10-01'),
+           y = 0.3,
+           label = "Male proportion [Coefficient difference: -0.77 (pvalue: 0.005)]", 
+           fill = "#B2DF8A") +
+  labs(
+       x = "Calendar dates",
+       y = "Sex proportion",
+       color = "Sex") +
+  ylim(0.25, 0.75) + 
   theme(strip.text = element_text(size = 10),
         axis.text.x=element_text(angle = 45, hjust=1, size = 10),
         axis.text.y = element_text(size = 10),
-        axis.title.x =element_blank(),
+        axis.title.x = element_text(size = 10),
         axis.title.y = element_text(size = 10),
-         panel.grid.minor.x = element_blank(), 
-        panel.grid.minor.y = element_blank(),
         title = element_text(size = 14), 
-        plot.subtitle = element_text(size = 12, face = "italic"),
-        legend.position = "bottom") 
+        plot.subtitle = element_text(size = 12, face = "italic"))
 
-ggsave("figure4_boostrapped_sex.png", height = 15, width = 20, units = "cm")
+ggsave(plot = plot_sex, filename = "figure4_ITS_sex.png", height = 15, width = 20, units = "cm")
 ```
 
 ### Alternative plot
