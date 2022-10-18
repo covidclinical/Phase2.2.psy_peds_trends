@@ -117,9 +117,24 @@ ratios_patients_with_without_psy_all <- filter_by_dates(ratios_patients_with_wit
 ```
 
 ```{r}
+# To be able to have one single reference for the mapping between periods, months and months labels
+time_timep_df <- distinct(patient_count_psy_period_psy_all[, c("time", "time_p")])
+time_timep_list <- time_timep_df[["time_p"]]
+names(time_timep_list) <- as.character(time_timep_df[["time"]])
+time_timep_list[["29"]] <- as.Date("2021-05-01")
+```
+
+
+```{r}
 patient_count_psy_period_psy_all <- patient_count_psy_period_psy_all %>% 
   mutate(count_icd = count_no_psy_patients + count_psy_patients)
-
+patients_hospitalized_agg_sex_perc_all <- left_join(
+  patients_hospitalized_agg_sex_perc_all, 
+  time_timep_df, 
+  by = c("time_p"))
+perc_disorder_group_all <- left_join(perc_disorder_group_all, 
+                                     time_timep_df, 
+                                     by = c("time_p"))
 ```
 
 
@@ -130,7 +145,6 @@ patient_count_psy_period_psy_all <- left_join(patient_count_psy_period_psy_all, 
 patients_hospitalized_agg_sex_perc_all <- left_join(patients_hospitalized_agg_sex_perc_all, country_map, on = "site_id")
 perc_disorder_group_all <- left_join(perc_disorder_group_all, country_map, on = "site_id")
 ratios_patients_with_without_psy_all <- left_join(ratios_patients_with_without_psy_all, country_map, on = "site_id")
-
 ```
 
 ### Table 1
@@ -324,8 +338,7 @@ observed_coefficients_df <- patient_count_psy_period_psy_all %>%
 ### Define bootstrap functions 
 
 ```{r}
-# Call function from another file : bootstrap.R
-bootstrap_size <- 100
+bootstrap_size <- 10000
 binom_proportion <- function(n, prob, size) {
   (rbinom(n, size, prob) / size) * 100
 }
@@ -345,6 +358,7 @@ bootstrapping_slopes <- function(df,
   for (iteration in 1:bootstrap_size) {
     df_iteration <- data.frame(period = df$period,
                                time = df$time,
+                               time_p = df$time_p,
                                percentage = bootstrapped_timepoints[iteration, ])
     ts_linear_percent <- lm(as.formula(paste0(percentage, "~ period * time")), df_iteration)
     linear_model <- broom::tidy(ts_linear_percent) %>%
@@ -352,8 +366,15 @@ bootstrapping_slopes <- function(df,
     coefficients <- linear_model$estimate
     names(coefficients) <- linear_model$term
     bootstrapped_coefficients_list[[iteration]] <- coefficients
-    df_iteration$predicted <- predict(ts_linear_percent)
-    df_iteration$time_p <- df$time_p
+    # To be able to fill the gap in the subsequent graphs
+    df_extended_prediction <- data.frame(
+      period = c("before_pandemic", "before_pandemic", "during_pandemic", "during_pandemic"), 
+      time = c(1.5, 15.5, 15.5, 28.5), 
+      time_p = NA,
+      percentage = NA
+    )
+    df_iteration <- bind_rows(df_iteration, df_extended_prediction)
+    df_iteration$predicted <- predict(ts_linear_percent, newdata = df_iteration)
     bootstrapped_sample_list[[iteration]] <- df_iteration
   }
   bootstrapped_fitted_df <- bind_rows(bootstrapped_sample_list, .id = "iteration") %>%
@@ -435,7 +456,6 @@ quantile_bootstrapped_fitted_all <- bootstrapped_fitted_all %>%
 ```
 
 
-
 ## Table with bootstrapped coefficients, and pvalues
 
 
@@ -464,65 +484,46 @@ plot_annotations_df_primary <- pvalues_boot_complete %>%
   left_join(country_map, by = c("siteid", "plotsLabel"))
 ```
 
+```{r}
+# Function to change x-axis labels in graphs
+time_to_time_p <- function(break_ticks) {
+  break_ticks <- as.character(break_ticks)
+  sapply(break_ticks, function(break_tick) {
+   if (is.na(break_tick) | !break_tick %in% names(time_timep_list)) {
+     return(as.Date(NA_character_))
+   } else {
+     time_timep_list[[break_tick]]
+   }
+  }) %>%
+    as.Date(origin = "1970/01/01") %>% 
+    format(format = "%b %Y", tz = "UTC")
+}
+
+```
 
 
 ```{r, fig.width = 20, fig.height=14}
 bootstrapped_fitted_all %>%
-  # mutate( time = time + 0.5) %>% 
-  
-          # 
-          # ),
-          # time_p = as.character(time_p),
-          #         time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-          #         time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-          #         time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-          #         time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-          #         time_p = as.Date(time_p))%>%
   ggplot(aes(x = time, y = predicted, group = interaction(iteration, period))) +
   facet_wrap("plotsLabel", scales = "free_y", labeller = label_wrap_gen(width = 35,multi_line = TRUE), ncol = 2) +
-  geom_line(aes(color = period),
-            alpha = 0.03) +
-  geom_line(data = quantile_bootstrapped_fitted_all,
-            # %>% mutate(time_p = as.Date(time_p)+ 15,  time_p = as.character(time_p),
-            #       time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-            #       time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-            #       time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-            #       time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-            #       time_p = as.Date(time_p)),
-            aes(y = value, group = interaction(quantiles, period)),
+  geom_line(aes(x = time + 0.5, color = period), alpha = 0.03) +
+  geom_line(aes(x = time + 0.5, 
+                y = value,
+                group = interaction(quantiles, period)),
+            data = filter(quantile_bootstrapped_fitted_all, quantiles %in% c("2.5%", "97.5%")),
             linetype = "dashed") +
-  # geom_line(data = quantile_bootstrapped_fitted_all[quantile_bootstrapped_fitted_all$quantiles == "50%", ] 
-  #           %>% mutate(time_p = as.Date(time_p)+ 15, 
-  #                      time_p = as.character(time_p),
-  #                 time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-  #                 time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-  #                 time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-  #                 time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-  #                 time_p = as.Date(time_p)),
-  #           aes(y = value, group = period)) +
-  geom_point(data = patient_count_psy_period_psy_all,
-             # %>% mutate( time_p = as.Date(time_p)+ 15),
-             aes(y = percentage, group=NULL),
+  geom_line(aes(x = time + 0.5, 
+                y = value,
+                group = period),
+            data = filter(quantile_bootstrapped_fitted_all, quantiles == "50%")) +
+  geom_point(aes(x = time + 0.5, y = percentage, group = NULL),
+             data = patient_count_psy_period_psy_all,
              alpha = 0.5) +
-  scale_x_continuous(breaks = scales::breaks_width(1, offset = 0)) + 
-  geom_vline(xintercept = as.Date("2020-04-01"), linetype = 6)+
-  scale_x_date(breaks = "1 month", labels=date_format("%b %Y"), expand=c(0.03,0))+
-  guides(color = guide_legend(override.aes = list(alpha = 1))) +
-  scale_colour_manual(values = cbPalette, labels = c("pre-pandemic", "pandemic"), name = "Period") +
-  geom_label(data = plot_annotations_df_primary, 
-             aes(label=label), 
-            x = -Inf,
-            y = +Inf,
-            hjust = 0,
-            vjust = 1,
-            size = 4,
-            inherit.aes = FALSE) +
-  labs(
-    #title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
-    #subtitle = "Parametric bootstrap estimation: (10000 iterations)",
-       x = "Calendar dates",
-       y = "Percentage",
-       color = "Period") +
+  scale_x_continuous(breaks = breaks_width(1),
+                     labels = time_to_time_p, 
+                     limits = c(2, 29),
+                     expand = c(0.03,0)) + 
+  geom_vline(xintercept = 16, linetype = 6 ) +
   theme(strip.text = element_text(size = 14),
         axis.text.x=element_text(angle = 45, hjust=1, size = 8),
         axis.text.y = element_text(size = 8), 
@@ -532,78 +533,26 @@ bootstrapped_fitted_all %>%
         panel.grid.minor.y = element_blank(),
         title = element_text(size = 14),
         plot.subtitle = element_text(size = 12, face = "italic"), 
-        legend.position="bottom")
-
-# ggsave("figure1_boostrapped_all.png", height = 20, width = 25, units = "cm")
-```
-
-
-
-```{r}
-bootstrapped_fitted_all %>%
-  mutate( time_p = as.Date(time_p)+ 15,
-          time_p = as.character(time_p),
-                  time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-                  time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-                  time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-                  time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-                  time_p = as.Date(time_p))%>%
-  ggplot(aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
-  facet_wrap("plotsLabel", scales = "free_y", labeller = label_wrap_gen(width = 35,multi_line = TRUE), ncol = 2) +
-  geom_line(aes(color = period),
-            alpha = 0.03) +
-  geom_line(data = quantile_bootstrapped_fitted_all %>% mutate(time_p = as.Date(time_p)+ 15,  time_p = as.character(time_p),
-                  time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-                  time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-                  time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-                  time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-                  time_p = as.Date(time_p)),
-            aes(y = value, group = interaction(quantiles, period)),
-            linetype = "dashed") +
-  geom_line(data = quantile_bootstrapped_fitted_all[quantile_bootstrapped_fitted_all$quantiles == "50%", ] 
-            %>% mutate(time_p = as.Date(time_p)+ 15, 
-                       time_p = as.character(time_p),
-                  time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-                  time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-                  time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-                  time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-                  time_p = as.Date(time_p)),
-            aes(y = value, group = period)) +
-  geom_point(data = patient_count_psy_period_psy_all %>% mutate( time_p = as.Date(time_p)+ 15),
-             aes(y = percentage, group=NULL),
-             alpha = 0.5) +
-  geom_vline(xintercept = as.Date("2020-04-01"), linetype = 6)+
-  scale_x_date(breaks = "1 month", labels=date_format("%b %Y"), expand=c(0.03,0))+
-  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+        legend.position="bottom") + 
   scale_colour_manual(values = cbPalette, labels = c("pre-pandemic", "pandemic"), name = "Period") +
   geom_label(data = plot_annotations_df_primary, 
              aes(label=label), 
-            x = -Inf,
-            y = +Inf,
-            hjust = 0,
-            vjust = 1,
-            size = 4,
-            inherit.aes = FALSE) +
+             x = -Inf,
+             y = +Inf,
+             hjust = 0,
+             vjust = 1,
+             size = 4,
+             inherit.aes = FALSE) +
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
   labs(
     #title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
     #subtitle = "Parametric bootstrap estimation: (10000 iterations)",
        x = "Calendar dates",
        y = "Percentage",
-       color = "Period") +
-  theme(strip.text = element_text(size = 14),
-        axis.text.x=element_text(angle = 45, hjust=1, size = 8),
-        axis.text.y = element_text(size = 8), 
-        axis.title.x =element_blank(),
-        axis.title.y = element_text(size = 8),
-        panel.grid.minor.x = element_blank(), 
-        panel.grid.minor.y = element_blank(),
-        title = element_text(size = 14),
-        plot.subtitle = element_text(size = 12, face = "italic"), 
-        legend.position="bottom")
+       color = "Period")
 
 ggsave("figure1_boostrapped_all.png", height = 20, width = 25, units = "cm")
 ```
-
 
 
 ## Meta-analysis of temporal trends
@@ -641,7 +590,6 @@ metafor::forest(model_meta_siteid,
                 xlab = "Mean of the coefficients",
                 mlab="Overall effect")
 dev.off()
-#ggsave("figure2A_metaanalysis_persite.png", height = 20, width = 45, units = "cm")
 ```
 
 
@@ -697,8 +645,8 @@ forest.meta(m.siteid,
             sortvar = TE,
             print.tau2 = FALSE,
             leftlabs = c("plotsLabel"))
-
 forest.meta(m.siteid, layout = "JAMA")
+
 ```
 
 
@@ -729,13 +677,14 @@ forest.meta(m.country, layout = "JAMA")
 ```{r, include=FALSE}
 patients_hospitalized_agg_sex_total <- patients_hospitalized_agg_sex_perc_all %>%
   select( - percentage ) %>%
-  group_by( time_p, sex ) %>%
+  group_by( time_p, time, sex ) %>%
   summarise( total = sum( count ), 
              count_sex = sum( count_sex ), 
              percentage = 100* count_sex / total, 
              siteid = "ALL") %>%  
   mutate(period = ifelse(time_p <= as.Date("2020-03-15"), "before_pandemic", "during_pandemic")) %>% 
-  select(time_p, period, sex, count_sex, percentage, siteid)
+  mutate(month_year = format(time_p, "%m")) %>% 
+  select(time_p, time, period, sex, count_sex, percentage, siteid, month_year)
 ```
 
 
@@ -744,8 +693,6 @@ patients_hospitalized_agg_sex_total <- patients_hospitalized_agg_sex_perc_all %>
 ```{r}
 observed_coefficients_df_sex <- patients_hospitalized_agg_sex_total %>% 
   group_by(sex) %>% 
-  mutate(month_year = format(time_p, "%m"),
-         time = seq_along(time_p))  %>% 
   group_modify(coefficient_slope_calculation, 
                slope_name = c("time", "periodduring_pandemic:time")
                ) %>% 
@@ -769,8 +716,6 @@ observed_coefficients_df_sex <- patients_hospitalized_agg_sex_total %>%
 ```{r }
 bootstrapped_sex <- patients_hospitalized_agg_sex_total %>%
   group_by(sex) %>% 
-  mutate(month_year = format(time_p, "%m"),
-         time = seq_along(time_p))  %>% 
   group_map(~ bootstrapping_slopes(.x,
                                    group_name = .y,
                                    bootstrap_size = bootstrap_size,
@@ -806,16 +751,18 @@ ci_boot_sex <- bootstrapped_coefficients_sex %>%
   group_by(sex, term) %>% 
   summarise("2.5%" = quantile(bootstrapped_slope_coefficient, 0.025), 
             "50%" = quantile(bootstrapped_slope_coefficient, 0.50), 
-            "97.5%" = quantile(bootstrapped_slope_coefficient, 0.975)) %>% 
+            "97.5%" = quantile(bootstrapped_slope_coefficient, 0.975), 
+            .groups = "drop") %>% 
   mutate(ci = paste0("(95% CI ", as.character(round(`2.5%`, 2)), "–", as.character(round(`97.5%`, 2)), ")"))
 
 bootstrapped_fitted_sex <- lapply(bootstrapped_sex, `[[`, 2) %>% bind_rows()
 
 quantile_bootstrapped_fitted_sex <- bootstrapped_fitted_sex %>%
-  group_by(time_p, period,  sex) %>%
+  group_by(time_p, time, period,  sex) %>%
   summarise("2.5%" = quantile(predicted, 0.025),
             "50%" = median(predicted, 0.5),
-            "97.5%" = quantile(predicted, 0.975)) %>%
+            "97.5%" = quantile(predicted, 0.975), 
+            .groups = "drop") %>%
   pivot_longer(cols = c("2.5%", "50%", "97.5%"),
                names_to = "quantiles")
 
@@ -827,11 +774,11 @@ quantile_bootstrapped_fitted_sex <- bootstrapped_fitted_sex %>%
 
 ```{r}
 pvalues_boot_sex_complete <- pvalues_boot_sex %>% 
-  inner_join(ci_boot_sex) %>% 
+  inner_join(ci_boot_sex, by = c("sex", "term")) %>% 
   arrange(sex) %>% 
   #mutate(string = paste0(observed_slope_coefficient, "% ", ci, " (p-value ", format.pval(pvalue, digits = 3, eps = 10**-2), ")")) %>% 
   mutate(string = paste0(observed_slope_coefficient, "% ", ci)) %>% 
-  select(sex, string) %>% 
+  select(sex, string, term) %>% 
   pivot_wider(names_from = term, values_from = string) %>% 
   select(sex, before_slope, during_slope, difference_slope) %>% 
   rename("Before pandemic trend [95% CI] (p-value)" = before_slope,
@@ -839,10 +786,10 @@ pvalues_boot_sex_complete <- pvalues_boot_sex %>%
         "Difference before/since pandemic trend [95% CI] (p-value)" = difference_slope)
 
 pvalues_boot_sex %>% 
-  inner_join(ci_boot_sex) %>% 
+  inner_join(ci_boot_sex, by = c("sex", "term")) %>% 
   arrange(sex) %>% 
   mutate(string = paste0(observed_slope_coefficient, " ", ci, " (", format.pval(pvalue, digits = 3, eps = 10**-3), ")")) %>% 
-  select(sex, string) %>% 
+  select(sex, string, term) %>% 
   pivot_wider(names_from = term, values_from = string) %>% 
   select(sex, before_slope, during_slope, difference_slope) %>% 
   rename("Before pandemic trend [95% CI] (p-value)" = before_slope,
@@ -861,78 +808,49 @@ pvalues_boot_sex %>%
 
 
 ```{r}
-#plot_annotations_sex_df <- pvalues_boot_sex %>%
-#  select(term, sex, label) %>% 
-#  filter(term == "difference_slope" & sex == "female") %>% 
-#  mutate(plotsLabel = "Female") 
-
 plot_annotations_sex_df <- pvalues_boot_sex_complete %>%
   filter( sex == "female") %>% 
     mutate(plotsLabel = "Female") %>%
-  select( label = `Difference before/since pandemic trend [95% CI] (p-value)`, plotsLabel )
-
-
+  select( label = `Difference before/since pandemic trend [95% CI] (p-value)`, plotsLabel, sex)
 ```
 
 
 
 ```{r }
-#plot_annotations_sex_df2 <- data.frame(term=c("difference_solpe","difference_solpe"),
-#                                       sex=c("female", "male"),
-#                                       label=c("Coefficient difference: 0.77 (pvalue: <0.01)", "Coefficient difference: -0.77 (pvalue: 0.005)"),
-#                                       plotsLabel=c("Female", "Male"))
-
-
 bootstrapped_fitted_sex %>% 
   filter( sex == "female") %>%
-  mutate( time_p = as.Date(time_p)+ 15,
-          time_p = as.character(time_p),
-                  time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-                  time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-                  time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-                  time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-                  time_p = as.Date(time_p))%>%
-  ggplot(aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
+  ggplot(aes(x = time, y = predicted, group = interaction(iteration, period))) +
   facet_wrap("sex",
              labeller = labeller(sex = c("female" = "Female proportion "))) +
-  geom_line(aes(color = period),
-            alpha = 0.01) +
-  geom_line(data = quantile_bootstrapped_fitted_sex[ quantile_bootstrapped_fitted_sex$sex =="female", ] %>% 
-              mutate(time_p = as.Date(time_p)+ 15,  time_p = as.character(time_p),
-                  time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-                  time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-                  time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-                  time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-                  time_p = as.Date(time_p)),
-            aes(y = value, group = interaction(quantiles, period)),
+  geom_line(aes(x = time + 0.5, color = period), alpha = 0.01) +
+  geom_line(aes(x = time + 0.5, 
+                y = value,
+                group = interaction(quantiles, period)),
+            data = filter(quantile_bootstrapped_fitted_sex, sex == "female" & quantiles %in% c("2.5%", "97.5%")),
             linetype = "dashed") +
-  geom_line(data = quantile_bootstrapped_fitted_sex[quantile_bootstrapped_fitted_sex$sex =="female" & quantile_bootstrapped_fitted_sex$quantiles == "50%", ]%>% mutate(time_p = as.Date(time_p)+ 15,  time_p = as.character(time_p),
-                  time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-                  time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-                  time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-                  time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-                  time_p = as.Date(time_p)),
-            aes(y = value, group = period)) +
-  geom_point(data = patients_hospitalized_agg_sex_total[ patients_hospitalized_agg_sex_total$sex =="female",]  
-             %>% mutate( time_p = as.Date(time_p)+ 15),
-             aes(y = percentage, group=NULL),
+  geom_line(aes(x = time + 0.5, 
+                y = value,
+                group = period),
+            data = filter(quantile_bootstrapped_fitted_sex, sex == "female" & quantiles == "50%")) +
+  geom_point(aes(x = time + 0.5, y = percentage, group = NULL),
+             data = filter(patients_hospitalized_agg_sex_total, sex == "female"),
              alpha = 0.5) +
-  #scale_colour_manual(values = wesanderson::wes_palette("GrandBudapest1", 3)) +
+  scale_x_continuous(breaks = breaks_width(1),
+                     labels = time_to_time_p, 
+                     limits = c(2, 29),
+                     expand = c(0.03,0)) + 
+  geom_vline(xintercept = 16, linetype = 6 ) +
   scale_colour_manual(values = cbPalette) +
-  scale_x_date(breaks = "1 month", labels=date_format("%b %Y"), expand=c(0.03,0))+
-  guides(color = guide_legend(override.aes = list(alpha = 1))) +
-  geom_vline(xintercept = as.Date("2020-04-01"), linetype = 6)+
-  scale_x_date(breaks = "1 month", labels=date_format("%b %Y"), expand=c(0.03,0))+
   guides(color = guide_legend(override.aes = list(alpha = 1))) +
   scale_colour_manual(values = cbPalette, labels = c("pre-pandemic", "pandemic"), name = "Period") +
   geom_label(data = plot_annotations_sex_df, 
              aes(label=label), 
-            x = -Inf,
-            y = +Inf,
-            hjust = 0,
-            vjust = 1,
-            size = 4,
-            inherit.aes = FALSE) +
+             x = -Inf,
+             y = +Inf,
+             hjust = 0,
+             vjust = 1,
+             size = 4,
+             inherit.aes = FALSE) +
   labs(x = "Calendar dates",
        y = "Percentage",
        color = "Period") +
@@ -946,12 +864,13 @@ bootstrapped_fitted_sex %>%
         title = element_text(size = 14), 
         plot.subtitle = element_text(size = 12, face = "italic"),
         legend.position = "bottom") 
+
 ggsave("figure4_boostrapped_sex.png", height = 15, width = 20, units = "cm")
 ```
 
 ### Alternative plot
 
-```{r bootstrap_plot, include=FALSE}
+```{r bootstrap_plot, include=FALSE, eval = FALSE}
 plot_sex <- ggplot(bootstrapped_fitted_sex,
        aes(x = time_p, y = predicted/100, group = interaction(iteration, period, sex))) +
   geom_line(aes(color = interaction(period, sex)),
@@ -964,7 +883,6 @@ plot_sex <- ggplot(bootstrapped_fitted_sex,
   geom_point(data = patients_hospitalized_agg_sex_total,
              aes(y = percentage/100, group=sex),
              alpha = 1) +
-  # scale_color_brewer(palette = "Paired") +
   scale_color_manual(labels = c("Female", "Male", "", ""),
                      values = c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C")) +
   scale_x_date(breaks = "1 month", labels=date_format("%b %Y"), expand=c(0.03,0))+
@@ -972,30 +890,17 @@ plot_sex <- ggplot(bootstrapped_fitted_sex,
     override.aes = list(alpha = 1,
                         colour = c('#1F78B4', '#33A02C', NA, NA))) 
   ) +
-  #geom_label(data = plot_annotations_sex_df,
-  #           aes(label = label),
-  #           x = -Inf,
-  #           y = +Inf,
-  #           hjust = 0,
-  #           vjust = 1,
-  #           size = 4,
-  #           inherit.aes = FALSE) +
   annotate("label",
            x = as.Date('2019-10-01'),
            y = 0.69,
-           #label = "Female proportion", 
            label = "Female proportion [Coefficient difference: 0.77 (pvalue: <0.01)]", 
            fill = "#A6CEE3") +
   annotate("label",
            x = as.Date('2019-10-01'),
            y = 0.3,
-           #label = "Male proportion", 
            label = "Male proportion [Coefficient difference: -0.77 (pvalue: 0.005)]", 
            fill = "#B2DF8A") +
-  # annotate("text", x = 7, y = 0.15, label = "Male proportion") +
   labs(
-    #title = "Patients sex proportion trends among psychiatric-related visits",
-    #   subtitle = "Parametric bootstrap estimation: (10000 iterations)",
        x = "Calendar dates",
        y = "Sex proportion",
        color = "Sex") +
@@ -1045,7 +950,7 @@ disorders_to_select <- c(
 
 
 perc_disorder_group_total <- perc_disorder_group_complete %>%
-  group_by( time_p, disorder_group ) %>%
+  group_by( time_p, time, disorder_group ) %>%
   summarise( total_diagnoses = sum(count_icd, na.rm = TRUE),
              dg_cases = sum(count_dg),
              percentage = (dg_cases / total_diagnoses) * 100, 
@@ -1054,7 +959,7 @@ perc_disorder_group_total <- perc_disorder_group_complete %>%
   mutate(period = ifelse(time_p < pandemic_start_date,
                          "before_pandemic", 
                          "during_pandemic")) %>% 
-    filter(disorder_group %in% disorders_to_select)
+  filter(disorder_group %in% disorders_to_select)
   
 perc_disorder_group_total$disorder_group <- gsub( "Feeding and Eating Disorders", "Eating Disorders", perc_disorder_group_total$disorder_group)
 
@@ -1130,7 +1035,8 @@ ci_boot_disorders <- bootstrapped_coefficients_disorders %>%
   group_by(disorder_group, term) %>% 
   summarise("2.5%" = quantile(bootstrapped_slope_coefficient, 0.025), 
             "50%" = quantile(bootstrapped_slope_coefficient, 0.50), 
-            "97.5%" = quantile(bootstrapped_slope_coefficient, 0.975)) %>% 
+            "97.5%" = quantile(bootstrapped_slope_coefficient, 0.975), 
+            .groups = "drop") %>% 
   mutate(ci = paste0("(95% CI ", as.character(round(`2.5%`, 2)), "–", as.character(round(`97.5%`, 2)), ")"))
 
   
@@ -1138,10 +1044,11 @@ bootstrapped_fitted_disorder <- lapply(bootstrapped_disorders, `[[`, 2) %>%
   bind_rows() 
 
 quantile_bootstrapped_fitted_disorder <- bootstrapped_fitted_disorder %>%
-  group_by(time_p, period, disorder_group) %>%
+  group_by(time_p, time, period, disorder_group) %>%
   summarise("2.5%" = quantile(predicted, 0.025),
             "50%" = median(predicted, 0.5),
-            "97.5%" = quantile(predicted, 0.975)) %>%
+            "97.5%" = quantile(predicted, 0.975), 
+            .groups = "drop") %>%
   pivot_longer(cols = c("2.5%", "50%", "97.5%"),
                names_to = "quantiles") 
 
@@ -1152,11 +1059,10 @@ quantile_bootstrapped_fitted_disorder <- bootstrapped_fitted_disorder %>%
 
 ```{r}
 pvalues_boot_disorders_complete <- pvalues_boot_disorders %>% 
-  inner_join(ci_boot_disorders) %>% 
+  inner_join(ci_boot_disorders, by = c("disorder_group", "term")) %>% 
   arrange(disorder_group) %>% 
-  #mutate(string = paste0(observed_slope_coefficient, " ", ci, " (", format.pval(pvalue, digits = 3, eps = 10**-2), ")")) %>% 
   mutate(string = paste0(observed_slope_coefficient, "% ", ci)) %>% 
-  select(disorder_group, string) %>% 
+  select(disorder_group, term, string) %>% 
   pivot_wider(names_from = term, values_from = string) %>% 
   select(disorder_group, before_slope, during_slope, difference_slope) %>% 
   rename("Before pandemic trend [95% CI] (p-value)" = before_slope,
@@ -1164,11 +1070,11 @@ pvalues_boot_disorders_complete <- pvalues_boot_disorders %>%
         "Difference before/since pandemic trend [95% CI] (p-value)" = difference_slope) 
 
 pvalues_boot_disorders %>% 
-  inner_join(ci_boot_disorders) %>% 
+  inner_join(ci_boot_disorders, by = c("disorder_group", "term")) %>% 
   arrange(disorder_group) %>% 
   #mutate(string = paste0(observed_slope_coefficient, " ", ci, " (", format.pval(pvalue, digits = 3, eps = 10**-2), ")")) %>% 
   mutate(string = paste0(observed_slope_coefficient, " ", ci)) %>% 
-  select(disorder_group, string) %>% 
+  select(disorder_group, term, string) %>% 
   pivot_wider(names_from = term, values_from = string) %>% 
   select(disorder_group, before_slope, during_slope, difference_slope) %>% 
   rename("Before pandemic trend [95% CI] (p-value)" = before_slope,
@@ -1187,60 +1093,47 @@ plot_annotations_disorder_df <-  pvalues_boot_disorders_complete %>%
 
 
 
-```{r}
+```{r, fig.height=15, fig.width=25}
 bootstrapped_fitted_disorder %>% 
-  mutate( time_p = as.Date(time_p)+ 15,
-          time_p = as.character(time_p),
-                  time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-                  time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-                  time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-                  time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-                  time_p = as.Date(time_p))%>%
   mutate(period = recode_factor(period, "before_pandemic" = "Before pandemic onset", "during_pandemic" = "Since pandemic onset")) %>% 
-  ggplot(aes(x = time_p, y = predicted, group = interaction(iteration, period))) +
+  ggplot(aes(x = time, y = predicted, group = interaction(iteration, period))) +
   facet_wrap("disorder_group",
              scales = "free_y",
              labeller = label_wrap_gen(width = 35,multi_line = TRUE)) +
-  geom_line(aes(color = period),
-            alpha = 0.03) +
-  geom_line(data = quantile_bootstrapped_fitted_disorder %>% mutate(time_p = as.Date(time_p)+ 15,  time_p = as.character(time_p),
-                  time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-                  time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-                  time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-                  time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-                  time_p = as.Date(time_p)),
-            aes(y = value, group = interaction(quantiles, period)),
+  geom_line(aes(x = time + 0.5, color = period), alpha = 0.03) +
+  geom_line(aes(x = time + 0.5, 
+                y = value,
+                group = interaction(quantiles, period)),
+            data = filter(quantile_bootstrapped_fitted_disorder, quantiles %in% c("2.5%", "97.5%")),
             linetype = "dashed") +
-  geom_line(data = quantile_bootstrapped_fitted_disorder[quantile_bootstrapped_fitted_disorder$quantiles == "50%", ] %>%
-              mutate(time_p = as.Date(time_p)+ 15,  time_p = as.character(time_p),
-                  time_p = if_else(time_p == '2020-04-16', as.character('2020-04-01'), time_p), 
-                  time_p = if_else(time_p == '2020-03-16', as.character('2020-03-31'), time_p),
-                  time_p = if_else(time_p == '2021-04-16', as.character('2021-04-30'), time_p),
-                  time_p = if_else(time_p == '2019-02-16', as.character('2019-02-01'), time_p),
-                  time_p = as.Date(time_p)),
-            aes(y = value, group = period)) +
-  geom_point(data = filter(perc_disorder_group_total  %>% mutate( time_p = as.Date(time_p)+ 15),
-                           disorder_group %in% disorders_to_select),
-             aes(y = percentage, group=NULL),
+  geom_line(aes(x = time + 0.5, 
+                y = value,
+                group = period),
+            data = filter(quantile_bootstrapped_fitted_disorder, quantiles == "50%")) +
+  geom_point(aes(x = time + 0.5, y = percentage, group = NULL),
+             data = filter(perc_disorder_group_total, disorder_group %in% disorders_to_select),
              alpha = 0.5) +
+  scale_x_continuous(breaks = breaks_width(1),
+                     labels = time_to_time_p, 
+                     limits = c(2, 29),
+                     expand = c(0.03,0)) + 
+  geom_vline(xintercept = 16, linetype = 6 ) +
   scale_colour_manual(values = cbPalette, labels = c("pre-pandemic", "pandemic"), name = "Period") +
-  geom_vline(xintercept = as.Date("2020-04-01"), linetype = 6)+
-  scale_x_date(breaks = "1 month", labels=date_format("%b %Y"), expand=c(0.03,0))+
   guides(color = guide_legend(override.aes = list(alpha = 1))) +
   geom_label(data = plot_annotations_disorder_df, 
              aes(label=label), 
-            x = -Inf,
-            y = +Inf,
-            hjust = 0,
-            vjust = 1,
-            size = 4,
-            inherit.aes = FALSE) +
+             x = -Inf,
+             y = +Inf,
+             hjust = 0,
+             vjust = 1,
+             size = 4,
+             inherit.aes = FALSE) +
   labs(
     #title = "Interrupted Time Series Analysis: Percentage of patients with psychiatric conditions",
     # subtitle = "Parametric bootstrap estimation: (10000 iterations)",
-       x = "Calendar dates",
-       y = "Percentage",
-       color = "Period") +
+    x = "Calendar dates",
+    y = "Percentage",
+    color = "Period") +
   theme(strip.text = element_text(size = 10),
         axis.text.x=element_text(angle = 45, hjust=1, size = 8),
         axis.text.y = element_text(size = 8), 
@@ -1249,42 +1142,32 @@ bootstrapped_fitted_disorder %>%
         title = element_text(size = 14),
         plot.subtitle = element_text(size = 8, face = "italic"), 
         legend.position = "bottom") 
-ggsave("figure3_boostrapped_disorders.png", height = 15, width = 25, units = "cm")
 
+ggsave("figure3_boostrapped_disorders.png", height = 15, width = 25, units = "cm")
 ```
 
 
 
 ```{r}
-perc_disorder_group_total %>%
-  ggplot( aes( x= as.Date( time_p ), y = percentage, group = disorder_group )) +
-  facet_wrap( ~ disorder_group, scales = "free" ) +
-  geom_line( aes(color = disorder_group )) +
-  geom_point( aes( color = disorder_group )) +
-  geom_vline(xintercept = as.Date(pandemic_start_date), linetype = "dashed")+
-  labs(x ="", y = "percentage of patients (%)")+
-  scale_x_date(breaks = "1 month", labels=date_format("%b %Y"), expand=c(0.03,0))+
-  theme(axis.text.x=element_text(angle = 45, hjust=1, size = 6),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        panel.border = element_rect(colour = "black", fill = NA))
-
 
 percentages_htm <- perc_disorder_group_total %>%
-  select( time_p, disorder_group, percentage ) %>%
+  select( time, time_p, disorder_group, percentage ) %>%
   unique() %>%
   pivot_wider( names_from =  disorder_group, 
-               values_from = percentage )
+               values_from = percentage ) %>% 
+  ungroup()
 
 dates <- percentages_htm$time_p 
 
-percentages_htm <- percentages_htm[  , -1]
+percentages_htm <- percentages_htm %>% select(-time, -time_p)
 
 counts_htm <- perc_disorder_group_total %>%
-  select( time_p, disorder_group, dg_cases ) %>%
+  select( time, time_p, disorder_group, dg_cases ) %>%
   unique() %>%
   pivot_wider( names_from =  disorder_group, 
-               values_from = dg_cases )
-counts_htm <- counts_htm[  , -1]
+               values_from = dg_cases ) %>% 
+  ungroup()
+counts_htm <- counts_htm %>% select(-time, -time_p)
 tempVariabilityInput <- new('DataTemporalMap', probabilityMap = as.matrix(percentages_htm), 
          countsMap = as.matrix(counts_htm), dates = dates, support = as.data.frame(names(percentages_htm)), 
          variableName = "example", variableType = "character", period = "month")
@@ -1314,8 +1197,6 @@ fig <- fig %>%
     shapes = list(vline(as.Date("2020-03-15"))))
 
 fig
-
-#plotly::orca(fig, file = "figure_supp3_counts_disorder.png")
 ```
 
 ### Estimate number of ICD codes per site and disorder group
@@ -1393,8 +1274,9 @@ counts_plot <- counts2 %>% ggplot( aes( x= as.Date( time_p ), y = value, group= 
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
         panel.border = element_rect(colour = "black", fill = NA), 
         legend.position="bottom")
+
 counts_plot
-ggsave("figure_supp1A_counts_per_site.png",counts_plot, height = 25, width = 40, units = "cm")
+ggsave("figure_supp1A_counts_per_site.png", counts_plot, height = 25, width = 40, units = "cm")
 
 ```
 
@@ -1423,9 +1305,9 @@ counts_agg2plot <- counts_agg2 %>% ggplot( aes( x= as.Date( time_p ), y = value,
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(), strip.background = element_blank(),
         panel.border = element_rect(colour = "black", fill = NA), 
         legend.position="bottom")
+
 counts_agg2plot
 ggsave("figure_supp1B_counts_all.png",counts_agg2plot, height = 20, width = 32, units = "cm")
-
 ```
 
 
@@ -1488,41 +1370,4 @@ patients_hospitalized_agg_sex_total %>%
         panel.border = element_rect(colour = "black", fill = NA))
   
 ```
-
-
-
-### By site
-```{r, include=FALSE}
-sites <- unique( patient_count_psy_period_psy_all$siteid )
-source("../metanalysis_visualization/time_series_analysis_plotting.R")
-p <- list()
-
-for( i in 1:length(sites)){
-  print(i)
-  subset_site <- patient_count_psy_period_psy_all %>%
-    filter( siteid == sites[i])
-  ts_seasonal_percent_per_site <- lm(percentage ~ period*time + harmonic(month_year, 1, 12), subset_site)
-  p[[i]] <- time_series_analysis_plotting(ts_seasonal_percent_per_site,
-                              subset_site,
-                              "percentage",
-                              clearance_period = FALSE) +
-  labs(title = sites[i],
-       x = "Calendar dates",
-       y = "Percentage") +
-      scale_x_date(breaks = "1 month", labels=date_format("%b %Y"), expand=c(0.03,0)) +
-     theme(strip.text = element_text(size = 10),
-        axis.text.x = element_text(angle = 45, hjust=1, size = 8), 
-        axis.text.y = element_text(size = 8), 
-        axis.title.x = element_text(size = 8),
-        axis.title.y = element_text(size = 8),
-        title = element_text(size = 14),
-        plot.subtitle = element_text(size = 12, face = "italic"))
-
-}
-
-g <- do.call(grid.arrange,p)
-#ggsave("its_seasonality_site.png",g, height = 20, width = 32, units = "cm")
-
-```
-
 
