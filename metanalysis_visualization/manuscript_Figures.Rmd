@@ -683,8 +683,7 @@ patients_hospitalized_agg_sex_total <- patients_hospitalized_agg_sex_perc_all %>
              percentage = 100* count_sex / total, 
              siteid = "ALL") %>%  
   mutate(period = ifelse(time_p <= as.Date("2020-03-15"), "before_pandemic", "during_pandemic")) %>% 
-  mutate(month_year = format(time_p, "%m")) %>% 
-  select(time_p, time, period, sex, count_sex, percentage, siteid, month_year)
+  select(time_p, time, period, sex, count_sex, percentage, siteid)
 ```
 
 
@@ -931,14 +930,17 @@ table_iterations_disorder <- with(perc_disorder_group_all,
 perc_disorder_group_complete <- perc_disorder_group_all %>% 
   full_join(table_iterations_disorder) %>% 
   arrange(siteid, time_p, disorder_group) %>% 
-  group_by(siteid, time_p) %>% 
+  group_by(siteid, time_p) %>% # grouping by time prevent following function from wokring as expected
   fill(count_icd, 
        period, 
        country , 
        plotsLabel, 
        .direction = "downup") %>% 
   ungroup() %>% 
-  replace_na(list(count_dg = 0, percentage_dg = 0))
+  replace_na(list(count_dg = 0, percentage_dg = 0)) %>% 
+  select(-time) %>% 
+  # Readfing consistent time information 
+  left_join(time_timep_df, by = "time_p")
 
 
 disorders_to_select <- c(
@@ -978,8 +980,6 @@ disorders_to_select <- c(
 ```{r}
 observed_coefficients_df_disorder <- perc_disorder_group_total %>% 
   group_by(disorder_group) %>% 
-  mutate(month_year = format(time_p, "%m"),
-         time = seq_along(time_p))  %>% 
   group_modify(coefficient_slope_calculation, 
                slope_name = c("time", "periodduring_pandemic:time")
                ) %>% 
@@ -1002,8 +1002,6 @@ observed_coefficients_df_disorder <- perc_disorder_group_total %>%
 
 bootstrapped_disorders <- perc_disorder_group_total %>%
   group_by(disorder_group) %>% 
-  mutate(month_year = format(time_p, "%m"),
-         time = seq_along(time_p))  %>% 
   group_map( ~bootstrapping_slopes(.x,
                                    group_name = .y,
                                    bootstrap_size = bootstrap_size,
@@ -1033,8 +1031,8 @@ pvalues_boot_disorders <- bootstrapped_coefficients_disorders %>%
 
 ci_boot_disorders <- bootstrapped_coefficients_disorders %>% 
   group_by(disorder_group, term) %>% 
-  summarise("2.5%" = quantile(bootstrapped_slope_coefficient, 0.025), 
-            "50%" = quantile(bootstrapped_slope_coefficient, 0.50), 
+  summarise("2.5%"  = quantile(bootstrapped_slope_coefficient, 0.025), 
+            "50%"   = quantile(bootstrapped_slope_coefficient, 0.50), 
             "97.5%" = quantile(bootstrapped_slope_coefficient, 0.975), 
             .groups = "drop") %>% 
   mutate(ci = paste0("(95% CI ", as.character(round(`2.5%`, 2)), "–", as.character(round(`97.5%`, 2)), ")"))
@@ -1050,7 +1048,7 @@ quantile_bootstrapped_fitted_disorder <- bootstrapped_fitted_disorder %>%
             "97.5%" = quantile(predicted, 0.975), 
             .groups = "drop") %>%
   pivot_longer(cols = c("2.5%", "50%", "97.5%"),
-               names_to = "quantiles") 
+               names_to = "quantiles")
 
 
 ```
@@ -1095,7 +1093,7 @@ plot_annotations_disorder_df <-  pvalues_boot_disorders_complete %>%
 
 ```{r, fig.height=15, fig.width=25}
 bootstrapped_fitted_disorder %>% 
-  mutate(period = recode_factor(period, "before_pandemic" = "Before pandemic onset", "during_pandemic" = "Since pandemic onset")) %>% 
+  # mutate(period = recode_factor(period, "before_pandemic" = "Before pandemic onset", "during_pandemic" = "Since pandemic onset")) %>% 
   ggplot(aes(x = time, y = predicted, group = interaction(iteration, period))) +
   facet_wrap("disorder_group",
              scales = "free_y",
@@ -1253,9 +1251,9 @@ ggsave("figure_supp2_ICDdictionaryQC.png", height = 40, width = 45, units = "cm"
 library(reshape2)
 
 counts <- patient_count_psy_period_psy_all %>%
-  select( plotsLabel, time_p, time, month_year, count_psy_patients, total_cases = count_icd )
+  select( plotsLabel, time_p, time, count_psy_patients, total_cases = count_icd )
 
-counts2 <- reshape2::melt(counts ,  id.vars = c('plotsLabel', 'time_p', 'time','month_year'), variable.name = 'group')
+counts2 <- reshape2::melt(counts ,  id.vars = c('plotsLabel', 'time_p', 'time'), variable.name = 'group')
 counts2$group <- gsub("count_psy_patients", "Patients with mental health disorder", counts2$group )
 counts2$group <- gsub("total_cases", "Total number of patients", counts2$group )
 
@@ -1286,9 +1284,9 @@ counts_agg <- counts %>%
   group_by( time_p ) %>%
   mutate( psy_cases = sum( count_psy_patients), 
     total_cases = sum(total_cases)) %>%
-  select( time_p, time, month_year, psy_cases, total_cases)
+  select( time_p, time, psy_cases, total_cases)
 
-counts_agg2 <- reshape2::melt(counts_agg ,  id.vars = c('time_p', 'time','month_year'), variable.name = 'group')
+counts_agg2 <- reshape2::melt(counts_agg ,  id.vars = c('time_p', 'time'), variable.name = 'group')
 counts_agg2$group <- gsub("count_psy_patients", "Patients with mental health disorder", counts_agg2$group )
 counts_agg2$group <- gsub("total_cases", "Total number of patients", counts_agg2$group )
 
