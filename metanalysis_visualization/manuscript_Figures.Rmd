@@ -339,6 +339,8 @@ observed_coefficients_df <- patient_count_psy_period_psy_all %>%
 
 ```{r}
 bootstrap_size <- 10000
+set.seed(1) 
+
 binom_proportion <- function(n, prob, size) {
   (rbinom(n, size, prob) / size) * 100
 }
@@ -471,7 +473,8 @@ pvalues_boot_complete <- pvalues_boot %>%
   select(siteid, plotsLabel, before_slope, during_slope, difference_slope) %>% 
   rename("Before pandemic trend [95% CI] (p-value)" = before_slope,
         "Since pandemic trend [95% CI] (p-value)" = during_slope,
-        "Difference before/since pandemic trend [95% CI] (p-value)" = difference_slope)
+        "Difference before/since pandemic trend [95% CI] (p-value)" = difference_slope) 
+
 
 ```
 
